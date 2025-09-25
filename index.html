@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-Stop Productivity Hub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .combined-section {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .combined-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        #current-time {
+            font-size: 2em;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        h2 {
+            text-align: center;
+            color: #34495e;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        #timer {
+            font-size: 3.5em;
+            text-align: center;
+            margin: 20px 0;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #todo-list {
+            list-style: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #todo-list li {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s ease;
+        }
+        #todo-list li:hover {
+            background: #f9f9f9;
+        }
+        #todo-list li input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        #todo-list li.completed span.task-text {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+        #add-task {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+        #add-task input[type="text"] {
+            flex: 2;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        #add-task input[type="date"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        #add-task button {
+            border-radius: 6px;
+        }
+        #youtube-player {
+            width: 100%;
+            height: 315px;
+            border: none;
+            border-radius: 8px;
+        }
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+        }
+        .deadline {
+            margin-left: 15px;
+            color: #555;
+            font-size: 14px;
+        }
+        .checkbox-label {
+            font-size: 14px;
+            color: #34495e;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        #playlist-url {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        #playlist-select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+        }
+        p {
+            color: #555;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="combined-section">
+            <!-- Header with Current Time -->
+            <div class="header-section">
+                <h1>One-Stop Productivity Hub</h1>
+                <div id="current-time"></div>
+            </div>
+
+            <!-- Pomodoro Timer Section -->
+            <div class="section">
+                <h2>Pomodoro Timer (25 min)</h2>
+                <div id="timer">25:00</div>
+                <div class="button-group">
+                    <button id="start">Start</button>
+                    <button id="stop" disabled>Stop</button>
+                    <button id="reset">Reset</button>
+                </div>
+            </div>
+
+            <!-- To-Do List Section -->
+            <div class="section">
+                <h2>To-Do List</h2>
+                <div id="add-task">
+                    <input type="text" id="new-task" placeholder="Add a new task...">
+                    <input type="date" id="task-deadline" placeholder="Select deadline">
+                    <button id="add">Add</button>
+                </div>
+                <ul id="todo-list"></ul>
+            </div>
+
+            <!-- YouTube Music Playlist Section -->
+            <div class="section">
+                <h2>YouTube Music Playlist</h2>
+                <p>Add a YouTube playlist URL to save it, then select to play:</p>
+                <input type="text" id="playlist-url" placeholder="Enter playlist URL (e.g., https://www.youtube.com/playlist?list=PLAYLIST_ID)">
+                <div class="button-group">
+                    <button id="save-playlist">Save Playlist</button>
+                    <button id="embed-playlist">Play Selected Playlist</button>
+                </div>
+                <select id="playlist-select">
+                    <option value="">Select a saved playlist</option>
+                </select>
+                <div id="player-container">
+                    <!-- Embedded player will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Current Time Display
+            const currentTimeDisplay = document.getElementById('current-time');
+
+            function updateCurrentTime() {
+                const now = new Date();
+                currentTimeDisplay.textContent = now.toLocaleString();
+            }
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            // Pomodoro Timer
+            let timer = 25 * 60; // 25 minutes in seconds
+            let interval;
+            let isRunning = false;
+
+            const timerDisplay = document.getElementById('timer');
+            const startBtn = document.getElementById('start');
+            const stopBtn = document.getElementById('stop');
+            const resetBtn = document.getElementById('reset');
+
+            function updateDisplay() {
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            startBtn.addEventListener('click', () => {
+                if (!isRunning) {
+                    interval = setInterval(() => {
+                        timer--;
+                        updateDisplay();
+                        if (timer <= 0) {
+                            clearInterval(interval);
+                            alert('Time\'s up! Take a break.');
+                            isRunning = false;
+                            startBtn.disabled = false;
+                            stopBtn.disabled = true;
+                        }
+                    }, 1000);
+                    isRunning = true;
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                }
+            });
+
+            stopBtn.addEventListener('click', () => {
+                clearInterval(interval);
+                isRunning = false;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            });
+
+            resetBtn.addEventListener('click', () => {
+                clearInterval(interval);
+                isRunning = false;
+                timer = 25 * 60;
+                updateDisplay();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            });
+
+            updateDisplay();
+
+            // To-Do List
+            const todoList = document.getElementById('todo-list');
+            const newTaskInput = document.getElementById('new-task');
+            const deadlineInput = document.getElementById('task-deadline');
+            const addBtn = document.getElementById('add');
+
+            function saveTasks() {
+                const tasks = [];
+                todoList.querySelectorAll('li').forEach(li => {
+                    const text = li.querySelector('.task-text').textContent;
+                    const completed = li.classList.contains('completed');
+                    const deadline = li.querySelector('.deadline').textContent.replace('Due: ', '') === 'No deadline' ? '' : li.querySelector('.deadline').textContent.replace('Due: ', '');
+                    tasks.push({ text, completed, deadline });
+                });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            function loadTasks() {
+                const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                savedTasks.forEach(task => addTask(task.text, task.deadline, task.completed));
+            }
+
+            function addTask(text, deadline, completed = false) {
+                const li = document.createElement('li');
+                if (completed) li.classList.add('completed');
+                
+                const completeCheckbox = document.createElement('input');
+                completeCheckbox.type = 'checkbox';
+                completeCheckbox.className = 'complete-task';
+                completeCheckbox.checked = completed;
+                const completeLabel = document.createElement('label');
+                completeLabel.className = 'checkbox-label';
+                completeLabel.textContent = 'Done';
+                const uniqueId = `complete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                completeLabel.htmlFor = uniqueId;
+                completeCheckbox.id = uniqueId;
+
+                const deleteCheckbox = document.createElement('input');
+                deleteCheckbox.type = 'checkbox';
+                deleteCheckbox.className = 'delete-task';
+                const deleteLabel = document.createElement('label');
+                deleteLabel.className = 'checkbox-label';
+                deleteLabel.textContent = 'Delete';
+                const uniqueId2 = `delete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                deleteLabel.htmlFor = uniqueId2;
+                deleteCheckbox.id = uniqueId2;
+
+                const span = document.createElement('span');
+                span.className = 'task-text';
+                span.textContent = text;
+                const deadlineSpan = document.createElement('span');
+                deadlineSpan.className = 'deadline';
+                deadlineSpan.textContent = deadline ? `Due: ${new Date(deadline).toLocaleDateString()}` : 'No deadline';
+
+                completeCheckbox.addEventListener('change', () => {
+                    if (completeCheckbox.checked) {
+                        li.classList.add('completed');
+                    } else {
+                        li.classList.remove('completed');
+                    }
+                    saveTasks();
+                });
+
+                deleteCheckbox.addEventListener('change', () => {
+                    if (deleteCheckbox.checked) {
+                        todoList.removeChild(li);
+                        saveTasks();
+                    }
+                });
+
+                li.appendChild(completeCheckbox);
+                li.appendChild(completeLabel);
+                li.appendChild(deleteCheckbox);
+                li.appendChild(deleteLabel);
+                li.appendChild(span);
+                li.appendChild(deadlineSpan);
+                todoList.appendChild(li);
+                saveTasks();
+            }
+
+            addBtn.addEventListener('click', () => {
+                const text = newTaskInput.value.trim();
+                const deadline = deadlineInput.value;
+                if (text) {
+                    addTask(text, deadline);
+                    newTaskInput.value = '';
+                    deadlineInput.value = '';
+                }
+            });
+
+            newTaskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addBtn.click();
+                }
+            });
+
+            // Load tasks on page load
+            loadTasks();
+
+            // YouTube Playlist Management
+            const playlistUrlInput = document.getElementById('playlist-url');
+            const savePlaylistBtn = document.getElementById('save-playlist');
+            const embedBtn = document.getElementById('embed-playlist');
+            const playlistSelect = document.getElementById('playlist-select');
+            const playerContainer = document.getElementById('player-container');
+
+            // Load saved playlists from localStorage
+            function loadPlaylists() {
+                const savedPlaylists = JSON.parse(localStorage.getItem('playlists') || '[]');
+                playlistSelect.innerHTML = '<option value="">Select a saved playlist</option>';
+                savedPlaylists.forEach((url, index) => {
+                    const option = document.createElement('option');
+                    option.value = url;
+                    option.textContent = `Playlist ${index + 1}: ${url.substring(0, 30)}${url.length > 30 ? '...' : ''}`;
+                    playlistSelect.appendChild(option);
+                });
+            }
+
+            // Save playlist to localStorage
+            savePlaylistBtn.addEventListener('click', () => {
+                const url = playlistUrlInput.value.trim();
+                if (url) {
+                    const match = url.match(/[?&]list=([^&]+)/);
+                    if (match) {
+                        const savedPlaylists = JSON.parse(localStorage.getItem('playlists') || '[]');
+                        if (!savedPlaylists.includes(url)) {
+                            savedPlaylists.push(url);
+                            localStorage.setItem('playlists', JSON.stringify(savedPlaylists));
+                            loadPlaylists();
+                            playlistUrlInput.value = '';
+                            alert('Playlist saved!');
+                        } else {
+                            alert('This playlist is already saved.');
+                        }
+                    } else {
+                        alert('Invalid YouTube playlist URL. Please check the format.');
+                    }
+                }
+            });
+
+            // Embed selected playlist
+            embedBtn.addEventListener('click', () => {
+                const url = playlistSelect.value;
+                if (url) {
+                    const match = url.match(/[?&]list=([^&]+)/);
+                    if (match) {
+                        const playlistId = match[1];
+                        const iframe = `
+                            <iframe id="youtube-player" 
+                                    src="https://www.youtube.com/embed/videoseries?list=${playlistId}" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                            </iframe>
+                        `;
+                        playerContainer.innerHTML = iframe;
+                    } else {
+                        alert('Invalid playlist URL selected.');
+                    }
+                } else {
+                    alert('Please select a playlist from the dropdown.');
+                }
+            });
+
+            // Initialize playlists on load
+            loadPlaylists();
+        });
+    </script>
+</body>
+</html>
