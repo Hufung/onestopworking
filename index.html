@@ -67,6 +67,33 @@
             color: #e74c3c;
             font-weight: bold;
         }
+        .timer-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .timer-inputs label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #555;
+        }
+        .timer-inputs input {
+            width: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+        #timer-status {
+            text-align: center;
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 10px;
+        }
         .button-group {
             display: flex;
             justify-content: center;
@@ -88,6 +115,12 @@
         button:disabled {
             background: #bdc3c7;
             cursor: not-allowed;
+        }
+        #fullscreen-btn {
+            background: #27ae60;
+        }
+        #fullscreen-btn:hover {
+            background: #229954;
         }
         #todo-list {
             list-style: none;
@@ -118,19 +151,20 @@
             margin-bottom: 15px;
             gap: 8px;
         }
-        #add-task input[type="text"] {
+        #add-task label {
+            display: flex;
+            flex-direction: column;
             flex: 2;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
         }
-        #add-task input[type="date"] {
+        #add-task label:last-child {
             flex: 1;
+        }
+        #add-task input[type="text"], #add-task input[type="date"] {
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
+            margin-top: 5px;
         }
         #add-task button {
             border-radius: 6px;
@@ -178,6 +212,11 @@
             font-size: 14px;
             text-align: center;
         }
+        .input-label {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -191,12 +230,24 @@
 
             <!-- Pomodoro Timer Section -->
             <div class="section">
-                <h2>Pomodoro Timer (25 min)</h2>
+                <h2>Pomodoro Timer</h2>
+                <div class="timer-inputs">
+                    <label>
+                        <span class="input-label">Work (min)</span>
+                        <input type="number" id="work-time" min="1" value="25">
+                    </label>
+                    <label>
+                        <span class="input-label">Rest (min)</span>
+                        <input type="number" id="rest-time" min="1" value="5">
+                    </label>
+                </div>
+                <div id="timer-status">Work Session</div>
                 <div id="timer">25:00</div>
                 <div class="button-group">
                     <button id="start">Start</button>
                     <button id="stop" disabled>Stop</button>
                     <button id="reset">Reset</button>
+                    <button id="fullscreen-btn">Full Screen</button>
                 </div>
             </div>
 
@@ -204,8 +255,14 @@
             <div class="section">
                 <h2>To-Do List</h2>
                 <div id="add-task">
-                    <input type="text" id="new-task" placeholder="Add a new task...">
-                    <input type="date" id="task-deadline" placeholder="Select deadline">
+                    <label>
+                        <span class="input-label">Task</span>
+                        <input type="text" id="new-task" placeholder="Add a new task...">
+                    </label>
+                    <label>
+                        <span class="input-label">Deadline</span>
+                        <input type="date" id="task-deadline">
+                    </label>
                     <button id="add">Add</button>
                 </div>
                 <ul id="todo-list"></ul>
@@ -215,14 +272,20 @@
             <div class="section">
                 <h2>YouTube Music Playlist</h2>
                 <p>Add a YouTube playlist URL to save it, then select to play:</p>
-                <input type="text" id="playlist-url" placeholder="Enter playlist URL (e.g., https://www.youtube.com/playlist?list=PLAYLIST_ID)">
+                <label>
+                    <span class="input-label">Playlist URL</span>
+                    <input type="text" id="playlist-url" placeholder="Enter playlist URL (e.g., https://www.youtube.com/playlist?list=PLAYLIST_ID)">
+                </label>
                 <div class="button-group">
                     <button id="save-playlist">Save Playlist</button>
                     <button id="embed-playlist">Play Selected Playlist</button>
                 </div>
-                <select id="playlist-select">
-                    <option value="">Select a saved playlist</option>
-                </select>
+                <label>
+                    <span class="input-label">Saved Playlists</span>
+                    <select id="playlist-select">
+                        <option value="">Select a saved playlist</option>
+                    </select>
+                </label>
                 <div id="player-container">
                     <!-- Embedded player will appear here -->
                 </div>
@@ -232,6 +295,34 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Block Navigation (beforeunload event)
+            window.addEventListener('beforeunload', (e) => {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave? Your productivity session will be interrupted.';
+                return e.returnValue;
+            });
+
+            // Full Screen Mode
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            fullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        alert('Full screen mode not supported or blocked.');
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+
+            // Listen for fullscreen changes to update button text
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenBtn.textContent = 'Exit Full Screen';
+                } else {
+                    fullscreenBtn.textContent = 'Full Screen';
+                }
+            });
+
             // Current Time Display
             const currentTimeDisplay = document.getElementById('current-time');
 
@@ -244,14 +335,32 @@
             setInterval(updateCurrentTime, 1000);
 
             // Pomodoro Timer
-            let timer = 25 * 60; // 25 minutes in seconds
+            let timer;
             let interval;
             let isRunning = false;
+            let isWorkSession = true;
 
+            const workTimeInput = document.getElementById('work-time');
+            const restTimeInput = document.getElementById('rest-time');
             const timerDisplay = document.getElementById('timer');
+            const timerStatus = document.getElementById('timer-status');
             const startBtn = document.getElementById('start');
             const stopBtn = document.getElementById('stop');
             const resetBtn = document.getElementById('reset');
+
+            // Load saved timer settings or use defaults
+            const savedSettings = JSON.parse(localStorage.getItem('timerSettings') || '{}');
+            workTimeInput.value = savedSettings.workTime || 25;
+            restTimeInput.value = savedSettings.restTime || 5;
+            timer = (savedSettings.workTime || 25) * 60;
+
+            function saveTimerSettings() {
+                const settings = {
+                    workTime: parseInt(workTimeInput.value) || 25,
+                    restTime: parseInt(restTimeInput.value) || 5
+                };
+                localStorage.setItem('timerSettings', JSON.stringify(settings));
+            }
 
             function updateDisplay() {
                 const minutes = Math.floor(timer / 60);
@@ -259,24 +368,36 @@
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
 
-            startBtn.addEventListener('click', () => {
+            function startTimer() {
                 if (!isRunning) {
+                    saveTimerSettings();
                     interval = setInterval(() => {
                         timer--;
                         updateDisplay();
                         if (timer <= 0) {
                             clearInterval(interval);
-                            alert('Time\'s up! Take a break.');
-                            isRunning = false;
-                            startBtn.disabled = false;
-                            stopBtn.disabled = true;
+                            if (isWorkSession) {
+                                alert('Work session done! Starting rest.');
+                                isWorkSession = false;
+                                timerStatus.textContent = 'Rest Session';
+                                timer = parseInt(restTimeInput.value) * 60 || 5 * 60;
+                            } else {
+                                alert('Rest session done! Starting work.');
+                                isWorkSession = true;
+                                timerStatus.textContent = 'Work Session';
+                                timer = parseInt(workTimeInput.value) * 60 || 25 * 60;
+                            }
+                            updateDisplay();
+                            startTimer();
                         }
                     }, 1000);
                     isRunning = true;
                     startBtn.disabled = true;
                     stopBtn.disabled = false;
                 }
-            });
+            }
+
+            startBtn.addEventListener('click', startTimer);
 
             stopBtn.addEventListener('click', () => {
                 clearInterval(interval);
@@ -288,7 +409,9 @@
             resetBtn.addEventListener('click', () => {
                 clearInterval(interval);
                 isRunning = false;
-                timer = 25 * 60;
+                isWorkSession = true;
+                timerStatus.textContent = 'Work Session';
+                timer = parseInt(workTimeInput.value) * 60 || 25 * 60;
                 updateDisplay();
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
