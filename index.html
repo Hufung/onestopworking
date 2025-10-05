@@ -3,588 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>One-Stop Productivity Hub</title>
+    <title>Modern To-Do List</title>
+    
+    <!-- Google Fonts for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS styles are embedded here -->
     <style>
+        :root {
+            --bg-color: #f7f8fc;
+            --main-color: #ffffff;
+            --primary-color: #6a5af9;
+            --primary-light-color: #e8e6ff;
+            --text-color: #1d1d1f;
+            --text-light-color: #6e6e73;
+            --border-color: #e5e5e5;
+            --shadow-color: rgba(106, 90, 249, 0.15);
+            --danger-color: #ff3b30;
+            --success-color: #34c759;
+            --timer-bg-color: #1d1d1f;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --main-color: #1e1e1e;
+            --text-color: #e1e1e1;
+            --text-light-color: #8e8e8e;
+            --border-color: #333333;
+            --shadow-color: rgba(106, 90, 249, 0.2);
+            --timer-bg-color: #000000;
+        }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
             margin: 0;
-            padding: 30px;
-            background-color: #f0f2f5;
-            color: #333;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
         }
+
         .container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            max-width: 1300px;
-            margin: 0 auto;
+            background: var(--main-color);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 700px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+            position: relative; /* Added for positioning the theme switch */
         }
-        .combined-section {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .combined-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-        }
-        .section {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
-        }
-        .section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-        .header-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+
         h1 {
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2.5em;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 2.25rem;
+            font-weight: 700;
         }
-        #current-time {
-            font-size: 2em;
-            color: #7f8c8d;
+        
+        /* --- Dark Mode Toggle --- */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-light-color);
+            font-size: 0.9rem;
             font-weight: 500;
         }
-        h2 {
-            text-align: center;
-            color: #34495e;
-            margin-bottom: 20px;
-            font-size: 1.5em;
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
         }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        /* --- End Dark Mode Toggle --- */
+
+        #timer-container {
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: var(--timer-bg-color);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 5px rgba(0,0,0,0.5);
+            transition: background-color 0.3s;
+        }
+
         #timer {
-            font-size: 3.5em;
-            text-align: center;
-            margin: 20px 0;
-            color: #e74c3c;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2.5rem;
             font-weight: bold;
+            color: var(--success-color);
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--success-color), 0 0 10px var(--success-color);
         }
-        .timer-inputs {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
+
+        #timer-date {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-top: 5px;
+            text-shadow: none;
+            letter-spacing: normal;
         }
-        .timer-inputs label {
-            display: flex;
-            flex-direction: column;
+
+        #task-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
             align-items: center;
-            font-size: 12px;
-            color: #555;
         }
-        .timer-inputs input {
-            width: 80px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            text-align: center;
+
+        #task-form input[type="text"] {
+            grid-column: 1 / -1;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+            background-color: #fcfcfd;
         }
-        #timer-status {
-            text-align: center;
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 10px;
+        
+        #task-form input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--shadow-color);
+            outline: none;
         }
-        .button-group {
+        
+        body.dark-mode #task-form input[type="text"] {
+             background-color: #2a2a2a;
+        }
+        
+        .date-picker, .reminder-picker {
             display: flex;
-            justify-content: center;
+            align-items: center;
             gap: 10px;
+            background-color: #fcfcfd;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
-        button {
-            background: #3498db;
+
+        body.dark-mode .date-picker, body.dark-mode .reminder-picker {
+             background-color: #2a2a2a;
+        }
+        
+        .date-picker label, .reminder-picker label {
+            font-weight: 500;
+            color: var(--text-light-color);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        #task-form input[type="date"], #task-form input[type="number"] {
+            padding: 4px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            width: 100%;
+        }
+
+        body.dark-mode #task-form input[type="date"] {
+            color-scheme: dark;
+        }
+
+        #task-form button {
+            grid-column: 1 / -1;
+            padding: 16px 20px;
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
-        button:hover {
-            background: #2980b9;
+
+        #task-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-color);
+            background-color: #5a48e3;
         }
-        button:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        #fullscreen-btn {
-            background: #27ae60;
-        }
-        #fullscreen-btn:hover {
-            background: #229954;
-        }
-        #todo-list {
+
+        #task-list {
             list-style: none;
             padding: 0;
-            max-height: 400px;
-            overflow-y: auto;
+            margin: 0;
         }
-        #todo-list li {
+
+        .task-item {
             display: flex;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.2s ease;
+            background: var(--main-color);
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+            gap: 15px;
         }
-        #todo-list li:hover {
-            background: #f9f9f9;
+        
+        .task-item:hover {
+             box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+             border-color: #d8d8d8;
         }
-        #todo-list li input[type="checkbox"] {
-            margin-right: 10px;
-            cursor: pointer;
+
+        body.dark-mode .task-item:hover {
+            border-color: #444;
         }
-        #todo-list li.completed span.task-text {
+
+        .task-item.completed {
+            background-color: #f7f7f7;
+        }
+        
+        body.dark-mode .task-item.completed {
+            background-color: #2c2c2c;
+        }
+        
+        .task-item.completed .task-details label {
             text-decoration: line-through;
-            color: #7f8c8d;
+            color: var(--text-light-color);
         }
-        #add-task {
-            display: flex;
-            margin-bottom: 15px;
-            gap: 8px;
+
+        .task-item .task-details {
+            flex-grow: 1;
         }
-        #add-task label {
-            display: flex;
-            flex-direction: column;
-            flex: 2;
-        }
-        #add-task label:last-child {
-            flex: 1;
-        }
-        #add-task input[type="text"], #add-task input[type="date"] {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        #add-task button {
-            border-radius: 6px;
-        }
-        #youtube-player {
-            width: 100%;
-            height: 315px;
-            border: none;
-            border-radius: 8px;
-        }
-        .task-text {
-            flex: 1;
-            font-size: 16px;
-        }
-        .deadline {
-            margin-left: 15px;
-            color: #555;
-            font-size: 14px;
-        }
-        .checkbox-label {
-            font-size: 14px;
-            color: #34495e;
-            margin-right: 15px;
+        
+        .task-item .task-details label {
+            font-size: 1.05rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: color 0.3s;
         }
-        #playlist-url {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+
+        .task-item .task-info {
+            font-size: 0.85em;
+            color: var(--text-light-color);
+            margin-top: 6px;
         }
-        #playlist-select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            background: #fff;
+        
+        .task-item .reminder-info {
+            color: var(--primary-color);
+            font-weight: 500;
         }
-        p {
-            color: #555;
-            font-size: 14px;
-            text-align: center;
+
+        .complete-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: var(--primary-color);
         }
-        .input-label {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 5px;
+
+        .deadline-text {
+            cursor: pointer;
+            color: var(--danger-color);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .deadline-text:hover {
+            text-decoration: underline;
+            color: #d92b21;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, top 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            top: 30px;
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+        }
+        
+        .notification.reminder {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+        
+        @media (max-width: 600px) {
+             .container {
+                padding: 20px;
+            }
+            .theme-switch-wrapper {
+                top: 15px;
+                right: 15px;
+                gap: 5px;
+            }
+            .theme-switch-wrapper span {
+                display: none; /* Hide text on small screens */
+            }
+            #timer {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
+
+    <div id="notification" class="notification"></div>
+
     <div class="container">
-        <div class="combined-section">
-            <!-- Header with Current Time -->
-            <div class="header-section">
-                <h1>One-Stop Productivity Hub</h1>
-                <div id="current-time"></div>
-            </div>
-
-            <!-- Pomodoro Timer Section -->
-            <div class="section">
-                <h2>Pomodoro Timer</h2>
-                <div class="timer-inputs">
-                    <label>
-                        <span class="input-label">Work (min)</span>
-                        <input type="number" id="work-time" min="1" value="25">
-                    </label>
-                    <label>
-                        <span class="input-label">Rest (min)</span>
-                        <input type="number" id="rest-time" min="1" value="5">
-                    </label>
-                </div>
-                <div id="timer-status">Work Session</div>
-                <div id="timer">25:00</div>
-                <div class="button-group">
-                    <button id="start">Start</button>
-                    <button id="stop" disabled>Stop</button>
-                    <button id="reset">Reset</button>
-                    <button id="fullscreen-btn">Full Screen</button>
-                </div>
-            </div>
-
-            <!-- To-Do List Section -->
-            <div class="section">
-                <h2>To-Do List</h2>
-                <div id="add-task">
-                    <label>
-                        <span class="input-label">Task</span>
-                        <input type="text" id="new-task" placeholder="Add a new task...">
-                    </label>
-                    <label>
-                        <span class="input-label">Deadline</span>
-                        <input type="date" id="task-deadline">
-                    </label>
-                    <button id="add">Add</button>
-                </div>
-                <ul id="todo-list"></ul>
-            </div>
-
-            <!-- YouTube Music Playlist Section -->
-            <div class="section">
-                <h2>YouTube Music Playlist</h2>
-                <p>Add a YouTube playlist URL to save it, then select to play:</p>
-                <label>
-                    <span class="input-label">Playlist URL</span>
-                    <input type="text" id="playlist-url" placeholder="Enter playlist URL (e.g., https://www.youtube.com/playlist?list=PLAYLIST_ID)">
-                </label>
-                <div class="button-group">
-                    <button id="save-playlist">Save Playlist</button>
-                    <button id="embed-playlist">Play Selected Playlist</button>
-                </div>
-                <label>
-                    <span class="input-label">Saved Playlists</span>
-                    <select id="playlist-select">
-                        <option value="">Select a saved playlist</option>
-                    </select>
-                </label>
-                <div id="player-container">
-                    <!-- Embedded player will appear here -->
-                </div>
-            </div>
+        <div class="theme-switch-wrapper">
+            <span>☀️</span>
+            <label class="theme-switch" for="theme-checkbox">
+                <input type="checkbox" id="theme-checkbox" />
+                <div class="slider"></div>
+            </label>
+            <span>🌙</span>
         </div>
+        <h1>My To-Do List</h1>
+        <div id="timer-container">
+            <span id="timer">00:00:00</span>
+            <span id="timer-date">Loading date...</span>
+        </div>
+        <form id="task-form">
+            <input type="text" id="task-name-input" placeholder="What do you need to do?" required>
+            <div class="date-picker">
+                <label for="task-deadline-input">Deadline:</label>
+                <input type="date" id="task-deadline-input" required>
+            </div>
+            <div class="date-picker">
+                <label for="task-finish-date-input">Finished:</label>
+                <input type="date" id="task-finish-date-input">
+            </div>
+            <div class="reminder-picker">
+                <label for="task-reminder-input">Remind (days before):</label>
+                <input type="number" id="task-reminder-input" min="0" placeholder="e.g., 1">
+            </div>
+            <button type="submit">Add Task</button>
+        </form>
+        
+        <ul id="task-list">
+            <!-- Tasks will be dynamically added here by JavaScript -->
+        </ul>
     </div>
 
+    <!-- JavaScript logic is embedded here -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Block Navigation (beforeunload event)
-            window.addEventListener('beforeunload', (e) => {
-                e.preventDefault();
-                e.returnValue = 'Are you sure you want to leave? Your productivity session will be interrupted.';
-                return e.returnValue;
-            });
+            // Select DOM elements
+            const taskForm = document.getElementById('task-form');
+            const taskNameInput = document.getElementById('task-name-input');
+            const taskDeadlineInput = document.getElementById('task-deadline-input');
+            const taskFinishDateInput = document.getElementById('task-finish-date-input');
+            const taskReminderInput = document.getElementById('task-reminder-input');
+            const taskList = document.getElementById('task-list');
+            const timerElement = document.getElementById('timer');
+            const timerDateElement = document.getElementById('timer-date');
+            const notificationElement = document.getElementById('notification');
+            const themeCheckbox = document.getElementById('theme-checkbox');
 
-            // Full Screen Mode
-            const fullscreenBtn = document.getElementById('fullscreen-btn');
-            fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        alert('Full screen mode not supported or blocked.');
-                    });
+            // --- Theme Logic ---
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeCheckbox.checked = true;
                 } else {
-                    document.exitFullscreen();
+                    document.body.classList.remove('dark-mode');
+                    themeCheckbox.checked = false;
                 }
+                localStorage.setItem('theme', theme);
+            }
+
+            themeCheckbox.addEventListener('change', () => {
+                const newTheme = themeCheckbox.checked ? 'dark' : 'light';
+                setTheme(newTheme);
             });
 
-            // Listen for fullscreen changes to update button text
-            document.addEventListener('fullscreenchange', () => {
-                if (document.fullscreenElement) {
-                    fullscreenBtn.textContent = 'Exit Full Screen';
-                } else {
-                    fullscreenBtn.textContent = 'Full Screen';
-                }
-            });
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            // Current Time Display
-            const currentTimeDisplay = document.getElementById('current-time');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (prefersDark) {
+                setTheme('dark');
+            }
 
-            function updateCurrentTime() {
+            // --- Timer Logic ---
+            function updateTimer() {
                 const now = new Date();
-                currentTimeDisplay.textContent = now.toLocaleString();
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                
+                timerDateElement.textContent = now.toLocaleDateString(undefined, dateOptions);
+                timerElement.textContent = now.toLocaleTimeString([], timeOptions);
+            }
+            updateTimer(); 
+            setInterval(updateTimer, 1000); 
+
+            // --- Notification Logic ---
+            function showNotification(message, type = 'error') {
+                notificationElement.textContent = message;
+                notificationElement.className = `notification ${type} show`;
+
+                setTimeout(() => {
+                    notificationElement.className = `notification ${type}`;
+                }, 4000); // Increased duration for reminders
             }
 
-            updateCurrentTime();
-            setInterval(updateCurrentTime, 1000);
+            // --- Reminder Logic ---
+            function checkReminders() {
+                const tasks = getTasks();
+                const now = new Date();
+                now.setHours(0, 0, 0, 0); // Compare dates only
 
-            // Pomodoro Timer
-            let timer;
-            let interval;
-            let isRunning = false;
-            let isWorkSession = true;
+                const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
+                let notificationDelay = 0;
 
-            const workTimeInput = document.getElementById('work-time');
-            const restTimeInput = document.getElementById('rest-time');
-            const timerDisplay = document.getElementById('timer');
-            const timerStatus = document.getElementById('timer-status');
-            const startBtn = document.getElementById('start');
-            const stopBtn = document.getElementById('stop');
-            const resetBtn = document.getElementById('reset');
+                tasks.forEach(task => {
+                    const hasReminder = task.reminderDays !== null && task.reminderDays >= 0;
+                    if (!task.isCompleted && hasReminder && !remindedTasks.includes(task.id)) {
+                        const deadlineDate = new Date(task.deadline + 'T00:00:00');
+                        const reminderDate = new Date(deadlineDate);
+                        reminderDate.setDate(deadlineDate.getDate() - task.reminderDays);
 
-            // Load saved timer settings or use defaults
-            const savedSettings = JSON.parse(localStorage.getItem('timerSettings') || '{}');
-            workTimeInput.value = savedSettings.workTime || 25;
-            restTimeInput.value = savedSettings.restTime || 5;
-            timer = (savedSettings.workTime || 25) * 60;
-
-            function saveTimerSettings() {
-                const settings = {
-                    workTime: parseInt(workTimeInput.value) || 25,
-                    restTime: parseInt(restTimeInput.value) || 5
-                };
-                localStorage.setItem('timerSettings', JSON.stringify(settings));
-            }
-
-            function updateDisplay() {
-                const minutes = Math.floor(timer / 60);
-                const seconds = timer % 60;
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-
-            function startTimer() {
-                if (!isRunning) {
-                    saveTimerSettings();
-                    interval = setInterval(() => {
-                        timer--;
-                        updateDisplay();
-                        if (timer <= 0) {
-                            clearInterval(interval);
-                            if (isWorkSession) {
-                                alert('Work session done! Starting rest.');
-                                isWorkSession = false;
-                                timerStatus.textContent = 'Rest Session';
-                                timer = parseInt(restTimeInput.value) * 60 || 5 * 60;
-                            } else {
-                                alert('Rest session done! Starting work.');
-                                isWorkSession = true;
-                                timerStatus.textContent = 'Work Session';
-                                timer = parseInt(workTimeInput.value) * 60 || 25 * 60;
-                            }
-                            updateDisplay();
-                            startTimer();
+                        if (now >= reminderDate && now <= deadlineDate) {
+                            setTimeout(() => {
+                                const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
+                                showNotification(`Reminder: "${taskName}" is due on ${deadlineDate.toLocaleDateString()}.`, 'reminder');
+                            }, notificationDelay);
+                            
+                            notificationDelay += 500; // Stagger notifications
+                            remindedTasks.push(task.id);
                         }
-                    }, 1000);
-                    isRunning = true;
-                    startBtn.disabled = true;
-                    stopBtn.disabled = false;
+                    }
+                });
+                sessionStorage.setItem('remindedTasks', JSON.stringify(remindedTasks));
+            }
+
+            // Load tasks from local storage
+            loadTasks();
+            checkReminders(); // Check for reminders on page load
+
+            // Event listener for the form submission
+            taskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const taskName = taskNameInput.value.trim();
+                const deadline = taskDeadlineInput.value;
+                const finishDate = taskFinishDateInput.value;
+                const reminderDays = taskReminderInput.value;
+
+                if (taskName === '' || deadline === '') {
+                    showNotification('Task name and deadline are required.');
+                    return;
+                }
+                
+                const deadlineDate = new Date(deadline);
+                if (isNaN(deadlineDate.getTime())) {
+                    showNotification('The deadline date you entered is not valid.');
+                    return;
+                }
+
+                if (finishDate) {
+                    const finishDateObj = new Date(finishDate);
+                    if (isNaN(finishDateObj.getTime())) {
+                        showNotification('The finish date you entered is not valid.');
+                        return;
+                    }
+                    if (finishDateObj > deadlineDate) {
+                        showNotification('Finish date cannot be after the deadline.');
+                        return;
+                    }
+                }
+
+                const task = {
+                    id: Date.now(),
+                    name: taskName,
+                    deadline: deadline,
+                    isCompleted: !!finishDate,
+                    finishDate: finishDate || null,
+                    reminderDays: reminderDays ? parseInt(reminderDays, 10) : null
+                };
+
+                addTaskToDOM(task);
+                saveTask(task);
+                
+                taskForm.reset();
+                taskNameInput.focus();
+            });
+
+            // Event listener for checkbox changes
+            taskList.addEventListener('change', (e) => {
+                if (e.target.classList.contains('complete-checkbox')) {
+                    const taskId = e.target.closest('.task-item').dataset.id;
+                    toggleComplete(taskId);
+                }
+            });
+
+            // Event listener for clicks on the deadline to delete
+            taskList.addEventListener('click', (e) => {
+                const deleteTrigger = e.target.closest('.deadline-text');
+                if (deleteTrigger) {
+                    const taskItem = deleteTrigger.closest('.task-item');
+                    const taskId = taskItem.dataset.id;
+                    
+                    taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    taskItem.style.opacity = '0';
+                    taskItem.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        taskList.removeChild(taskItem);
+                        deleteTask(taskId);
+                    }, 300);
+                }
+            });
+
+            function addTaskToDOM(task) {
+                const li = document.createElement('li');
+                li.classList.add('task-item');
+                li.dataset.id = task.id;
+
+                if (task.isCompleted) {
+                    li.classList.add('completed');
+                }
+
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                const deadlineDate = new Date(task.deadline + 'T00:00:00');
+                const formattedDeadline = deadlineDate.toLocaleDateString(undefined, dateOptions);
+                
+                const formattedFinishDate = task.finishDate 
+                    ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, dateOptions) 
+                    : 'Pending';
+
+                let reminderInfo = '';
+                if (task.reminderDays !== null && task.reminderDays >= 0) {
+                    const plural = task.reminderDays === 1 ? '' : 's';
+                    reminderInfo = `<span class="reminder-info"> | Reminder: ${task.reminderDays} day${plural} before</span>`;
+                }
+
+                li.innerHTML = `
+                    <input type="checkbox" class="complete-checkbox" id="task-${task.id}" ${task.isCompleted ? 'checked' : ''}>
+                    <div class="task-details">
+                        <label for="task-${task.id}">${escapeHTML(task.name)}</label>
+                        <div class="task-info">
+                            <span class="deadline-text" title="Click deadline to delete task">
+                                <strong>Deadline:</strong> ${formattedDeadline}
+                            </span> | 
+                            <strong>Finished:</strong> <span class="finish-date">${formattedFinishDate}</span>
+                            ${reminderInfo}
+                        </div>
+                    </div>
+                `;
+                taskList.appendChild(li);
+            }
+
+            function getTasks() {
+                try {
+                    const tasks = localStorage.getItem('tasks');
+                    return tasks ? JSON.parse(tasks) : [];
+                } catch (e) {
+                    console.error("Error parsing tasks from localStorage", e);
+                    return [];
                 }
             }
 
-            startBtn.addEventListener('click', startTimer);
+            function saveTasks(tasks) {
+                 localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
 
-            stopBtn.addEventListener('click', () => {
-                clearInterval(interval);
-                isRunning = false;
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-            });
-
-            resetBtn.addEventListener('click', () => {
-                clearInterval(interval);
-                isRunning = false;
-                isWorkSession = true;
-                timerStatus.textContent = 'Work Session';
-                timer = parseInt(workTimeInput.value) * 60 || 25 * 60;
-                updateDisplay();
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-            });
-
-            updateDisplay();
-
-            // To-Do List
-            const todoList = document.getElementById('todo-list');
-            const newTaskInput = document.getElementById('new-task');
-            const deadlineInput = document.getElementById('task-deadline');
-            const addBtn = document.getElementById('add');
-
-            function saveTasks() {
-                const tasks = [];
-                todoList.querySelectorAll('li').forEach(li => {
-                    const text = li.querySelector('.task-text').textContent;
-                    const completed = li.classList.contains('completed');
-                    const deadline = li.querySelector('.deadline').textContent.replace('Due: ', '') === 'No deadline' ? '' : li.querySelector('.deadline').textContent.replace('Due: ', '');
-                    tasks.push({ text, completed, deadline });
-                });
-                localStorage.setItem('tasks', JSON.stringify(tasks));
+            function saveTask(task) {
+                const tasks = getTasks();
+                tasks.push(task);
+                saveTasks(tasks);
             }
 
             function loadTasks() {
-                const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-                savedTasks.forEach(task => addTask(task.text, task.deadline, task.completed));
+                const tasks = getTasks();
+                taskList.innerHTML = '';
+                tasks.forEach(task => addTaskToDOM(task));
             }
 
-            function addTask(text, deadline, completed = false) {
-                const li = document.createElement('li');
-                if (completed) li.classList.add('completed');
+            function toggleComplete(id) {
+                const tasks = getTasks();
+                const taskIndex = tasks.findIndex(t => t.id == id);
                 
-                const completeCheckbox = document.createElement('input');
-                completeCheckbox.type = 'checkbox';
-                completeCheckbox.className = 'complete-task';
-                completeCheckbox.checked = completed;
-                const completeLabel = document.createElement('label');
-                completeLabel.className = 'checkbox-label';
-                completeLabel.textContent = 'Done';
-                const uniqueId = `complete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                completeLabel.htmlFor = uniqueId;
-                completeCheckbox.id = uniqueId;
+                if (taskIndex > -1) {
+                    tasks[taskIndex].isCompleted = !tasks[taskIndex].isCompleted;
+                    tasks[taskIndex].finishDate = tasks[taskIndex].isCompleted ? new Date().toISOString().split('T')[0] : null;
+                    saveTasks(tasks);
+                }
 
-                const deleteCheckbox = document.createElement('input');
-                deleteCheckbox.type = 'checkbox';
-                deleteCheckbox.className = 'delete-task';
-                const deleteLabel = document.createElement('label');
-                deleteLabel.className = 'checkbox-label';
-                deleteLabel.textContent = 'Delete';
-                const uniqueId2 = `delete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                deleteLabel.htmlFor = uniqueId2;
-                deleteCheckbox.id = uniqueId2;
-
-                const span = document.createElement('span');
-                span.className = 'task-text';
-                span.textContent = text;
-                const deadlineSpan = document.createElement('span');
-                deadlineSpan.className = 'deadline';
-                deadlineSpan.textContent = deadline ? `Due: ${new Date(deadline).toLocaleDateString()}` : 'No deadline';
-
-                completeCheckbox.addEventListener('change', () => {
-                    if (completeCheckbox.checked) {
-                        li.classList.add('completed');
-                    } else {
-                        li.classList.remove('completed');
-                    }
-                    saveTasks();
-                });
-
-                deleteCheckbox.addEventListener('change', () => {
-                    if (deleteCheckbox.checked) {
-                        todoList.removeChild(li);
-                        saveTasks();
-                    }
-                });
-
-                li.appendChild(completeCheckbox);
-                li.appendChild(completeLabel);
-                li.appendChild(deleteCheckbox);
-                li.appendChild(deleteLabel);
-                li.appendChild(span);
-                li.appendChild(deadlineSpan);
-                todoList.appendChild(li);
-                saveTasks();
+                loadTasks();
             }
 
-            addBtn.addEventListener('click', () => {
-                const text = newTaskInput.value.trim();
-                const deadline = deadlineInput.value;
-                if (text) {
-                    addTask(text, deadline);
-                    newTaskInput.value = '';
-                    deadlineInput.value = '';
-                }
-            });
-
-            newTaskInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addBtn.click();
-                }
-            });
-
-            // Load tasks on page load
-            loadTasks();
-
-            // YouTube Playlist Management
-            const playlistUrlInput = document.getElementById('playlist-url');
-            const savePlaylistBtn = document.getElementById('save-playlist');
-            const embedBtn = document.getElementById('embed-playlist');
-            const playlistSelect = document.getElementById('playlist-select');
-            const playerContainer = document.getElementById('player-container');
-
-            // Load saved playlists from localStorage
-            function loadPlaylists() {
-                const savedPlaylists = JSON.parse(localStorage.getItem('playlists') || '[]');
-                playlistSelect.innerHTML = '<option value="">Select a saved playlist</option>';
-                savedPlaylists.forEach((url, index) => {
-                    const option = document.createElement('option');
-                    option.value = url;
-                    option.textContent = `Playlist ${index + 1}: ${url.substring(0, 30)}${url.length > 30 ? '...' : ''}`;
-                    playlistSelect.appendChild(option);
-                });
+            function deleteTask(id) {
+                let tasks = getTasks();
+                tasks = tasks.filter(t => t.id != id);
+                saveTasks(tasks);
             }
-
-            // Save playlist to localStorage
-            savePlaylistBtn.addEventListener('click', () => {
-                const url = playlistUrlInput.value.trim();
-                if (url) {
-                    const match = url.match(/[?&]list=([^&]+)/);
-                    if (match) {
-                        const savedPlaylists = JSON.parse(localStorage.getItem('playlists') || '[]');
-                        if (!savedPlaylists.includes(url)) {
-                            savedPlaylists.push(url);
-                            localStorage.setItem('playlists', JSON.stringify(savedPlaylists));
-                            loadPlaylists();
-                            playlistUrlInput.value = '';
-                            alert('Playlist saved!');
-                        } else {
-                            alert('This playlist is already saved.');
-                        }
-                    } else {
-                        alert('Invalid YouTube playlist URL. Please check the format.');
-                    }
-                }
-            });
-
-            // Embed selected playlist
-            embedBtn.addEventListener('click', () => {
-                const url = playlistSelect.value;
-                if (url) {
-                    const match = url.match(/[?&]list=([^&]+)/);
-                    if (match) {
-                        const playlistId = match[1];
-                        const iframe = `
-                            <iframe id="youtube-player" 
-                                    src="https://www.youtube.com/embed/videoseries?list=${playlistId}" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen>
-                            </iframe>
-                        `;
-                        playerContainer.innerHTML = iframe;
-                    } else {
-                        alert('Invalid playlist URL selected.');
-                    }
-                } else {
-                    alert('Please select a playlist from the dropdown.');
-                }
-            });
-
-            // Initialize playlists on load
-            loadPlaylists();
+            
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.appendChild(document.createTextNode(str));
+                return div.innerHTML;
+            }
         });
     </script>
 </body>
 </html>
+
