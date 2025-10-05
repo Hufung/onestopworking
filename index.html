@@ -23,6 +23,7 @@
             --shadow-color: rgba(106, 90, 249, 0.15);
             --danger-color: #ff3b30;
             --success-color: #34c759;
+            --warning-color: #ff9500;
             --timer-bg-color: #1d1d1f;
         }
 
@@ -329,6 +330,30 @@
             color: #d92b21;
         }
 
+        .deadline-status {
+            font-weight: 500;
+            font-size: 0.85em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            color: white;
+            margin-left: 8px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .deadline-status.future {
+            background-color: var(--success-color);
+            opacity: 0.8;
+        }
+
+        .deadline-status.today {
+            background-color: var(--warning-color);
+        }
+
+        .deadline-status.overdue {
+            background-color: var(--danger-color);
+        }
+
         .notification {
             position: fixed;
             top: 20px;
@@ -611,6 +636,23 @@
                     reminderInfo = `<span class="reminder-info"> | Reminder: ${task.reminderDays} day${plural} before</span>`;
                 }
 
+                let deadlineStatusHTML = '';
+                if (!task.isCompleted) {
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0);
+                    const diffTime = deadlineDate - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays > 0) {
+                        deadlineStatusHTML = `<span class="deadline-status future">${diffDays} day${diffDays === 1 ? '' : 's'} left</span>`;
+                    } else if (diffDays === 0) {
+                        deadlineStatusHTML = `<span class="deadline-status today">Due today</span>`;
+                    } else {
+                        const overdueDays = Math.abs(diffDays);
+                        deadlineStatusHTML = `<span class="deadline-status overdue">Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}</span>`;
+                    }
+                }
+
                 li.innerHTML = `
                     <input type="checkbox" class="complete-checkbox" id="task-${task.id}" ${task.isCompleted ? 'checked' : ''}>
                     <div class="task-details">
@@ -618,7 +660,8 @@
                         <div class="task-info">
                             <span class="deadline-text" title="Click deadline to delete task">
                                 <strong>Deadline:</strong> ${formattedDeadline}
-                            </span> | 
+                            </span> 
+                            ${deadlineStatusHTML} | 
                             <strong>Finished:</strong> <span class="finish-date">${formattedFinishDate}</span>
                             ${reminderInfo}
                         </div>
