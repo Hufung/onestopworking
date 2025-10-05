@@ -178,8 +178,9 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
             background-color: #fcfcfd;
+            color: var(--text-color);
         }
         
         #task-form input[type="text"]:focus {
@@ -192,6 +193,11 @@
              background-color: #2a2a2a;
         }
         
+        #task-form input::placeholder {
+            color: var(--text-light-color);
+            opacity: 0.7;
+        }
+
         .date-picker, .reminder-picker {
             display: flex;
             align-items: center;
