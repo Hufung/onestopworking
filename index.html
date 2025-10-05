@@ -166,14 +166,13 @@
 
         #task-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr auto;
             gap: 15px;
             margin-bottom: 30px;
             align-items: center;
         }
 
         #task-form input[type="text"] {
-            grid-column: 1 / -1;
             padding: 14px 16px;
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -198,7 +197,7 @@
             opacity: 0.7;
         }
 
-        .date-picker, .reminder-picker {
+        .date-picker {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -209,18 +208,18 @@
             transition: background-color 0.3s, border-color 0.3s;
         }
 
-        body.dark-mode .date-picker, body.dark-mode .reminder-picker {
+        body.dark-mode .date-picker {
              background-color: #2a2a2a;
         }
         
-        .date-picker label, .reminder-picker label {
+        .date-picker label {
             font-weight: 500;
             color: var(--text-light-color);
             font-size: 0.9rem;
             white-space: nowrap;
         }
 
-        #task-form input[type="date"], #task-form input[type="number"] {
+        #task-form input[type="date"] {
             padding: 4px;
             border: none;
             border-radius: 4px;
@@ -406,6 +405,9 @@
             #timer {
                 font-size: 2rem;
             }
+             #task-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -433,14 +435,6 @@
                 <label for="task-deadline-input">Deadline:</label>
                 <input type="date" id="task-deadline-input" required>
             </div>
-            <div class="date-picker">
-                <label for="task-finish-date-input">Finished:</label>
-                <input type="date" id="task-finish-date-input">
-            </div>
-            <div class="reminder-picker">
-                <label for="task-reminder-input">Remind (days before):</label>
-                <input type="number" id="task-reminder-input" min="0" placeholder="e.g., 1">
-            </div>
             <button type="submit">Add Task</button>
         </form>
         
@@ -456,8 +450,6 @@
             const taskForm = document.getElementById('task-form');
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
-            const taskFinishDateInput = document.getElementById('task-finish-date-input');
-            const taskReminderInput = document.getElementById('task-reminder-input');
             const taskList = document.getElementById('task-list');
             const timerElement = document.getElementById('timer');
             const timerDateElement = document.getElementById('timer-date');
@@ -522,16 +514,14 @@
                 let notificationDelay = 0;
 
                 tasks.forEach(task => {
-                    const hasReminder = task.reminderDays !== null && task.reminderDays >= 0;
-                    if (!task.isCompleted && hasReminder && !remindedTasks.includes(task.id)) {
+                    if (!task.isCompleted && !remindedTasks.includes(task.id)) {
                         const deadlineDate = new Date(task.deadline + 'T00:00:00');
-                        const reminderDate = new Date(deadlineDate);
-                        reminderDate.setDate(deadlineDate.getDate() - task.reminderDays);
-
-                        if (now >= reminderDate && now <= deadlineDate) {
+                        
+                        // Check if deadline is today
+                        if (now.getTime() === deadlineDate.getTime()) {
                             setTimeout(() => {
                                 const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
-                                showNotification(`Reminder: "${taskName}" is due on ${deadlineDate.toLocaleDateString()}.`, 'reminder');
+                                showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
                             }, notificationDelay);
                             
                             notificationDelay += 500; // Stagger notifications
@@ -552,8 +542,6 @@
 
                 const taskName = taskNameInput.value.trim();
                 const deadline = taskDeadlineInput.value;
-                const finishDate = taskFinishDateInput.value;
-                const reminderDays = taskReminderInput.value;
 
                 if (taskName === '' || deadline === '') {
                     showNotification('Task name and deadline are required.');
@@ -566,25 +554,12 @@
                     return;
                 }
 
-                if (finishDate) {
-                    const finishDateObj = new Date(finishDate);
-                    if (isNaN(finishDateObj.getTime())) {
-                        showNotification('The finish date you entered is not valid.');
-                        return;
-                    }
-                    if (finishDateObj > deadlineDate) {
-                        showNotification('Finish date cannot be after the deadline.');
-                        return;
-                    }
-                }
-
                 const task = {
                     id: Date.now(),
                     name: taskName,
                     deadline: deadline,
-                    isCompleted: !!finishDate,
-                    finishDate: finishDate || null,
-                    reminderDays: reminderDays ? parseInt(reminderDays, 10) : null
+                    isCompleted: false,
+                    finishDate: null
                 };
 
                 addTaskToDOM(task);
@@ -636,12 +611,6 @@
                     ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, dateOptions) 
                     : 'Pending';
 
-                let reminderInfo = '';
-                if (task.reminderDays !== null && task.reminderDays >= 0) {
-                    const plural = task.reminderDays === 1 ? '' : 's';
-                    reminderInfo = `<span class="reminder-info"> | Reminder: ${task.reminderDays} day${plural} before</span>`;
-                }
-
                 let deadlineStatusHTML = '';
                 if (!task.isCompleted) {
                     const now = new Date();
@@ -669,7 +638,6 @@
                             </span> 
                             ${deadlineStatusHTML} | 
                             <strong>Finished:</strong> <span class="finish-date">${formattedFinishDate}</span>
-                            ${reminderInfo}
                         </div>
                     </div>
                 `;
