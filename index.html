@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- PeerJS Library for WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
     <!-- CSS styles are embedded here -->
     <style>
         :root {
@@ -63,21 +66,40 @@
             border: 1px solid var(--border-color);
             transition: background-color 0.3s, border-color 0.3s;
             position: relative; /* Added for positioning the theme switch */
+            overflow: hidden; /* Ensures smooth view transitions */
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
             color: var(--text-color);
             margin-bottom: 20px;
-            font-size: 2.25rem;
             font-weight: 700;
         }
+
+        h1 {
+            font-size: 2.25rem;
+        }
         
-        /* --- Dark Mode Toggle --- */
-        .theme-switch-wrapper {
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        /* --- Top Controls Container --- */
+        .top-controls {
             position: absolute;
             top: 25px;
             right: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        /* --- Dark Mode Toggle --- */
+        .theme-switch-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -174,7 +196,7 @@
             align-items: center;
         }
 
-        #task-form input[type="text"] {
+        #task-form input[type="text"], #remote-peer-id-input {
             grid-column: 1 / -1;
             padding: 14px 16px;
             border: 1px solid var(--border-color);
@@ -185,13 +207,13 @@
             color: var(--text-color);
         }
         
-        #task-form input[type="text"]:focus {
+        #task-form input[type="text"]:focus, #remote-peer-id-input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px var(--shadow-color);
             outline: none;
         }
         
-        #task-form input::placeholder {
+        #task-form input::placeholder, #remote-peer-id-input::placeholder {
             color: var(--text-light-color);
             opacity: 0.7;
         }
@@ -229,7 +251,7 @@
             color-scheme: dark;
         }
 
-        #task-form button {
+        #task-form button, #connect-button {
             grid-column: 1 / -1;
             padding: 16px 20px;
             background: var(--primary-color);
@@ -241,11 +263,90 @@
             font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
+        
+        #connect-button {
+            background-color: var(--success-color);
+        }
 
-        #task-form button:hover {
+        #task-form button:hover, #connect-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px var(--shadow-color);
-            background-color: #5a48e3;
+        }
+
+        #connect-button:hover {
+             box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
+             background-color: #30b852;
+        }
+        
+        #toggle-sharing-button {
+            position: relative; 
+            width: auto;
+            padding: 10px 16px;
+            background: var(--text-light-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        #toggle-sharing-button:hover {
+            background-color: var(--text-color);
+            transform: translateY(-1px);
+        }
+
+        /* --- View Switching --- */
+        #sharing-view {
+            display: none;
+        }
+        
+        #back-to-tasks-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 30px;
+            transition: background-color 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #back-to-tasks-button:hover {
+            background-color: var(--input-bg-color);
+        }
+
+        /* Search Bar Styles */
+        #search-container {
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        #search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--shadow-color);
+            outline: none;
+        }
+
+        #search-input::placeholder {
+            color: var(--text-light-color);
+            opacity: 0.7;
         }
 
         #task-list {
@@ -262,8 +363,19 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             margin-bottom: 12px;
-            transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+            transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out;
             gap: 15px;
+            overflow: hidden;
+            max-height: 100px; /* Adjust as needed */
+        }
+        
+        .task-item.hidden {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            border-width: 0;
         }
         
         .task-item:hover {
@@ -283,6 +395,7 @@
             background-color: #2c2c2c;
         }
         
+        .task-item.completed .task-name,
         .task-item.completed .task-details label {
             text-decoration: line-through;
             color: var(--text-light-color);
@@ -292,24 +405,25 @@
             flex-grow: 1;
         }
         
-        .task-item .task-details label {
+        .task-name {
             font-size: 1.05rem;
             font-weight: 500;
             cursor: pointer;
             transition: color 0.3s;
+            padding: 4px;
+            border-radius: 6px;
+        }
+        
+        .task-name:hover {
+            background-color: var(--input-bg-color);
         }
 
-        .task-item .task-info {
+        .task-info {
             font-size: 0.85em;
             color: var(--text-light-color);
             margin-top: 6px;
         }
         
-        .task-item .reminder-info {
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
         .complete-checkbox {
             width: 20px;
             height: 20px;
@@ -380,18 +494,66 @@
             box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
         }
         
-        .notification.reminder {
+        .notification.reminder, .notification.info {
             background-color: var(--primary-color);
             box-shadow: 0 4px 15px var(--shadow-color);
+        }
+        
+        /* --- Sharing Section --- */
+        #sharing-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #my-peer-id-container {
+            font-size: 0.9rem;
+            color: var(--text-light-color);
+        }
+        #my-peer-id {
+            font-weight: 600;
+            color: var(--text-color);
+            background-color: var(--input-bg-color);
+            padding: 5px 10px;
+            border-radius: 8px;
+            user-select: all;
+            cursor: copy;
+        }
+        
+        #connection-status {
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        #connection-status.disconnected {
+            background-color: #ffebeb;
+            color: var(--danger-color);
+        }
+        
+        body.dark-mode #connection-status.disconnected {
+             background-color: #4f2525;
+        }
+
+        #connection-status.connected {
+            background-color: #e3fcef;
+            color: var(--success-color);
+        }
+        
+        body.dark-mode #connection-status.connected {
+             background-color: #1c4b2a;
         }
         
         @media (max-width: 600px) {
              .container {
                 padding: 20px;
             }
-            .theme-switch-wrapper {
-                top: 15px;
-                right: 15px;
+            .top-controls {
                 gap: 5px;
             }
             .theme-switch-wrapper span {
@@ -411,41 +573,64 @@
     <div id="notification" class="notification"></div>
 
     <div class="container">
-        <div class="theme-switch-wrapper">
-            <span>☀️</span>
-            <label class="theme-switch" for="theme-checkbox">
-                <input type="checkbox" id="theme-checkbox" />
-                <div class="slider"></div>
-            </label>
-            <span>🌙</span>
-        </div>
-        <h1>My To-Do List</h1>
-        <div id="timer-container">
-            <span id="timer">00:00:00</span>
-            <span id="timer-date">Loading date...</span>
-        </div>
-        <form id="task-form">
-            <input type="text" id="task-name-input" placeholder="What do you need to do?" required>
-            <div class="date-picker">
-                <label for="task-deadline-input">Deadline:</label>
-                <input type="date" id="task-deadline-input" required>
+        <div class="top-controls">
+            <button id="toggle-sharing-button">Sharing</button>
+            <div class="theme-switch-wrapper">
+                <span>☀️</span>
+                <label class="theme-switch" for="theme-checkbox">
+                    <input type="checkbox" id="theme-checkbox" />
+                    <div class="slider"></div>
+                </label>
+                <span>🌙</span>
             </div>
-            <div class="date-picker">
-                <label for="task-finish-date-input">Finished:</label>
-                <input type="date" id="task-finish-date-input">
-            </div>
-            <button type="submit">Add Task</button>
-        </form>
+        </div>
         
-        <ul id="task-list">
-            <!-- Tasks will be dynamically added here by JavaScript -->
-        </ul>
+        <div id="main-view">
+            <h1>My To-Do List</h1>
+            <div id="timer-container">
+                <span id="timer">00:00:00</span>
+                <span id="timer-date">Loading date...</span>
+            </div>
+
+            <form id="task-form">
+                <input type="text" id="task-name-input" placeholder="What do you need to do?" required>
+                <div class="date-picker">
+                    <label for="task-deadline-input">Deadline:</label>
+                    <input type="date" id="task-deadline-input" required>
+                </div>
+                <div class="date-picker">
+                    <label for="task-finish-date-input">Finished:</label>
+                    <input type="date" id="task-finish-date-input">
+                </div>
+                <button type="submit">Add Task</button>
+            </form>
+            
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="Search for a task...">
+            </div>
+            
+            <ul id="task-list">
+                <!-- Tasks will be dynamically added here by JavaScript -->
+            </ul>
+        </div>
+
+        <div id="sharing-view">
+            <button id="back-to-tasks-button">← Back to Tasks</button>
+            <div id="sharing-container">
+                <h2>Real-Time Sharing</h2>
+                <div id="my-peer-id-container">Your ID: <span id="my-peer-id" title="Click to copy">Loading...</span></div>
+                <input type="text" id="remote-peer-id-input" placeholder="Enter peer's ID to connect">
+                <button id="connect-button">Connect</button>
+                <div id="connection-status" class="disconnected">Status: Not Connected</div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- JavaScript logic is embedded here -->
+    <!-- Main application logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Select DOM elements
+            // --- Select DOM elements ---
             const taskForm = document.getElementById('task-form');
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
@@ -455,6 +640,194 @@
             const timerDateElement = document.getElementById('timer-date');
             const notificationElement = document.getElementById('notification');
             const themeCheckbox = document.getElementById('theme-checkbox');
+            const searchInput = document.getElementById('search-input');
+            
+            // --- View Switching Elements ---
+            const mainView = document.getElementById('main-view');
+            const sharingView = document.getElementById('sharing-view');
+            const toggleSharingButton = document.getElementById('toggle-sharing-button');
+            const backToTasksButton = document.getElementById('back-to-tasks-button');
+            const topControls = document.querySelector('.top-controls');
+
+            // --- WebRTC Elements ---
+            const myPeerIdElement = document.getElementById('my-peer-id');
+            const remotePeerIdInput = document.getElementById('remote-peer-id-input');
+            const connectButton = document.getElementById('connect-button');
+            const connectionStatusElement = document.getElementById('connection-status');
+            
+            // --- WebRTC State ---
+            let peer;
+            let myPeerId;
+            const connections = [];
+
+            // --- WebRTC Initialization ---
+            function initializePeer() {
+                peer = new Peer();
+
+                peer.on('open', (id) => {
+                    myPeerId = id;
+                    myPeerIdElement.textContent = id;
+                    myPeerIdElement.addEventListener('click', () => {
+                        navigator.clipboard.writeText(myPeerId);
+                        showNotification('Your ID has been copied!', 'info');
+                    });
+                });
+                
+                peer.on('connection', (conn) => {
+                    showNotification(`Incoming connection from ${conn.peer}`, 'info');
+                    setupConnection(conn);
+                });
+
+                peer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                    showNotification(`Connection error: ${err.message}`);
+                });
+            }
+            
+            function setupConnection(conn) {
+                conn.on('open', () => {
+                    connections.push(conn);
+                    updateConnectionStatus();
+                    // Save the ID of the peer we successfully connected to
+                    if (conn.metadata.isInitiator) {
+                         localStorage.setItem('lastConnectedPeerId', conn.peer);
+                    }
+                    conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
+                });
+
+                conn.on('data', (data) => {
+                    handleRemoteData(data);
+                });
+
+                conn.on('close', () => {
+                    const index = connections.findIndex(c => c.peer === conn.peer);
+                    if (index > -1) {
+                        connections.splice(index, 1);
+                    }
+                    updateConnectionStatus();
+                    showNotification(`Disconnected from ${conn.peer}`, 'info');
+                });
+            }
+
+            connectButton.addEventListener('click', () => {
+                const remoteId = remotePeerIdInput.value.trim();
+                if (!remoteId) {
+                    showNotification('Please enter a peer ID.');
+                    return;
+                }
+                if (remoteId === myPeerId) {
+                    showNotification("You can't connect to yourself.");
+                    return;
+                }
+                if (connections.some(c => c.peer === remoteId)) {
+                    showNotification("You are already connected to this peer.");
+                    return;
+                }
+                const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
+                setupConnection(conn);
+            });
+
+            function updateConnectionStatus() {
+                if (connections.length > 0) {
+                    const peerIds = connections.map(c => c.peer.slice(0, 8) + '...').join(', ');
+                    connectionStatusElement.textContent = `Connected to: ${peerIds}`;
+                    connectionStatusElement.className = 'connected';
+                } else {
+                    connectionStatusElement.textContent = 'Status: Not Connected';
+                    connectionStatusElement.className = 'disconnected';
+                }
+            }
+
+            function broadcast(data) {
+                connections.forEach(conn => {
+                    if (conn.open) {
+                        conn.send(data);
+                    }
+                });
+            }
+
+            function handleRemoteData(data) {
+                let tasks = getTasks();
+                let taskUpdated = false;
+                let taskIndex = -1;
+
+                switch (data.type) {
+                    case 'ADD_TASK':
+                        if (!tasks.some(t => t.id === data.task.id)) {
+                            tasks.push(data.task);
+                            taskUpdated = true;
+                        }
+                        break;
+                    case 'TOGGLE_COMPLETE':
+                        taskIndex = tasks.findIndex(t => t.id == data.taskId);
+                        if (taskIndex > -1) {
+                            tasks[taskIndex].isCompleted = data.isCompleted;
+                            tasks[taskIndex].finishDate = data.finishDate;
+                            taskUpdated = true;
+                        }
+                        break;
+                    case 'DELETE_TASK':
+                        const initialLength = tasks.length;
+                        tasks = tasks.filter(t => t.id != data.taskId);
+                        if(tasks.length < initialLength) taskUpdated = true;
+                        break;
+                    case 'UPDATE_TASK':
+                        taskIndex = tasks.findIndex(t => t.id == data.taskId);
+                        if (taskIndex > -1) {
+                            Object.assign(tasks[taskIndex], data.updatedFields);
+                            taskUpdated = true;
+                        }
+                        break;
+                    case 'SYNC_ALL':
+                        const taskMap = new Map(tasks.map(t => [t.id, t]));
+                        data.tasks.forEach(remoteTask => {
+                            taskMap.set(remoteTask.id, remoteTask);
+                        });
+                        tasks = Array.from(taskMap.values());
+                        taskUpdated = true;
+                        break;
+                }
+                
+                if (taskUpdated) {
+                    saveTasks(tasks);
+                    loadTasks();
+                }
+            }
+            
+            initializePeer();
+            
+            const lastPeerId = localStorage.getItem('lastConnectedPeerId');
+            if (lastPeerId) {
+                remotePeerIdInput.value = lastPeerId;
+            }
+
+            // --- View Switching Logic ---
+            toggleSharingButton.addEventListener('click', () => {
+                mainView.style.display = 'none';
+                sharingView.style.display = 'block';
+                topControls.style.display = 'none'; // Hide the controls
+            });
+
+            backToTasksButton.addEventListener('click', () => {
+                sharingView.style.display = 'none';
+                mainView.style.display = 'block';
+                topControls.style.display = 'flex'; // Show the controls again
+            });
+
+            // --- Task Search/Filter Logic ---
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const tasks = taskList.querySelectorAll('.task-item');
+                
+                tasks.forEach(task => {
+                    const taskName = task.querySelector('.task-name').textContent.toLowerCase();
+                    if (taskName.includes(searchTerm)) {
+                        task.classList.remove('hidden');
+                    } else {
+                        task.classList.add('hidden');
+                    }
+                });
+            });
 
             // --- Theme Logic ---
             function setTheme(theme) {
@@ -501,14 +874,14 @@
 
                 setTimeout(() => {
                     notificationElement.className = `notification ${type}`;
-                }, 4000); // Increased duration for reminders
+                }, 4000); 
             }
 
             // --- Reminder Logic ---
             function checkReminders() {
                 const tasks = getTasks();
                 const now = new Date();
-                now.setHours(0, 0, 0, 0); // Compare dates only
+                now.setHours(0, 0, 0, 0); 
 
                 const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
                 let notificationDelay = 0;
@@ -517,14 +890,13 @@
                     if (!task.isCompleted && !remindedTasks.includes(task.id)) {
                         const deadlineDate = new Date(task.deadline + 'T00:00:00');
                         
-                        // Check if deadline is today
                         if (now.getTime() === deadlineDate.getTime()) {
                             setTimeout(() => {
                                 const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
                                 showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
                             }, notificationDelay);
                             
-                            notificationDelay += 500; // Stagger notifications
+                            notificationDelay += 500; 
                             remindedTasks.push(task.id);
                         }
                     }
@@ -532,11 +904,10 @@
                 sessionStorage.setItem('remindedTasks', JSON.stringify(remindedTasks));
             }
 
-            // Load tasks from local storage
+            // --- Task Logic ---
             loadTasks();
-            checkReminders(); // Check for reminders on page load
+            checkReminders(); 
 
-            // Event listener for the form submission
             taskForm.addEventListener('submit', (e) => {
                 e.preventDefault();
 
@@ -571,41 +942,85 @@
                     id: Date.now(),
                     name: taskName,
                     deadline: deadline,
-                    isCompleted: false, // Always set to false initially
-                    finishDate: finishDate || null, // Store the pre-set finish date
+                    isCompleted: false, 
+                    finishDate: finishDate || null,
                 };
-
-                addTaskToDOM(task);
-                saveTask(task);
+                
+                let tasks = getTasks();
+                tasks.push(task);
+                saveTasks(tasks);
+                loadTasks();
+                
+                broadcast({ type: 'ADD_TASK', task });
                 
                 taskForm.reset();
                 taskNameInput.focus();
             });
 
-            // Event listener for checkbox changes
             taskList.addEventListener('change', (e) => {
                 if (e.target.classList.contains('complete-checkbox')) {
                     const taskId = e.target.closest('.task-item').dataset.id;
-                    toggleComplete(taskId);
+                    toggleComplete(Number(taskId));
                 }
             });
 
-            // Event listener for clicks on the deadline to delete
             taskList.addEventListener('click', (e) => {
-                const deleteTrigger = e.target.closest('.deadline-text');
+                const target = e.target;
+                const taskItem = target.closest('.task-item');
+                if (!taskItem) return;
+                const taskId = Number(taskItem.dataset.id);
+
+                // --- Handle Deleting ---
+                const deleteTrigger = target.closest('.deadline-text');
                 if (deleteTrigger) {
-                    const taskItem = deleteTrigger.closest('.task-item');
-                    const taskId = taskItem.dataset.id;
-                    
                     taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                     taskItem.style.opacity = '0';
                     taskItem.style.transform = 'translateX(-20px)';
                     setTimeout(() => {
-                        taskList.removeChild(taskItem);
                         deleteTask(taskId);
                     }, 300);
+                    return;
+                }
+
+                // --- Handle Editing ---
+                if (target.classList.contains('task-name')) {
+                    makeEditable(target, taskId, 'name', 'text');
                 }
             });
+
+            function makeEditable(element, taskId, field, inputType) {
+                const originalValue = (inputType === 'date')
+                    ? getTaskById(taskId)[field]
+                    : element.textContent;
+
+                const input = document.createElement('input');
+                input.type = inputType;
+                input.value = originalValue;
+                input.className = `edit-input-${field}`;
+                
+                element.replaceWith(input);
+                input.focus();
+
+                const saveChanges = () => {
+                    const newValue = input.value.trim();
+                    if (newValue && newValue !== originalValue) {
+                        updateTask(taskId, { [field]: newValue });
+                    } else {
+                        // If value is empty or unchanged, just re-render
+                        loadTasks();
+                    }
+                };
+
+                input.addEventListener('blur', saveChanges);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        input.blur();
+                    } else if (e.key === 'Escape') {
+                        // Revert without saving
+                        loadTasks();
+                    }
+                });
+            }
 
             function addTaskToDOM(task) {
                 const li = document.createElement('li');
@@ -644,10 +1059,10 @@
                 li.innerHTML = `
                     <input type="checkbox" class="complete-checkbox" id="task-${task.id}" ${task.isCompleted ? 'checked' : ''}>
                     <div class="task-details">
-                        <label for="task-${task.id}">${escapeHTML(task.name)}</label>
+                        <div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div>
                         <div class="task-info">
                             <span class="deadline-text" title="Click deadline to delete task">
-                                <strong>Deadline:</strong> ${formattedDeadline}
+                                <strong>Deadline:</strong> <span>${formattedDeadline}</span>
                             </span> 
                             ${deadlineStatusHTML} | 
                             <strong>Finished:</strong> <span class="finish-date">${formattedFinishDate}</span>
@@ -667,20 +1082,30 @@
                 }
             }
 
+            function getTaskById(id) {
+                return getTasks().find(task => task.id === id);
+            }
+
             function saveTasks(tasks) {
                  localStorage.setItem('tasks', JSON.stringify(tasks));
             }
 
-            function saveTask(task) {
-                const tasks = getTasks();
-                tasks.push(task);
-                saveTasks(tasks);
-            }
-
             function loadTasks() {
                 const tasks = getTasks();
+                tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 taskList.innerHTML = '';
                 tasks.forEach(task => addTaskToDOM(task));
+            }
+            
+            function updateTask(taskId, updatedFields) {
+                let tasks = getTasks();
+                const taskIndex = tasks.findIndex(t => t.id == taskId);
+                if (taskIndex > -1) {
+                    tasks[taskIndex] = { ...tasks[taskIndex], ...updatedFields };
+                    saveTasks(tasks);
+                    broadcast({ type: 'UPDATE_TASK', taskId, updatedFields });
+                }
+                loadTasks();
             }
 
             function toggleComplete(id) {
@@ -692,16 +1117,18 @@
                     task.isCompleted = !task.isCompleted;
                     
                     if (task.isCompleted) {
-                        // If completing, use pre-set date or today's date
                         task.finishDate = task.finishDate || new Date().toISOString().split('T')[0];
-                    } else {
-                        // If un-completing, you might want to clear the finish date or leave it.
-                        // We'll leave it for now so it can be restored if re-completed.
                     }
 
                     saveTasks(tasks);
+                    
+                    broadcast({ 
+                        type: 'TOGGLE_COMPLETE', 
+                        taskId: id, 
+                        isCompleted: task.isCompleted, 
+                        finishDate: task.finishDate 
+                    });
                 }
-
                 loadTasks();
             }
 
@@ -709,6 +1136,8 @@
                 let tasks = getTasks();
                 tasks = tasks.filter(t => t.id != id);
                 saveTasks(tasks);
+                broadcast({ type: 'DELETE_TASK', taskId: id });
+                loadTasks();
             }
             
             function escapeHTML(str) {
