@@ -509,6 +509,15 @@
             flex-direction: column;
             gap: 15px;
         }
+        
+        .sharing-note {
+            font-size: 0.85rem;
+            color: var(--text-light-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding: 0 10px;
+        }
 
         #my-peer-id-container {
             font-size: 0.9rem;
@@ -529,6 +538,7 @@
             padding: 8px 12px;
             border-radius: 8px;
             text-align: center;
+            word-break: break-all;
         }
         
         #connection-status.disconnected {
@@ -618,6 +628,7 @@
             <button id="back-to-tasks-button">← Back to Tasks</button>
             <div id="sharing-container">
                 <h2>Real-Time Sharing</h2>
+                 <p class="sharing-note">You can connect to multiple devices at the same time. All connected devices will be synced in real-time.</p>
                 <div id="my-peer-id-container">Your ID: <span id="my-peer-id" title="Click to copy">Loading...</span></div>
                 <input type="text" id="remote-peer-id-input" placeholder="Enter peer's ID to connect">
                 <button id="connect-button">Connect</button>
@@ -658,6 +669,8 @@
             // --- WebRTC State ---
             let peer;
             let myPeerId;
+            // The connections array is designed to hold multiple connection objects,
+            // enabling simultaneous sharing with more than one peer.
             const connections = [];
 
             // --- WebRTC Initialization ---
@@ -688,10 +701,11 @@
                 conn.on('open', () => {
                     connections.push(conn);
                     updateConnectionStatus();
-                    // Save the ID of the peer we successfully connected to
+                    // Save the ID of the peer we successfully initiated a connection with
                     if (conn.metadata.isInitiator) {
                          localStorage.setItem('lastConnectedPeerId', conn.peer);
                     }
+                    // Sync this new peer with the current list of tasks
                     conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
                 });
 
@@ -730,7 +744,7 @@
             function updateConnectionStatus() {
                 if (connections.length > 0) {
                     const peerIds = connections.map(c => c.peer.slice(0, 8) + '...').join(', ');
-                    connectionStatusElement.textContent = `Connected to: ${peerIds}`;
+                    connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${peerIds}`;
                     connectionStatusElement.className = 'connected';
                 } else {
                     connectionStatusElement.textContent = 'Status: Not Connected';
@@ -738,6 +752,11 @@
                 }
             }
 
+            /**
+             * Broadcasts data to all currently connected and open peers.
+             * This is the core of the multi-device sync functionality.
+             * @param {object} data The data payload to send.
+             */
             function broadcast(data) {
                 connections.forEach(conn => {
                     if (conn.open) {
