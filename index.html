@@ -703,15 +703,33 @@
             let peer;
             const connections = [];
 
+            // --- Helper functions for managing recent peer connections ---
+            function getRecentPeers() {
+                const peers = localStorage.getItem('recentPeerIds');
+                return peers ? JSON.parse(peers) : [];
+            }
+
+            function addRecentPeer(peerId) {
+                let recentPeers = getRecentPeers();
+                // Remove the peer if it already exists to move it to the front
+                recentPeers = recentPeers.filter(p => p !== peerId);
+                // Add the new peer to the front
+                recentPeers.unshift(peerId);
+                // Keep the list to a reasonable size, e.g., 5
+                const MAX_RECENT_PEERS = 5;
+                if (recentPeers.length > MAX_RECENT_PEERS) {
+                    recentPeers.pop();
+                }
+                localStorage.setItem('recentPeerIds', JSON.stringify(recentPeers));
+                // Also update the single 'last connected' for the input field value
+                localStorage.setItem('lastConnectedPeerId', peerId);
+            }
+
             // --- WebRTC Initialization ---
             function initializePeer(requestedId) {
-                // If a peer instance already exists, destroy it before creating a new one.
                 if (peer) {
                     peer.destroy();
                 }
-
-                // Create a new Peer instance with the requested ID. 
-                // If no ID is provided, PeerJS will assign a random one.
                 peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
@@ -720,6 +738,17 @@
                         navigator.clipboard.writeText(id);
                         showNotification('Your active ID has been copied!', 'info');
                     });
+
+                    // --- Auto-reconnect to RECENT peers ---
+                    const recentPeers = getRecentPeers();
+                    if (recentPeers.length > 0) {
+                        setTimeout(() => {
+                            showNotification(`Reconnecting to recent peers...`, 'info');
+                            recentPeers.forEach(peerId => {
+                                connectToPeer(peerId);
+                            });
+                        }, 500);
+                    }
                 });
                 
                 peer.on('connection', (conn) => {
@@ -749,7 +778,6 @@
                 initializePeer(newId);
             });
 
-            // On page load, try to initialize with a saved ID.
             const savedPeerId = localStorage.getItem('myPeerId');
             if (savedPeerId) {
                 myPeerIdInput.value = savedPeerId;
@@ -760,10 +788,14 @@
             
             function setupConnection(conn) {
                 conn.on('open', () => {
+                    if (connections.some(c => c.peer === conn.peer)) {
+                        conn.close();
+                        return;
+                    }
                     connections.push(conn);
                     updateConnectionStatus();
                     if (conn.metadata.isInitiator) {
-                         localStorage.setItem('lastConnectedPeerId', conn.peer);
+                         addRecentPeer(conn.peer);
                     }
                     conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
                 });
@@ -781,10 +813,9 @@
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
                 });
             }
-
-            connectButton.addEventListener('click', () => {
-                const remoteId = remotePeerIdInput.value.trim();
-                if (!peer || peer.disconnected) {
+            
+            function connectToPeer(remoteId) {
+                 if (!peer || peer.disconnected) {
                     showNotification('You must set your ID before connecting.', 'error');
                     return;
                 }
@@ -793,15 +824,19 @@
                     return;
                 }
                 if (remoteId === peer.id) {
-                    showNotification("You can't connect to yourself.");
                     return;
                 }
                 if (connections.some(c => c.peer === remoteId)) {
-                    showNotification("You are already connected to this peer.");
                     return;
                 }
+                showNotification(`Attempting to connect to ${remoteId}...`, 'info');
                 const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
                 setupConnection(conn);
+            }
+
+            connectButton.addEventListener('click', () => {
+                const remoteId = remotePeerIdInput.value.trim();
+                connectToPeer(remoteId);
             });
 
             function updateConnectionStatus() {
