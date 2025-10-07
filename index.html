@@ -196,7 +196,7 @@
             align-items: center;
         }
 
-        #task-form input[type="text"], #remote-peer-id-input {
+        #task-form input[type="text"], #remote-peer-id-input, #my-peer-id-input {
             grid-column: 1 / -1;
             padding: 14px 16px;
             border: 1px solid var(--border-color);
@@ -207,13 +207,13 @@
             color: var(--text-color);
         }
         
-        #task-form input[type="text"]:focus, #remote-peer-id-input:focus {
+        #task-form input[type="text"]:focus, #remote-peer-id-input:focus, #my-peer-id-input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px var(--shadow-color);
             outline: none;
         }
         
-        #task-form input::placeholder, #remote-peer-id-input::placeholder {
+        #task-form input::placeholder, #remote-peer-id-input::placeholder, #my-peer-id-input::placeholder {
             color: var(--text-light-color);
             opacity: 0.7;
         }
@@ -251,7 +251,7 @@
             color-scheme: dark;
         }
 
-        #task-form button, #connect-button {
+        #task-form button, #connect-button, #set-peer-id-button {
             grid-column: 1 / -1;
             padding: 16px 20px;
             background: var(--primary-color);
@@ -267,8 +267,12 @@
         #connect-button {
             background-color: var(--success-color);
         }
+        
+        #set-peer-id-button {
+             background-color: var(--warning-color);
+        }
 
-        #task-form button:hover, #connect-button:hover {
+        #task-form button:hover, #connect-button:hover, #set-peer-id-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px var(--shadow-color);
         }
@@ -276,6 +280,11 @@
         #connect-button:hover {
              box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
              background-color: #30b852;
+        }
+        
+        #set-peer-id-button:hover {
+             box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
+             background-color: #ff8c00;
         }
         
         #toggle-sharing-button {
@@ -510,6 +519,18 @@
             gap: 15px;
         }
         
+        .sharing-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .sharing-section h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+        
         .sharing-note {
             font-size: 0.85rem;
             color: var(--text-light-color);
@@ -519,11 +540,11 @@
             padding: 0 10px;
         }
 
-        #my-peer-id-container {
+        #active-peer-id-container {
             font-size: 0.9rem;
             color: var(--text-light-color);
         }
-        #my-peer-id {
+        #active-peer-id {
             font-weight: 600;
             color: var(--text-color);
             background-color: var(--input-bg-color);
@@ -628,11 +649,21 @@
             <button id="back-to-tasks-button">← Back to Tasks</button>
             <div id="sharing-container">
                 <h2>Real-Time Sharing</h2>
-                 <p class="sharing-note">You can connect to multiple devices at the same time. All connected devices will be synced in real-time.</p>
-                <div id="my-peer-id-container">Your ID: <span id="my-peer-id" title="Click to copy">Loading...</span></div>
-                <input type="text" id="remote-peer-id-input" placeholder="Enter peer's ID to connect">
-                <button id="connect-button">Connect</button>
-                <div id="connection-status" class="disconnected">Status: Not Connected</div>
+                
+                <div class="sharing-section">
+                    <h3>Set Your Persistent ID</h3>
+                    <input type="text" id="my-peer-id-input" placeholder="e.g., my-work-laptop">
+                    <button id="set-peer-id-button">Set ID & Reconnect</button>
+                    <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
+                </div>
+                
+                <div class="sharing-section">
+                    <h3>Connect to a Peer</h3>
+                    <input type="text" id="remote-peer-id-input" placeholder="Enter peer's persistent ID">
+                    <button id="connect-button">Connect</button>
+                    <div id="connection-status" class="disconnected">Status: Not Connected</div>
+                </div>
+
             </div>
         </div>
 
@@ -661,28 +692,33 @@
             const topControls = document.querySelector('.top-controls');
 
             // --- WebRTC Elements ---
-            const myPeerIdElement = document.getElementById('my-peer-id');
+            const myPeerIdInput = document.getElementById('my-peer-id-input');
+            const setPeerIdButton = document.getElementById('set-peer-id-button');
+            const activePeerIdElement = document.getElementById('active-peer-id');
             const remotePeerIdInput = document.getElementById('remote-peer-id-input');
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
             // --- WebRTC State ---
             let peer;
-            let myPeerId;
-            // The connections array is designed to hold multiple connection objects,
-            // enabling simultaneous sharing with more than one peer.
             const connections = [];
 
             // --- WebRTC Initialization ---
-            function initializePeer() {
-                peer = new Peer();
+            function initializePeer(requestedId) {
+                // If a peer instance already exists, destroy it before creating a new one.
+                if (peer) {
+                    peer.destroy();
+                }
+
+                // Create a new Peer instance with the requested ID. 
+                // If no ID is provided, PeerJS will assign a random one.
+                peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
-                    myPeerId = id;
-                    myPeerIdElement.textContent = id;
-                    myPeerIdElement.addEventListener('click', () => {
-                        navigator.clipboard.writeText(myPeerId);
-                        showNotification('Your ID has been copied!', 'info');
+                    activePeerIdElement.textContent = id;
+                    activePeerIdElement.addEventListener('click', () => {
+                        navigator.clipboard.writeText(id);
+                        showNotification('Your active ID has been copied!', 'info');
                     });
                 });
                 
@@ -693,19 +729,42 @@
 
                 peer.on('error', (err) => {
                     console.error('PeerJS error:', err);
-                    showNotification(`Connection error: ${err.message}`);
+                    if (err.type === 'unavailable-id') {
+                         showNotification(`ID "${requestedId}" is already taken. Please choose another.`);
+                    } else {
+                         showNotification(`Connection error: ${err.message}`);
+                    }
+                    activePeerIdElement.textContent = 'Error';
                 });
+            }
+            
+            setPeerIdButton.addEventListener('click', () => {
+                const newId = myPeerIdInput.value.trim();
+                if (!newId) {
+                    showNotification('Please enter a persistent ID.');
+                    return;
+                }
+                localStorage.setItem('myPeerId', newId);
+                showNotification(`Setting ID to "${newId}"...`, 'info');
+                initializePeer(newId);
+            });
+
+            // On page load, try to initialize with a saved ID.
+            const savedPeerId = localStorage.getItem('myPeerId');
+            if (savedPeerId) {
+                myPeerIdInput.value = savedPeerId;
+                initializePeer(savedPeerId);
+            } else {
+                 activePeerIdElement.textContent = "Set an ID to connect";
             }
             
             function setupConnection(conn) {
                 conn.on('open', () => {
                     connections.push(conn);
                     updateConnectionStatus();
-                    // Save the ID of the peer we successfully initiated a connection with
                     if (conn.metadata.isInitiator) {
                          localStorage.setItem('lastConnectedPeerId', conn.peer);
                     }
-                    // Sync this new peer with the current list of tasks
                     conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
                 });
 
@@ -725,11 +784,15 @@
 
             connectButton.addEventListener('click', () => {
                 const remoteId = remotePeerIdInput.value.trim();
-                if (!remoteId) {
-                    showNotification('Please enter a peer ID.');
+                if (!peer || peer.disconnected) {
+                    showNotification('You must set your ID before connecting.', 'error');
                     return;
                 }
-                if (remoteId === myPeerId) {
+                if (!remoteId) {
+                    showNotification('Please enter a peer ID to connect to.');
+                    return;
+                }
+                if (remoteId === peer.id) {
                     showNotification("You can't connect to yourself.");
                     return;
                 }
@@ -752,11 +815,6 @@
                 }
             }
 
-            /**
-             * Broadcasts data to all currently connected and open peers.
-             * This is the core of the multi-device sync functionality.
-             * @param {object} data The data payload to send.
-             */
             function broadcast(data) {
                 connections.forEach(conn => {
                     if (conn.open) {
@@ -812,8 +870,6 @@
                     loadTasks();
                 }
             }
-            
-            initializePeer();
             
             const lastPeerId = localStorage.getItem('lastConnectedPeerId');
             if (lastPeerId) {
