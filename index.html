@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Working Stop</title>
+    <title>Modern To-Do List</title>
     
     <!-- Google Fonts for a modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,12 +65,18 @@
             max-width: 700px;
             border: 1px solid var(--border-color);
             transition: background-color 0.3s, border-color 0.3s;
-            position: relative; /* Added for positioning the theme switch */
-            overflow: hidden; /* Ensures smooth view transitions */
+            position: relative; 
+            overflow: hidden; 
         }
 
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
         h1, h2 {
-            text-align: center;
             color: var(--text-color);
             margin-bottom: 20px;
             font-weight: 700;
@@ -78,6 +84,8 @@
 
         h1 {
             font-size: 2.25rem;
+            margin-bottom: 0;
+            text-align: left;
         }
         
         h2 {
@@ -85,17 +93,16 @@
             margin-top: 40px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
+            text-align: center;
         }
         
         /* --- Top Controls Container --- */
         .top-controls {
-            position: absolute;
-            top: 25px;
-            right: 25px;
             display: flex;
             align-items: center;
             gap: 15px;
             z-index: 10;
+            flex-shrink: 0;
         }
 
         /* --- Dark Mode Toggle --- */
@@ -576,11 +583,17 @@
              .container {
                 padding: 20px;
             }
+            .main-header {
+                padding-top: 30px; /* Add space so title doesn't overlap container padding */
+            }
             h1 {
                 font-size: 1.75rem;
             }
             .top-controls {
                 gap: 8px;
+                position: absolute; /* Keep it absolute on mobile */
+                top: 25px;
+                right: 20px;
             }
             .theme-switch-wrapper span {
                 display: none; /* Hide text on small screens */
@@ -608,21 +621,24 @@
     <div id="notification" class="notification"></div>
 
     <div class="container">
-        <div class="top-controls">
-            <button id="toggle-file-transfer-button">File Transfer</button>
-            <button id="toggle-sharing-button">Sharing</button>
-            <div class="theme-switch-wrapper">
-                <span>☀️</span>
-                <label class="theme-switch" for="theme-checkbox">
-                    <input type="checkbox" id="theme-checkbox" />
-                    <div class="slider"></div>
-                </label>
-                <span>🌙</span>
-            </div>
-        </div>
         
         <div id="main-view">
-            <h1>My To-Do List</h1>
+            <div class="main-header">
+                <h1>My To-Do List</h1>
+                <div class="top-controls">
+                    <button id="toggle-file-transfer-button">File Transfer</button>
+                    <button id="toggle-sharing-button">Sharing</button>
+                    <div class="theme-switch-wrapper">
+                        <span>☀️</span>
+                        <label class="theme-switch" for="theme-checkbox">
+                            <input type="checkbox" id="theme-checkbox" />
+                            <div class="slider"></div>
+                        </label>
+                        <span>🌙</span>
+                    </div>
+                </div>
+            </div>
+            
             <div id="timer-container">
                 <span id="timer">00:00:00</span>
                 <span id="timer-date">Loading date...</span>
@@ -733,6 +749,8 @@
             // --- WebRTC State ---
             let peer;
             const connections = [];
+            let peerInitRetries = 0; // To handle reconnection errors
+            const MAX_PEER_INIT_RETRIES = 3;
 
             // --- Helper functions for managing recent peer connections ---
             function getRecentPeers() {
@@ -755,9 +773,13 @@
             // --- WebRTC Initialization ---
             function initializePeer(requestedId) {
                 if (peer) { peer.destroy(); }
+                
+                activePeerIdElement.textContent = "Connecting...";
+
                 peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
+                    peerInitRetries = 0; // Reset retries on success
                     activePeerIdElement.textContent = id;
                     activePeerIdElement.addEventListener('click', () => {
                         navigator.clipboard.writeText(id);
@@ -781,11 +803,19 @@
                 peer.on('error', (err) => {
                     console.error('PeerJS error:', err);
                     if (err.type === 'unavailable-id') {
-                         showNotification(`ID "${requestedId}" is already taken. Please choose another.`);
+                        if (peerInitRetries < MAX_PEER_INIT_RETRIES) {
+                            peerInitRetries++;
+                            const delay = 2000;
+                            showNotification(`ID "${requestedId}" is busy. Retrying... (${peerInitRetries}/${MAX_PEER_INIT_RETRIES})`, 'info');
+                            setTimeout(() => initializePeer(requestedId), delay);
+                        } else {
+                            showNotification(`ID "${requestedId}" is unavailable. Please choose another.`, 'error');
+                            activePeerIdElement.textContent = 'Failed to connect';
+                        }
                     } else {
                          showNotification(`Connection error: ${err.message}`);
+                         activePeerIdElement.textContent = 'Error';
                     }
-                    activePeerIdElement.textContent = 'Error';
                 });
             }
             
@@ -1016,7 +1046,11 @@
                     view.style.display = 'none';
                 });
                 viewToShow.style.display = 'block';
-                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
+                // This logic needs to be aware of the new header structure
+                const mainHeader = mainView.querySelector('.main-header');
+                if (mainHeader) {
+                    mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
+                }
             }
 
             toggleSharingButton.addEventListener('click', () => showView(sharingView));
@@ -1291,6 +1325,20 @@
                 div.appendChild(document.createTextNode(str));
                 return div.innerHTML;
             }
+
+             // --- Final View Switching Fix ---
+             // A small correction to the view switching logic to handle the new header structure correctly.
+             const mainHeader = mainView.querySelector('.main-header');
+             const originalShowView = showView; // Keep a reference to the original function
+
+             showView = function(viewToShow) {
+                 originalShowView(viewToShow); // Call the original logic
+                 if (mainHeader) {
+                     // The visibility of the header depends only on whether the main view is active
+                     mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
+                 }
+             }
+
         });
     </script>
 </body>
