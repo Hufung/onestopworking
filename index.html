@@ -273,6 +273,7 @@
         
         .button.green { background-color: var(--success-color); }
         .button.orange { background-color: var(--warning-color); }
+        .button.red { background-color: var(--danger-color); }
 
         .button:hover, #task-form button:hover {
             transform: translateY(-2px);
@@ -287,6 +288,11 @@
         .button.orange:hover {
              box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
              background-color: #ff8c00;
+        }
+
+        .button.red:hover {
+            box-shadow: 0 6px 20px rgba(255, 59, 48, 0.3);
+            background-color: #e02b21;
         }
         
         #toggle-sharing-button, #toggle-file-transfer-button {
@@ -672,9 +678,10 @@
                 <h2>Real-Time Sharing</h2>
                 
                 <div class="section-part">
-                    <h3>Set Your Persistent ID</h3>
+                    <h3>Your Connection</h3>
                     <input type="text" id="my-peer-id-input" class="input-field" placeholder="e.g., my-work-laptop">
                     <button id="set-peer-id-button" class="button orange">Set ID & Reconnect</button>
+                    <button id="disconnect-button" class="button red">Disconnect</button>
                     <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
                 </div>
                 
@@ -735,6 +742,7 @@
             // --- WebRTC Elements ---
             const myPeerIdInput = document.getElementById('my-peer-id-input');
             const setPeerIdButton = document.getElementById('set-peer-id-button');
+            const disconnectButton = document.getElementById('disconnect-button');
             const activePeerIdElement = document.getElementById('active-peer-id');
             const remotePeerIdInput = document.getElementById('remote-peer-id-input');
             const connectButton = document.getElementById('connect-button');
@@ -749,7 +757,7 @@
             // --- WebRTC State ---
             let peer;
             const connections = [];
-            let peerInitRetries = 0; // To handle reconnection errors
+            let peerInitRetries = 0;
             const MAX_PEER_INIT_RETRIES = 3;
 
             // --- Helper functions for managing recent peer connections ---
@@ -770,10 +778,23 @@
                 localStorage.setItem('lastConnectedPeerId', peerId);
             }
 
-            // --- WebRTC Initialization ---
+            // --- WebRTC Initialization and Control ---
+            function disconnectFromPeers() {
+                if (peer) {
+                    peer.destroy();
+                }
+                connections.forEach(conn => conn.close());
+                connections.length = 0; // Clear the array
+                updateConnectionStatus();
+                updatePeerSelectDropdown();
+                activePeerIdElement.textContent = "Disconnected";
+                showNotification('You have been disconnected.', 'info');
+            }
+
+            disconnectButton.addEventListener('click', disconnectFromPeers);
+
             function initializePeer(requestedId) {
                 if (peer) { peer.destroy(); }
-                
                 activePeerIdElement.textContent = "Connecting...";
 
                 peer = new Peer(requestedId);
@@ -789,9 +810,9 @@
                     const recentPeers = getRecentPeers();
                     if (recentPeers.length > 0) {
                         setTimeout(() => {
-                            showNotification(`Reconnecting to recent peers...`, 'info');
+                            showNotification(`Attempting to reconnect to recent peers...`, 'info');
                             recentPeers.forEach(peerId => connectToPeer(peerId));
-                        }, 500);
+                        }, 1000); // Increased delay
                     }
                 });
                 
@@ -805,8 +826,8 @@
                     if (err.type === 'unavailable-id') {
                         if (peerInitRetries < MAX_PEER_INIT_RETRIES) {
                             peerInitRetries++;
-                            const delay = 2000;
-                            showNotification(`ID "${requestedId}" is busy. Retrying... (${peerInitRetries}/${MAX_PEER_INIT_RETRIES})`, 'info');
+                            const delay = 2000 * peerInitRetries; // Increase delay each time
+                            showNotification(`ID "${requestedId}" is busy. Retrying in ${delay/1000}s... (${peerInitRetries}/${MAX_PEER_INIT_RETRIES})`, 'info');
                             setTimeout(() => initializePeer(requestedId), delay);
                         } else {
                             showNotification(`ID "${requestedId}" is unavailable. Please choose another.`, 'error');
@@ -826,8 +847,9 @@
                     return;
                 }
                 localStorage.setItem('myPeerId', newId);
-                showNotification(`Setting ID to "${newId}"...`, 'info');
-                initializePeer(newId);
+                showNotification(`Setting ID to "${newId}" and reconnecting...`, 'info');
+                disconnectFromPeers();
+                setTimeout(() => initializePeer(newId), 500); // Short delay after disconnect
             });
 
             const savedPeerId = localStorage.getItem('myPeerId');
@@ -869,8 +891,8 @@
             }
             
             function connectToPeer(remoteId) {
-                 if (!peer || peer.disconnected) {
-                    showNotification('You must set your ID before connecting.', 'error');
+                 if (!peer || peer.destroyed || peer.disconnected) {
+                    showNotification('Your connection is not active. Please set your ID.', 'error');
                     return;
                 }
                 if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) {
@@ -1327,14 +1349,12 @@
             }
 
              // --- Final View Switching Fix ---
-             // A small correction to the view switching logic to handle the new header structure correctly.
              const mainHeader = mainView.querySelector('.main-header');
-             const originalShowView = showView; // Keep a reference to the original function
+             const originalShowView = showView;
 
              showView = function(viewToShow) {
-                 originalShowView(viewToShow); // Call the original logic
+                 originalShowView(viewToShow);
                  if (mainHeader) {
-                     // The visibility of the header depends only on whether the main view is active
                      mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
                  }
              }
