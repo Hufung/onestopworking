@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern To-Do List</title>
+    <title>Working Stop</title>
     
     <!-- Google Fonts for a modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -196,7 +196,7 @@
             align-items: center;
         }
 
-        #task-form input[type="text"], #remote-peer-id-input, #my-peer-id-input {
+        #task-form input[type="text"], .input-field {
             grid-column: 1 / -1;
             padding: 14px 16px;
             border: 1px solid var(--border-color);
@@ -207,13 +207,13 @@
             color: var(--text-color);
         }
         
-        #task-form input[type="text"]:focus, #remote-peer-id-input:focus, #my-peer-id-input:focus {
+        #task-form input[type="text"]:focus, .input-field:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px var(--shadow-color);
             outline: none;
         }
         
-        #task-form input::placeholder, #remote-peer-id-input::placeholder, #my-peer-id-input::placeholder {
+        #task-form input::placeholder, .input-field::placeholder {
             color: var(--text-light-color);
             opacity: 0.7;
         }
@@ -251,7 +251,7 @@
             color-scheme: dark;
         }
 
-        #task-form button, #connect-button, #set-peer-id-button {
+        .button, #task-form button {
             grid-column: 1 / -1;
             padding: 16px 20px;
             background: var(--primary-color);
@@ -264,30 +264,25 @@
             transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
         
-        #connect-button {
-            background-color: var(--success-color);
-        }
-        
-        #set-peer-id-button {
-             background-color: var(--warning-color);
-        }
+        .button.green { background-color: var(--success-color); }
+        .button.orange { background-color: var(--warning-color); }
 
-        #task-form button:hover, #connect-button:hover, #set-peer-id-button:hover {
+        .button:hover, #task-form button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px var(--shadow-color);
         }
 
-        #connect-button:hover {
+        .button.green:hover {
              box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
              background-color: #30b852;
         }
         
-        #set-peer-id-button:hover {
+        .button.orange:hover {
              box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
              background-color: #ff8c00;
         }
         
-        #toggle-sharing-button {
+        #toggle-sharing-button, #toggle-file-transfer-button {
             position: relative; 
             width: auto;
             padding: 10px 16px;
@@ -301,17 +296,17 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        #toggle-sharing-button:hover {
+        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover {
             background-color: var(--text-color);
             transform: translateY(-1px);
         }
 
         /* --- View Switching --- */
-        #sharing-view {
+        #sharing-view, #file-transfer-view {
             display: none;
         }
         
-        #back-to-tasks-button {
+        .back-button {
             background: none;
             border: 1px solid var(--border-color);
             color: var(--text-color);
@@ -326,7 +321,7 @@
             gap: 8px;
         }
 
-        #back-to-tasks-button:hover {
+        .back-button:hover {
             background-color: var(--input-bg-color);
         }
 
@@ -337,25 +332,6 @@
 
         #search-input {
             width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
-            background-color: var(--input-bg-color);
-            color: var(--text-color);
-            box-sizing: border-box;
-        }
-
-        #search-input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px var(--shadow-color);
-            outline: none;
-        }
-
-        #search-input::placeholder {
-            color: var(--text-light-color);
-            opacity: 0.7;
         }
 
         #task-list {
@@ -375,7 +351,7 @@
             transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out;
             gap: 15px;
             overflow: hidden;
-            max-height: 100px; /* Adjust as needed */
+            max-height: 100px;
         }
         
         .task-item.hidden {
@@ -508,8 +484,8 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
         
-        /* --- Sharing Section --- */
-        #sharing-container {
+        /* --- Sharing & File Transfer Sections --- */
+        .section-container {
             margin-top: 20px;
             padding: 20px;
             border: 1px solid var(--border-color);
@@ -519,25 +495,16 @@
             gap: 15px;
         }
         
-        .sharing-section {
+        .section-part {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
         
-        .sharing-section h3 {
+        .section-part h3 {
             margin: 0 0 5px 0;
             font-size: 1.1rem;
             color: var(--text-color);
-        }
-        
-        .sharing-note {
-            font-size: 0.85rem;
-            color: var(--text-light-color);
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 10px;
-            padding: 0 10px;
         }
 
         #active-peer-id-container {
@@ -579,13 +546,41 @@
         body.dark-mode #connection-status.connected {
              background-color: #1c4b2a;
         }
+
+        #received-files-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #received-files-list li {
+            background-color: var(--input-bg-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        #received-files-list .download-link {
+            text-decoration: none;
+            color: white;
+            background-color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
         
         @media (max-width: 600px) {
              .container {
                 padding: 20px;
             }
+            h1 {
+                font-size: 1.75rem;
+            }
             .top-controls {
-                gap: 5px;
+                gap: 8px;
             }
             .theme-switch-wrapper span {
                 display: none; /* Hide text on small screens */
@@ -596,6 +591,15 @@
              #task-form {
                 grid-template-columns: 1fr;
             }
+            .task-item {
+                padding: 12px 15px;
+            }
+            .task-name {
+                font-size: 1rem;
+            }
+            .task-info {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -605,6 +609,7 @@
 
     <div class="container">
         <div class="top-controls">
+            <button id="toggle-file-transfer-button">File Transfer</button>
             <button id="toggle-sharing-button">Sharing</button>
             <div class="theme-switch-wrapper">
                 <span>☀️</span>
@@ -624,10 +629,10 @@
             </div>
 
             <form id="task-form">
-                <input type="text" id="task-name-input" placeholder="What do you need to do?" required>
+                <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
                 <div class="date-picker">
                     <label for="task-deadline-input">Deadline:</label>
-                    <input type="date" id="task-deadline-input" required>
+                    <input type="date" id="task-deadline-input">
                 </div>
                 <div class="date-picker">
                     <label for="task-finish-date-input">Finished:</label>
@@ -637,33 +642,51 @@
             </form>
             
             <div id="search-container">
-                <input type="text" id="search-input" placeholder="Search for a task...">
+                <input type="text" id="search-input" class="input-field" placeholder="Search for a task...">
             </div>
             
             <ul id="task-list">
-                <!-- Tasks will be dynamically added here by JavaScript -->
+                <!-- Tasks will be dynamically added here -->
             </ul>
         </div>
 
         <div id="sharing-view">
-            <button id="back-to-tasks-button">← Back to Tasks</button>
-            <div id="sharing-container">
+            <button class="back-button">← Back to Tasks</button>
+            <div class="section-container">
                 <h2>Real-Time Sharing</h2>
                 
-                <div class="sharing-section">
+                <div class="section-part">
                     <h3>Set Your Persistent ID</h3>
-                    <input type="text" id="my-peer-id-input" placeholder="e.g., my-work-laptop">
-                    <button id="set-peer-id-button">Set ID & Reconnect</button>
+                    <input type="text" id="my-peer-id-input" class="input-field" placeholder="e.g., my-work-laptop">
+                    <button id="set-peer-id-button" class="button orange">Set ID & Reconnect</button>
                     <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
                 </div>
                 
-                <div class="sharing-section">
+                <div class="section-part">
                     <h3>Connect to a Peer</h3>
-                    <input type="text" id="remote-peer-id-input" placeholder="Enter peer's persistent ID">
-                    <button id="connect-button">Connect</button>
+                    <input type="text" id="remote-peer-id-input" class="input-field" placeholder="Enter peer's persistent ID">
+                    <button id="connect-button" class="button green">Connect</button>
                     <div id="connection-status" class="disconnected">Status: Not Connected</div>
                 </div>
+            </div>
+        </div>
 
+        <div id="file-transfer-view">
+            <button class="back-button">← Back to Tasks</button>
+             <div class="section-container">
+                 <h2>Peer-to-Peer File Transfer</h2>
+                 <div class="section-part">
+                     <h3>Send a File</h3>
+                     <select id="peer-select" class="input-field"></select>
+                     <input type="file" id="file-input" class="input-field">
+                     <button id="send-file-button" class="button">Send File</button>
+                 </div>
+                 <div class="section-part">
+                     <h3>Received Files</h3>
+                     <ul id="received-files-list">
+                         <!-- Received files will appear here -->
+                     </ul>
+                 </div>
             </div>
         </div>
 
@@ -687,8 +710,10 @@
             // --- View Switching Elements ---
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
+            const fileTransferView = document.getElementById('file-transfer-view');
             const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const backToTasksButton = document.getElementById('back-to-tasks-button');
+            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
+            const backButtons = document.querySelectorAll('.back-button');
             const topControls = document.querySelector('.top-controls');
 
             // --- WebRTC Elements ---
@@ -699,6 +724,12 @@
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
+            // --- File Transfer Elements ---
+            const peerSelect = document.getElementById('peer-select');
+            const fileInput = document.getElementById('file-input');
+            const sendFileButton = document.getElementById('send-file-button');
+            const receivedFilesList = document.getElementById('received-files-list');
+
             // --- WebRTC State ---
             let peer;
             const connections = [];
@@ -711,25 +742,19 @@
 
             function addRecentPeer(peerId) {
                 let recentPeers = getRecentPeers();
-                // Remove the peer if it already exists to move it to the front
                 recentPeers = recentPeers.filter(p => p !== peerId);
-                // Add the new peer to the front
                 recentPeers.unshift(peerId);
-                // Keep the list to a reasonable size, e.g., 5
                 const MAX_RECENT_PEERS = 5;
                 if (recentPeers.length > MAX_RECENT_PEERS) {
                     recentPeers.pop();
                 }
                 localStorage.setItem('recentPeerIds', JSON.stringify(recentPeers));
-                // Also update the single 'last connected' for the input field value
                 localStorage.setItem('lastConnectedPeerId', peerId);
             }
 
             // --- WebRTC Initialization ---
             function initializePeer(requestedId) {
-                if (peer) {
-                    peer.destroy();
-                }
+                if (peer) { peer.destroy(); }
                 peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
@@ -739,14 +764,11 @@
                         showNotification('Your active ID has been copied!', 'info');
                     });
 
-                    // --- Auto-reconnect to RECENT peers ---
                     const recentPeers = getRecentPeers();
                     if (recentPeers.length > 0) {
                         setTimeout(() => {
                             showNotification(`Reconnecting to recent peers...`, 'info');
-                            recentPeers.forEach(peerId => {
-                                connectToPeer(peerId);
-                            });
+                            recentPeers.forEach(peerId => connectToPeer(peerId));
                         }, 500);
                     }
                 });
@@ -794,6 +816,7 @@
                     }
                     connections.push(conn);
                     updateConnectionStatus();
+                    updatePeerSelectDropdown();
                     if (conn.metadata.isInitiator) {
                          addRecentPeer(conn.peer);
                     }
@@ -810,6 +833,7 @@
                         connections.splice(index, 1);
                     }
                     updateConnectionStatus();
+                    updatePeerSelectDropdown();
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
                 });
             }
@@ -819,14 +843,7 @@
                     showNotification('You must set your ID before connecting.', 'error');
                     return;
                 }
-                if (!remoteId) {
-                    showNotification('Please enter a peer ID to connect to.');
-                    return;
-                }
-                if (remoteId === peer.id) {
-                    return;
-                }
-                if (connections.some(c => c.peer === remoteId)) {
+                if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) {
                     return;
                 }
                 showNotification(`Attempting to connect to ${remoteId}...`, 'info');
@@ -841,7 +858,7 @@
 
             function updateConnectionStatus() {
                 if (connections.length > 0) {
-                    const peerIds = connections.map(c => c.peer.slice(0, 8) + '...').join(', ');
+                    const peerIds = connections.map(c => c.peer).join(', ');
                     connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${peerIds}`;
                     connectionStatusElement.className = 'connected';
                 } else {
@@ -859,6 +876,11 @@
             }
 
             function handleRemoteData(data) {
+                if (data.type === 'FILE_TRANSFER') {
+                    handleReceivedFile(data);
+                    return;
+                }
+                
                 let tasks = getTasks();
                 let taskUpdated = false;
                 let taskIndex = -1;
@@ -911,18 +933,96 @@
                 remotePeerIdInput.value = lastPeerId;
             }
 
-            // --- View Switching Logic ---
-            toggleSharingButton.addEventListener('click', () => {
-                mainView.style.display = 'none';
-                sharingView.style.display = 'block';
-                topControls.style.display = 'none'; // Hide the controls
+            // --- File Transfer Logic ---
+            function updatePeerSelectDropdown() {
+                peerSelect.innerHTML = '';
+                if (connections.length === 0) {
+                    const option = document.createElement('option');
+                    option.textContent = 'No peers connected';
+                    peerSelect.appendChild(option);
+                    peerSelect.disabled = true;
+                    sendFileButton.disabled = true;
+                } else {
+                    connections.forEach(conn => {
+                        const option = document.createElement('option');
+                        option.value = conn.peer;
+                        option.textContent = conn.peer;
+                        peerSelect.appendChild(option);
+                    });
+                    peerSelect.disabled = false;
+                    sendFileButton.disabled = false;
+                }
+            }
+            
+            sendFileButton.addEventListener('click', () => {
+                const peerId = peerSelect.value;
+                const file = fileInput.files[0];
+
+                if (!peerId || peerId === 'No peers connected') {
+                    showNotification('Please select a peer to send the file to.');
+                    return;
+                }
+                if (!file) {
+                    showNotification('Please select a file to send.');
+                    return;
+                }
+
+                const conn = connections.find(c => c.peer === peerId);
+                if (!conn) {
+                    showNotification('Connection to that peer was lost.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const fileData = event.target.result;
+                    const payload = {
+                        type: 'FILE_TRANSFER',
+                        file: fileData,
+                        fileName: file.name,
+                        fileType: file.type
+                    };
+                    conn.send(payload);
+                    showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
+                };
+                reader.readAsArrayBuffer(file);
             });
 
-            backToTasksButton.addEventListener('click', () => {
-                sharingView.style.display = 'none';
-                mainView.style.display = 'block';
-                topControls.style.display = 'flex'; // Show the controls again
-            });
+            function handleReceivedFile(data) {
+                const { file, fileName, fileType } = data;
+                const blob = new Blob([file], { type: fileType });
+                const url = URL.createObjectURL(blob);
+
+                const li = document.createElement('li');
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.textContent = fileName;
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = fileName;
+                downloadLink.textContent = 'Download';
+                downloadLink.className = 'download-link';
+                
+                li.appendChild(fileNameSpan);
+                li.appendChild(downloadLink);
+                receivedFilesList.appendChild(li);
+
+                showNotification(`You received a file: ${fileName}`, 'info');
+            }
+
+
+            // --- View Switching Logic ---
+            function showView(viewToShow) {
+                [mainView, sharingView, fileTransferView].forEach(view => {
+                    view.style.display = 'none';
+                });
+                viewToShow.style.display = 'block';
+                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
+            }
+
+            toggleSharingButton.addEventListener('click', () => showView(sharingView));
+            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
+            backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
+
 
             // --- Task Search/Filter Logic ---
             searchInput.addEventListener('input', (e) => {
@@ -958,12 +1058,7 @@
 
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else if (prefersDark) {
-                setTheme('dark');
-            }
+            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
 
             // --- Timer Logic ---
             function updateTimer() {
@@ -981,7 +1076,6 @@
             function showNotification(message, type = 'error') {
                 notificationElement.textContent = message;
                 notificationElement.className = `notification ${type} show`;
-
                 setTimeout(() => {
                     notificationElement.className = `notification ${type}`;
                 }, 4000); 
@@ -992,20 +1086,16 @@
                 const tasks = getTasks();
                 const now = new Date();
                 now.setHours(0, 0, 0, 0); 
-
                 const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
                 let notificationDelay = 0;
-
                 tasks.forEach(task => {
                     if (!task.isCompleted && !remindedTasks.includes(task.id)) {
                         const deadlineDate = new Date(task.deadline + 'T00:00:00');
-                        
                         if (now.getTime() === deadlineDate.getTime()) {
                             setTimeout(() => {
                                 const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
                                 showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
                             }, notificationDelay);
-                            
                             notificationDelay += 500; 
                             remindedTasks.push(task.id);
                         }
@@ -1020,7 +1110,6 @@
 
             taskForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-
                 const taskName = taskNameInput.value.trim();
                 const deadline = taskDeadlineInput.value;
                 const finishDate = taskFinishDateInput.value;
@@ -1029,13 +1118,11 @@
                     showNotification('Task name and deadline are required.');
                     return;
                 }
-                
                 const deadlineDate = new Date(deadline);
                 if (isNaN(deadlineDate.getTime())) {
                     showNotification('The deadline date you entered is not valid.');
                     return;
                 }
-
                 if (finishDate) {
                     const finishDateObj = new Date(finishDate);
                     if (isNaN(finishDateObj.getTime())) {
@@ -1055,14 +1142,11 @@
                     isCompleted: false, 
                     finishDate: finishDate || null,
                 };
-                
                 let tasks = getTasks();
                 tasks.push(task);
                 saveTasks(tasks);
                 loadTasks();
-                
                 broadcast({ type: 'ADD_TASK', task });
-                
                 taskForm.reset();
                 taskNameInput.focus();
             });
@@ -1080,55 +1164,39 @@
                 if (!taskItem) return;
                 const taskId = Number(taskItem.dataset.id);
 
-                // --- Handle Deleting ---
                 const deleteTrigger = target.closest('.deadline-text');
                 if (deleteTrigger) {
                     taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                     taskItem.style.opacity = '0';
                     taskItem.style.transform = 'translateX(-20px)';
-                    setTimeout(() => {
-                        deleteTask(taskId);
-                    }, 300);
+                    setTimeout(() => deleteTask(taskId), 300);
                     return;
                 }
-
-                // --- Handle Editing ---
                 if (target.classList.contains('task-name')) {
                     makeEditable(target, taskId, 'name', 'text');
                 }
             });
 
-            function makeEditable(element, taskId, field, inputType) {
-                const originalValue = (inputType === 'date')
-                    ? getTaskById(taskId)[field]
-                    : element.textContent;
-
+            function makeEditable(element, taskId, field) {
+                const originalValue = getTaskById(taskId)[field];
                 const input = document.createElement('input');
-                input.type = inputType;
+                input.type = 'text';
                 input.value = originalValue;
-                input.className = `edit-input-${field}`;
-                
+                input.className = 'edit-input-field';
                 element.replaceWith(input);
                 input.focus();
-
                 const saveChanges = () => {
                     const newValue = input.value.trim();
                     if (newValue && newValue !== originalValue) {
                         updateTask(taskId, { [field]: newValue });
                     } else {
-                        // If value is empty or unchanged, just re-render
                         loadTasks();
                     }
                 };
-
                 input.addEventListener('blur', saveChanges);
                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        input.blur();
-                    } else if (e.key === 'Escape') {
-                        // Revert without saving
-                        loadTasks();
-                    }
+                    if (e.key === 'Enter') input.blur();
+                    if (e.key === 'Escape') loadTasks();
                 });
             }
 
@@ -1136,26 +1204,18 @@
                 const li = document.createElement('li');
                 li.classList.add('task-item');
                 li.dataset.id = task.id;
-
-                if (task.isCompleted) {
-                    li.classList.add('completed');
-                }
-
+                if (task.isCompleted) { li.classList.add('completed'); }
                 const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
                 const deadlineDate = new Date(task.deadline + 'T00:00:00');
                 const formattedDeadline = deadlineDate.toLocaleDateString(undefined, dateOptions);
-                
                 const formattedFinishDate = task.finishDate 
                     ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, dateOptions) 
                     : 'Pending';
-
                 let deadlineStatusHTML = '';
                 if (!task.isCompleted) {
                     const now = new Date();
                     now.setHours(0, 0, 0, 0);
-                    const diffTime = deadlineDate - now;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+                    const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
                     if (diffDays > 0) {
                         deadlineStatusHTML = `<span class="deadline-status future">${diffDays} day${diffDays === 1 ? '' : 's'} left</span>`;
                     } else if (diffDays === 0) {
@@ -1165,7 +1225,6 @@
                         deadlineStatusHTML = `<span class="deadline-status overdue">Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}</span>`;
                     }
                 }
-
                 li.innerHTML = `
                     <input type="checkbox" class="complete-checkbox" id="task-${task.id}" ${task.isCompleted ? 'checked' : ''}>
                     <div class="task-details">
@@ -1186,27 +1245,16 @@
                 try {
                     const tasks = localStorage.getItem('tasks');
                     return tasks ? JSON.parse(tasks) : [];
-                } catch (e) {
-                    console.error("Error parsing tasks from localStorage", e);
-                    return [];
-                }
+                } catch (e) { console.error("Error parsing tasks from localStorage", e); return []; }
             }
-
-            function getTaskById(id) {
-                return getTasks().find(task => task.id === id);
-            }
-
-            function saveTasks(tasks) {
-                 localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-
+            function getTaskById(id) { return getTasks().find(task => task.id === id); }
+            function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
             function loadTasks() {
                 const tasks = getTasks();
                 tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
                 taskList.innerHTML = '';
                 tasks.forEach(task => addTaskToDOM(task));
             }
-            
             function updateTask(taskId, updatedFields) {
                 let tasks = getTasks();
                 const taskIndex = tasks.findIndex(t => t.id == taskId);
@@ -1217,31 +1265,20 @@
                 }
                 loadTasks();
             }
-
             function toggleComplete(id) {
                 const tasks = getTasks();
                 const taskIndex = tasks.findIndex(t => t.id == id);
-                
                 if (taskIndex > -1) {
                     const task = tasks[taskIndex];
                     task.isCompleted = !task.isCompleted;
-                    
                     if (task.isCompleted) {
                         task.finishDate = task.finishDate || new Date().toISOString().split('T')[0];
                     }
-
                     saveTasks(tasks);
-                    
-                    broadcast({ 
-                        type: 'TOGGLE_COMPLETE', 
-                        taskId: id, 
-                        isCompleted: task.isCompleted, 
-                        finishDate: task.finishDate 
-                    });
+                    broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate });
                 }
                 loadTasks();
             }
-
             function deleteTask(id) {
                 let tasks = getTasks();
                 tasks = tasks.filter(t => t.id != id);
@@ -1249,7 +1286,6 @@
                 broadcast({ type: 'DELETE_TASK', taskId: id });
                 loadTasks();
             }
-            
             function escapeHTML(str) {
                 const div = document.createElement('div');
                 div.appendChild(document.createTextNode(str));
