@@ -830,12 +830,14 @@
                         } else {
                             showNotification(`ID "${requestedId}" is unavailable. Please choose another.`, 'error');
                             activePeerIdElement.textContent = 'Failed to connect';
-                            setConnectionButtonsState(true);
+                            setPeerIdButton.disabled = false; // Only enable this button
+                            connectButton.disabled = true; // Keep this disabled
                         }
                     } else {
                          showNotification(`Connection error: ${err.message}`);
                          activePeerIdElement.textContent = 'Error';
-                         setConnectionButtonsState(true);
+                         setPeerIdButton.disabled = false; // Only enable this button
+                         connectButton.disabled = true; // Keep this disabled
                     }
                 });
             }
@@ -863,15 +865,17 @@
             
             function setupConnection(conn) {
                 conn.on('open', () => {
+                    showNotification(`Connection established with ${conn.peer}`, 'info');
                     if (connections.some(c => c.peer === conn.peer)) {
                         conn.close();
                         return;
                     }
                     connections.push(conn);
                     updateConnectionStatus();
-                    if (conn.metadata.isInitiator) {
-                         addRecentPeer(conn.peer);
-                    }
+
+                    // Add the other party to recent peers, regardless of who initiated
+                    addRecentPeer(conn.peer);
+                    
                     conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
                 });
 
@@ -887,18 +891,40 @@
                     updateConnectionStatus();
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
                 });
+
+                conn.on('error', (err) => {
+                    console.error(`Connection error with ${conn.peer}:`, err);
+                    showNotification(`Error with peer ${conn.peer}: ${err.message}`, 'error');
+                });
             }
             
-            function connectToPeer(remoteId) {
-                 if (!peer || peer.destroyed || peer.disconnected) {
+            async function connectToPeer(remoteId) {
+                if (setPeerIdButton.disabled || connectButton.disabled) {
+                    showNotification('Please wait for the current connection to be ready.', 'info');
+                    return;
+                }
+                if (!peer || peer.destroyed || peer.disconnected) {
                     showNotification('Your connection is not active. Please set your ID.', 'error');
                     return;
                 }
                 if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) {
                     return;
                 }
+                
                 showNotification(`Attempting to connect to ${remoteId}...`, 'info');
+                connectButton.disabled = true; // Disable during this attempt
+
                 const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
+                
+                conn.on('open', () => {
+                    connectButton.disabled = false; // Re-enable on success
+                });
+
+                conn.on('error', (err) => {
+                    connectButton.disabled = false; // Re-enable on error
+                    showNotification(`Could not connect to peer: ${err.message}`, 'error');
+                });
+
                 setupConnection(conn);
             }
 
@@ -987,13 +1013,11 @@
 
                 const fontName = fontFamily.split(',')[0].replace(/'/g, "").replace(/\s/g, '+');
                 
-                // Remove old font link if it exists
                 const oldFontLink = document.getElementById('dynamic-font-link');
                 if (oldFontLink) {
                     oldFontLink.remove();
                 }
 
-                // Add new font link
                 const fontUrl = `${GOOGLE_FONTS_BASE_URL}${fontName}:wght@400;700&display=swap`;
                 const link = document.createElement('link');
                 link.id = 'dynamic-font-link';
@@ -1007,13 +1031,11 @@
 
             function applyBackgroundImage(imageUrl) {
                 if (imageUrl) {
-                    // Basic validation for Unsplash URLs
                     let finalUrl = imageUrl;
                     if (finalUrl.includes('unsplash.com/photos/')) {
                         const photoId = finalUrl.split('unsplash.com/photos/')[1];
                         finalUrl = `https://source.unsplash.com/${photoId}/1920x1080`;
                     } else if (!finalUrl.startsWith('http')) {
-                        // Assume it's just an ID
                         finalUrl = `https://source.unsplash.com/${finalUrl}/1920x1080`;
                     }
                     document.body.style.backgroundImage = `url('${finalUrl}')`;
