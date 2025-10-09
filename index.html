@@ -274,6 +274,8 @@
         .button:disabled {
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .button.green { background-color: var(--success-color); }
@@ -300,7 +302,7 @@
             background-color: #e02b21;
         }
         
-        #toggle-sharing-button, #toggle-file-transfer-button {
+        #toggle-sharing-button, #toggle-file-transfer-button, #toggle-settings-button {
             position: relative; 
             width: auto;
             padding: 10px 16px;
@@ -314,13 +316,13 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover {
+        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover, #toggle-settings-button:hover {
             background-color: var(--text-color);
             transform: translateY(-1px);
         }
 
         /* --- View Switching --- */
-        #sharing-view, #file-transfer-view {
+        #sharing-view, #file-transfer-view, #settings-view {
             display: none;
         }
         
@@ -502,7 +504,7 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
         
-        /* --- Sharing & File Transfer Sections --- */
+        /* --- Sharing & File Transfer & Settings Sections --- */
         .section-container {
             margin-top: 20px;
             padding: 20px;
@@ -510,7 +512,7 @@
             border-radius: 16px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 25px;
         }
         
         .section-part {
@@ -564,50 +566,25 @@
         body.dark-mode #connection-status.connected {
              background-color: #1c4b2a;
         }
-
-        #received-files-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        #received-files-list li {
-            background-color: var(--input-bg-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        #received-files-list .download-link {
-            text-decoration: none;
-            color: white;
-            background-color: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
         
         @media (max-width: 600px) {
              .container {
                 padding: 20px;
             }
             .main-header {
-                padding-top: 30px; /* Add space so title doesn't overlap container padding */
+                padding-top: 30px; 
             }
             h1 {
                 font-size: 1.75rem;
             }
             .top-controls {
                 gap: 8px;
-                position: absolute; /* Keep it absolute on mobile */
+                position: absolute;
                 top: 25px;
                 right: 20px;
             }
             .theme-switch-wrapper span {
-                display: none; /* Hide text on small screens */
+                display: none;
             }
             #timer {
                 font-size: 2rem;
@@ -637,7 +614,7 @@
             <div class="main-header">
                 <h1>My To-Do List</h1>
                 <div class="top-controls">
-                    <button id="toggle-file-transfer-button">File Transfer</button>
+                    <button id="toggle-settings-button">Settings</button>
                     <button id="toggle-sharing-button">Sharing</button>
                     <div class="theme-switch-wrapper">
                         <span>☀️</span>
@@ -699,22 +676,32 @@
             </div>
         </div>
 
-        <div id="file-transfer-view">
+        <div id="settings-view">
             <button class="back-button">← Back to Tasks</button>
-             <div class="section-container">
-                 <h2>Peer-to-Peer File Transfer</h2>
-                 <div class="section-part">
-                     <h3>Send a File</h3>
-                     <select id="peer-select" class="input-field"></select>
-                     <input type="file" id="file-input" class="input-field">
-                     <button id="send-file-button" class="button">Send File</button>
-                 </div>
-                 <div class="section-part">
-                     <h3>Received Files</h3>
-                     <ul id="received-files-list">
-                         <!-- Received files will appear here -->
-                     </ul>
-                 </div>
+            <div class="section-container">
+                <h2>Settings</h2>
+                <div class="section-part">
+                    <h3>Theme</h3>
+                    <select id="theme-select" class="input-field">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+                <div class="section-part">
+                    <h3>Font</h3>
+                    <select id="font-select" class="input-field">
+                        <option value="'Inter', sans-serif">Inter (Default)</option>
+                        <option value="'Roboto Slab', serif">Roboto Slab</option>
+                        <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                        <option value="'Lora', serif">Lora</option>
+                    </select>
+                </div>
+                <div class="section-part">
+                    <h3>Background Image</h3>
+                    <input type="text" id="background-image-input" class="input-field" placeholder="Enter Unsplash photo ID or URL">
+                    <button id="apply-background-button" class="button">Apply Background</button>
+                    <button id="clear-background-button" class="button red">Clear Background</button>
+                </div>
             </div>
         </div>
 
@@ -732,17 +719,15 @@
             const timerElement = document.getElementById('timer');
             const timerDateElement = document.getElementById('timer-date');
             const notificationElement = document.getElementById('notification');
-            const themeCheckbox = document.getElementById('theme-checkbox');
             const searchInput = document.getElementById('search-input');
             
             // --- View Switching Elements ---
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
-            const fileTransferView = document.getElementById('file-transfer-view');
+            const settingsView = document.getElementById('settings-view');
             const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
+            const toggleSettingsButton = document.getElementById('toggle-settings-button');
             const backButtons = document.querySelectorAll('.back-button');
-            const topControls = document.querySelector('.top-controls');
 
             // --- WebRTC Elements ---
             const myPeerIdInput = document.getElementById('my-peer-id-input');
@@ -753,11 +738,13 @@
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
-            // --- File Transfer Elements ---
-            const peerSelect = document.getElementById('peer-select');
-            const fileInput = document.getElementById('file-input');
-            const sendFileButton = document.getElementById('send-file-button');
-            const receivedFilesList = document.getElementById('received-files-list');
+            // --- Settings Elements ---
+            const themeCheckbox = document.getElementById('theme-checkbox'); // Keep for icon toggle
+            const themeSelect = document.getElementById('theme-select');
+            const fontSelect = document.getElementById('font-select');
+            const backgroundImageInput = document.getElementById('background-image-input');
+            const applyBackgroundButton = document.getElementById('apply-background-button');
+            const clearBackgroundButton = document.getElementById('clear-background-button');
 
             // --- WebRTC State ---
             let peer;
@@ -791,22 +778,28 @@
                 connections.forEach(conn => conn.close());
                 connections.length = 0; // Clear the array
                 updateConnectionStatus();
-                updatePeerSelectDropdown();
                 activePeerIdElement.textContent = "Disconnected";
                 showNotification('You have been disconnected.', 'info');
             }
 
             disconnectButton.addEventListener('click', disconnectFromPeers);
+            
+            function setConnectionButtonsState(enabled) {
+                setPeerIdButton.disabled = !enabled;
+                connectButton.disabled = !enabled;
+            }
 
             function initializePeer(requestedId) {
                 if (peer) { peer.destroy(); }
                 activePeerIdElement.textContent = "Connecting...";
+                setConnectionButtonsState(false);
 
                 peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
-                    peerInitRetries = 0; // Reset retries on success
+                    peerInitRetries = 0; 
                     activePeerIdElement.textContent = id;
+                    setConnectionButtonsState(true);
                     activePeerIdElement.addEventListener('click', () => {
                         navigator.clipboard.writeText(id);
                         showNotification('Your active ID has been copied!', 'info');
@@ -817,7 +810,7 @@
                         setTimeout(() => {
                             showNotification(`Attempting to reconnect to recent peers...`, 'info');
                             recentPeers.forEach(peerId => connectToPeer(peerId));
-                        }, 1000); // Increased delay
+                        }, 1000); 
                     }
                 });
                 
@@ -831,16 +824,18 @@
                     if (err.type === 'unavailable-id') {
                         if (peerInitRetries < MAX_PEER_INIT_RETRIES) {
                             peerInitRetries++;
-                            const delay = 2000 * peerInitRetries; // Increase delay each time
-                            showNotification(`ID "${requestedId}" is busy. Retrying in ${delay/1000}s... (${peerInitRetries}/${MAX_PEER_INIT_RETRIES})`, 'info');
+                            const delay = 2000 * peerInitRetries; 
+                            showNotification(`ID "${requestedId}" is busy. Retrying in ${delay/1000}s...`, 'info');
                             setTimeout(() => initializePeer(requestedId), delay);
                         } else {
                             showNotification(`ID "${requestedId}" is unavailable. Please choose another.`, 'error');
                             activePeerIdElement.textContent = 'Failed to connect';
+                            setConnectionButtonsState(true);
                         }
                     } else {
                          showNotification(`Connection error: ${err.message}`);
                          activePeerIdElement.textContent = 'Error';
+                         setConnectionButtonsState(true);
                     }
                 });
             }
@@ -854,7 +849,7 @@
                 localStorage.setItem('myPeerId', newId);
                 showNotification(`Setting ID to "${newId}" and reconnecting...`, 'info');
                 disconnectFromPeers();
-                setTimeout(() => initializePeer(newId), 500); // Short delay after disconnect
+                setTimeout(() => initializePeer(newId), 500); 
             });
 
             const savedPeerId = localStorage.getItem('myPeerId');
@@ -863,6 +858,7 @@
                 initializePeer(savedPeerId);
             } else {
                  activePeerIdElement.textContent = "Set an ID to connect";
+                 setConnectionButtonsState(true); // Enable button if no ID is saved
             }
             
             function setupConnection(conn) {
@@ -873,7 +869,6 @@
                     }
                     connections.push(conn);
                     updateConnectionStatus();
-                    updatePeerSelectDropdown();
                     if (conn.metadata.isInitiator) {
                          addRecentPeer(conn.peer);
                     }
@@ -890,7 +885,6 @@
                         connections.splice(index, 1);
                     }
                     updateConnectionStatus();
-                    updatePeerSelectDropdown();
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
                 });
             }
@@ -933,11 +927,6 @@
             }
 
             function handleRemoteData(data) {
-                if (data.type === 'FILE_TRANSFER') {
-                    handleReceivedFile(data);
-                    return;
-                }
-                
                 let tasks = getTasks();
                 let taskUpdated = false;
                 let taskIndex = -1;
@@ -990,90 +979,68 @@
                 remotePeerIdInput.value = lastPeerId;
             }
 
-            // --- File Transfer Logic ---
-            function updatePeerSelectDropdown() {
-                peerSelect.innerHTML = '';
-                if (connections.length === 0) {
-                    const option = document.createElement('option');
-                    option.textContent = 'No peers connected';
-                    peerSelect.appendChild(option);
-                    peerSelect.disabled = true;
-                    sendFileButton.disabled = true;
-                } else {
-                    connections.forEach(conn => {
-                        const option = document.createElement('option');
-                        option.value = conn.peer;
-                        option.textContent = conn.peer;
-                        peerSelect.appendChild(option);
-                    });
-                    peerSelect.disabled = false;
-                    sendFileButton.disabled = false;
-                }
-            }
-            
-            sendFileButton.addEventListener('click', () => {
-                const peerId = peerSelect.value;
-                const file = fileInput.files[0];
+            // --- Settings Logic ---
+            const GOOGLE_FONTS_BASE_URL = "https://fonts.googleapis.com/css2?family=";
 
-                if (!peerId || peerId === 'No peers connected') {
-                    showNotification('Please select a peer to send the file to.');
-                    return;
-                }
-                if (!file) {
-                    showNotification('Please select a file to send.');
-                    return;
-                }
+            function applyFont(fontFamily) {
+                if (!fontFamily) return;
 
-                const conn = connections.find(c => c.peer === peerId);
-                if (!conn) {
-                    showNotification('Connection to that peer was lost.');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const fileData = event.target.result;
-                    const payload = {
-                        type: 'FILE_TRANSFER',
-                        file: fileData,
-                        fileName: file.name,
-                        fileType: file.type
-                    };
-                    conn.send(payload);
-                    showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
-                };
-                reader.readAsArrayBuffer(file);
-            });
-
-            function handleReceivedFile(data) {
-                const { file, fileName, fileType } = data;
-                const blob = new Blob([file], { type: fileType });
-                const url = URL.createObjectURL(blob);
-
-                const li = document.createElement('li');
-                const fileNameSpan = document.createElement('span');
-                fileNameSpan.textContent = fileName;
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = fileName;
-                downloadLink.textContent = 'Download';
-                downloadLink.className = 'download-link';
+                const fontName = fontFamily.split(',')[0].replace(/'/g, "").replace(/\s/g, '+');
                 
-                li.appendChild(fileNameSpan);
-                li.appendChild(downloadLink);
-                receivedFilesList.appendChild(li);
+                // Remove old font link if it exists
+                const oldFontLink = document.getElementById('dynamic-font-link');
+                if (oldFontLink) {
+                    oldFontLink.remove();
+                }
 
-                showNotification(`You received a file: ${fileName}`, 'info');
+                // Add new font link
+                const fontUrl = `${GOOGLE_FONTS_BASE_URL}${fontName}:wght@400;700&display=swap`;
+                const link = document.createElement('link');
+                link.id = 'dynamic-font-link';
+                link.rel = 'stylesheet';
+                link.href = fontUrl;
+                document.head.appendChild(link);
+                
+                document.body.style.fontFamily = fontFamily;
+                localStorage.setItem('font', fontFamily);
             }
 
+            function applyBackgroundImage(imageUrl) {
+                if (imageUrl) {
+                    // Basic validation for Unsplash URLs
+                    let finalUrl = imageUrl;
+                    if (finalUrl.includes('unsplash.com/photos/')) {
+                        const photoId = finalUrl.split('unsplash.com/photos/')[1];
+                        finalUrl = `https://source.unsplash.com/${photoId}/1920x1080`;
+                    } else if (!finalUrl.startsWith('http')) {
+                        // Assume it's just an ID
+                        finalUrl = `https://source.unsplash.com/${finalUrl}/1920x1080`;
+                    }
+                    document.body.style.backgroundImage = `url('${finalUrl}')`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    localStorage.setItem('backgroundImage', finalUrl);
+                } else {
+                    document.body.style.backgroundImage = 'none';
+                    localStorage.removeItem('backgroundImage');
+                }
+            }
+
+            themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
+            fontSelect.addEventListener('change', (e) => applyFont(e.target.value));
+            applyBackgroundButton.addEventListener('click', () => applyBackgroundImage(backgroundImageInput.value));
+            clearBackgroundButton.addEventListener('click', () => {
+                backgroundImageInput.value = '';
+                applyBackgroundImage(null);
+            });
 
             // --- View Switching Logic ---
             function showView(viewToShow) {
-                [mainView, sharingView, fileTransferView].forEach(view => {
+                [mainView, sharingView, settingsView].forEach(view => {
                     view.style.display = 'none';
                 });
                 viewToShow.style.display = 'block';
-                // This logic needs to be aware of the new header structure
                 const mainHeader = mainView.querySelector('.main-header');
                 if (mainHeader) {
                     mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
@@ -1081,7 +1048,7 @@
             }
 
             toggleSharingButton.addEventListener('click', () => showView(sharingView));
-            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
+            toggleSettingsButton.addEventListener('click', () => showView(settingsView));
             backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
 
 
@@ -1105,9 +1072,11 @@
                 if (theme === 'dark') {
                     document.body.classList.add('dark-mode');
                     themeCheckbox.checked = true;
+                    themeSelect.value = 'dark';
                 } else {
                     document.body.classList.remove('dark-mode');
                     themeCheckbox.checked = false;
+                    themeSelect.value = 'light';
                 }
                 localStorage.setItem('theme', theme);
             }
@@ -1117,9 +1086,22 @@
                 setTheme(newTheme);
             });
 
+            // Initial load from storage
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+            const savedFont = localStorage.getItem('font');
+            if (savedFont) {
+                fontSelect.value = savedFont;
+                applyFont(savedFont);
+            }
+
+            const savedBg = localStorage.getItem('backgroundImage');
+            if (savedBg) {
+                backgroundImageInput.value = savedBg;
+                applyBackgroundImage(savedBg);
+            }
 
             // --- Timer Logic ---
             function updateTimer() {
@@ -1368,5 +1350,4 @@
     </script>
 </body>
 </html>
-"remove the file transfer button, and add a setting button, that can let user change the theme of the website, user can also choose the background image from unsplash, and change the font of the text."
 
