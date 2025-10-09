@@ -12,6 +12,9 @@
 
     <!-- PeerJS Library for WebRTC -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- Tailwind CSS for Schedule View -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- CSS styles are embedded here -->
     <style>
@@ -68,6 +71,13 @@
             position: relative; /* Added for positioning the theme switch */
             overflow: hidden; /* Ensures smooth view transitions */
         }
+        
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
         h1, h2 {
             text-align: center;
@@ -78,6 +88,8 @@
 
         h1 {
             font-size: 2.25rem;
+            margin-bottom: 0;
+            text-align: left;
         }
         
         h2 {
@@ -282,7 +294,7 @@
              background-color: #ff8c00;
         }
         
-        #toggle-sharing-button, #toggle-file-transfer-button {
+        #toggle-sharing-button, #toggle-schedule-button {
             position: relative; 
             width: auto;
             padding: 10px 16px;
@@ -296,13 +308,13 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover {
+        #toggle-sharing-button:hover, #toggle-schedule-button:hover {
             background-color: var(--text-color);
             transform: translateY(-1px);
         }
 
         /* --- View Switching --- */
-        #sharing-view, #file-transfer-view {
+        #sharing-view, #schedule-view {
             display: none;
         }
         
@@ -484,7 +496,7 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
         
-        /* --- Sharing & File Transfer Sections --- */
+        /* --- Sharing Section --- */
         .section-container {
             margin-top: 20px;
             padding: 20px;
@@ -546,31 +558,6 @@
         body.dark-mode #connection-status.connected {
              background-color: #1c4b2a;
         }
-
-        #received-files-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        #received-files-list li {
-            background-color: var(--input-bg-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        #received-files-list .download-link {
-            text-decoration: none;
-            color: white;
-            background-color: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
         
         @media (max-width: 600px) {
              .container {
@@ -597,7 +584,7 @@
 
     <div class="container">
         <div class="top-controls">
-            <button id="toggle-file-transfer-button">File Transfer</button>
+            <button id="toggle-schedule-button">Schedule</button>
             <button id="toggle-sharing-button">Sharing</button>
             <div class="theme-switch-wrapper">
                 <span>☀️</span>
@@ -620,7 +607,7 @@
                 <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
                 <div class="date-picker">
                     <label for="task-deadline-input">Deadline:</label>
-                    <input type="date" id="task-deadline-input">
+                    <input type="date" id="task-deadline-input" required>
                 </div>
                 <div class="date-picker">
                     <label for="task-finish-date-input">Finished:</label>
@@ -659,22 +646,32 @@
             </div>
         </div>
 
-        <div id="file-transfer-view">
+        <div id="schedule-view">
             <button class="back-button">← Back to Tasks</button>
-             <div class="section-container">
-                 <h2>Peer-to-Peer File Transfer</h2>
-                 <div class="section-part">
-                     <h3>Send a File</h3>
-                     <select id="peer-select" class="input-field"></select>
-                     <input type="file" id="file-input" class="input-field">
-                     <button id="send-file-button" class="button">Send File</button>
-                 </div>
-                 <div class="section-part">
-                     <h3>Received Files</h3>
-                     <ul id="received-files-list">
-                         <!-- Received files will appear here -->
-                     </ul>
-                 </div>
+            <div class="section-container">
+                <h2 style="margin-top:0;">School Schedule</h2>
+                <p class="text-gray-500 -mt-2 text-center" >At a glance view for today and tomorrow's events and classes.</p>
+                <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Today's Card -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2" style="text-align:left; border-bottom: none; margin-top:0; padding-bottom: 0;">Today</h2>
+                        <p id="today-date" class="font-medium text-gray-700 dark:text-gray-300 mb-4"></p>
+                        <div id="today-events" class="space-y-3">
+                            <p class="text-gray-500 dark:text-gray-400">Loading events...</p>
+                        </div>
+                        <div id="today-timetable" class="mt-4"></div>
+                    </div>
+
+                    <!-- Tomorrow's Card -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <h2 class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2" style="text-align:left; border-bottom: none; margin-top:0; padding-bottom: 0;">Tomorrow</h2>
+                        <p id="tomorrow-date" class="font-medium text-gray-700 dark:text-gray-300 mb-4"></p>
+                        <div id="tomorrow-events" class="space-y-3">
+                            <p class="text-gray-500 dark:text-gray-400">Loading events...</p>
+                        </div>
+                         <div id="tomorrow-timetable" class="mt-4"></div>
+                    </div>
+                </main>
             </div>
         </div>
 
@@ -698,9 +695,9 @@
             // --- View Switching Elements ---
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
-            const fileTransferView = document.getElementById('file-transfer-view');
+            const scheduleView = document.getElementById('schedule-view');
             const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
+            const toggleScheduleButton = document.getElementById('toggle-schedule-button');
             const backButtons = document.querySelectorAll('.back-button');
             const topControls = document.querySelector('.top-controls');
 
@@ -712,15 +709,485 @@
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
-            // --- File Transfer Elements ---
-            const peerSelect = document.getElementById('peer-select');
-            const fileInput = document.getElementById('file-input');
-            const sendFileButton = document.getElementById('send-file-button');
-            const receivedFilesList = document.getElementById('received-files-list');
-
             // --- WebRTC State ---
             let peer;
             const connections = [];
+
+            // --- Schedule Data ---
+            const csvData = `Date,DayOfWeek,CycleDay,Type,Events
+2025-10-09,Thursday,B,,
+2025-10-10,Friday,C,,
+2025-10-11,Saturday,,,
+2025-10-12,Sunday,,,
+2025-10-13,Monday,D,,
+2025-10-14,Tuesday,E,,
+2025-10-15,Wednesday,F,,
+2025-10-16,Thursday,G,,
+2025-10-17,Friday,H,,
+2025-10-18,Saturday,,,
+2025-10-19,Sunday,,,
+2025-10-20,Monday,,Special Timetable,"Swimming Gala"
+2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"
+2025-10-22,Wednesday,B,,"S6 First Examination"
+2025-10-23,Thursday,C,,"S6 First Examination"
+2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"
+2025-10-25,Saturday,,,
+2025-10-26,Sunday,,,
+2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"
+2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"
+2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"
+2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"
+2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"
+2025-11-01,Saturday,,,
+2025-11-02,Sunday,,,
+2025-11-03,Monday,B,,"S6 First Examination"
+2025-11-04,Tuesday,C,,"S6 First Examination"
+2025-11-05,Wednesday,D,,"S6 First Examination"
+2025-11-06,Thursday,E,,
+2025-11-07,Friday,A,,"Mind Your Mind (Mental Health Day)"
+2025-11-08,Saturday,,,
+2025-11-09,Sunday,,,
+2025-11-10,Monday,F,,
+2025-11-11,Tuesday,G,,
+2025-11-12,Wednesday,H,,
+2025-11-13,Thursday,B,,
+2025-11-14,Friday,C,,
+2025-11-15,Saturday,,,
+2025-11-16,Sunday,,,
+2025-11-17,Monday,D,,"Seasonal Influenza Vaccination"
+2025-11-18,Tuesday,F,,
+2025-11-19,Wednesday,A,,
+2025-11-20,Thursday,,Special Timetable,"School Picnic"
+2025-11-21,Friday,,Special Timetable,"Staff Development Day"
+2025-11-22,Saturday,,Special Timetable,"S1 Admission Info Day"
+2025-11-23,Sunday,,,
+2025-11-24,Monday,,School Holiday,"School Holiday"
+2025-11-25,Tuesday,E,,
+2025-11-26,Wednesday,G,,
+2025-11-27,Thursday,,,
+2025-11-28,Friday,B,,"School Picnic (Reserve)"
+2025-11-29,Saturday,,Special Timetable,"S6 Parents' Day"
+2025-11-30,Sunday,,,
+2025-12-01,Monday,A,,"Gospel Week"
+2025-12-02,Tuesday,C,,"Gospel Week"
+2025-12-03,Wednesday,D,,"Gospel Week"
+2025-12-04,Thursday,E,,"Gospel Week"
+2025-12-05,Friday,F,,"Gospel Week"
+2025-12-06,Saturday,,,
+2025-12-07,Sunday,,,
+2025-12-08,Monday,,School Holiday,"The day following the Legislative Council General Election"
+2025-12-09,Tuesday,G,,
+2025-12-10,Wednesday,H,,
+2025-12-11,Thursday,A,,
+2025-12-12,Friday,B,,
+2025-12-13,Saturday,,,
+2025-12-14,Sunday,,,
+2025-12-15,Monday,C,,
+2025-12-16,Tuesday,D,,
+2025-12-17,Wednesday,E,,
+2025-12-18,Thursday,G,,
+2025-12-19,Friday,F,Special Timetable,"Christmas Service"
+2025-12-20,Saturday,,,
+2025-12-21,Sunday,,,
+2025-12-22,Monday,,Special Timetable,"Christmas Celebration"
+2025-12-23,Tuesday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-24,Wednesday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-25,Thursday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-26,Friday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-27,Saturday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-28,Sunday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-29,Monday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-30,Tuesday,,School Holiday,"Christmas & New Year Holidays"
+2025-12-31,Wednesday,,School Holiday,"Christmas & New Year Holidays"
+2026-01-01,Thursday,,School Holiday,"Christmas & New Year Holidays"
+2026-01-02,Friday,H,,
+2026-01-03,Saturday,,,
+2026-01-04,Sunday,,,
+2026-01-05,Monday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-06,Tuesday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-07,Wednesday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-08,Thursday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-09,Friday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-10,Saturday,,,
+2026-01-11,Sunday,,,
+2026-01-12,Monday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-13,Tuesday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-14,Wednesday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-15,Thursday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-16,Friday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-17,Saturday,,,
+2026-01-18,Sunday,,,
+2026-01-19,Monday,A,,"S6 Mock Examination"
+2026-01-20,Tuesday,B,,"S6 Mock Examination"
+2026-01-21,Wednesday,C,,
+2026-01-22,Thursday,D,,
+2026-01-23,Friday,E,,
+2026-01-24,Saturday,,,
+2026-01-25,Sunday,,,
+2026-01-26,Monday,F,,
+2026-01-27,Tuesday,G,,
+2026-01-28,Wednesday,,,
+2026-01-29,Thursday,A,,
+2026-01-30,Friday,B,,
+2026-01-31,Saturday,,,
+2026-02-01,Sunday,,,
+2026-02-02,Monday,C,,
+2026-02-03,Tuesday,D,,
+2026-02-04,Wednesday,E,,
+2026-02-05,Thursday,F,,
+2026-02-06,Friday,,Special Timetable,"Sports Days"
+2026-02-07,Saturday,,,
+2026-02-08,Sunday,,,
+2026-02-09,Monday,,Special Timetable,"Sports Days"
+2026-02-10,Tuesday,,School Holiday,"The day following Sports Days"
+2026-02-11,Wednesday,G,,
+2026-02-12,Thursday,H,,
+2026-02-13,Friday,A,,"Farewell Activities for S6; Last Normal School Day for S6"
+2026-02-14,Saturday,,,
+2026-02-15,Sunday,,,
+2026-02-16,Monday,,School Holiday,"Lunar New Year Holiday"
+2026-02-17,Tuesday,,School Holiday,"Lunar New Year Holiday"
+2026-02-18,Wednesday,,School Holiday,"Lunar New Year Holiday"
+2026-02-19,Thursday,,School Holiday,"Lunar New Year Holiday"
+2026-02-20,Friday,,School Holiday,"Lunar New Year Holiday"
+2026-02-21,Saturday,,School Holiday,"Lunar New Year Holiday"
+2026-02-22,Sunday,,School Holiday,"Lunar New Year Holiday"
+2026-02-23,Monday,,School Holiday,"Lunar New Year Holiday"
+2026-02-24,Tuesday,B,,
+2026-02-25,Wednesday,,,
+2026-02-26,Thursday,,,
+2026-02-27,Friday,F,,"S1-5 Parents' Days (pm)"
+2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"
+2026-03-01,Sunday,,,
+2026-03-02,Monday,,School Holiday,"The day following Parents' Days"
+2026-03-03,Tuesday,E,,
+2026-03-04,Wednesday,G,,
+2026-03-05,Thursday,H,,
+2026-03-06,Friday,A,,
+2026-03-07,Saturday,,,
+2026-03-08,Sunday,,,
+2026-03-09,Monday,B,,"English Week"
+2026-03-10,Tuesday,,,"English Week"
+2026-03-11,Wednesday,,,"English Week"
+2026-03-12,Thursday,,,"English Week"
+2026-03-13,Friday,,,,"Staff Development Day"
+2026-03-14,Saturday,,,
+2026-03-15,Sunday,,,
+2026-03-16,Monday,,,
+2026-03-17,Tuesday,G,,
+2026-03-18,Wednesday,H,,
+2026-03-19,Thursday,F,,
+2026-03-20,Friday,A,,"S1-3 Test Week; Staff Development (pm)"
+2026-03-21,Saturday,,,"S1-3 Test Week"
+2026-03-22,Sunday,,,"S1-3 Test Week"
+2026-03-23,Monday,B,,"S1-3 Test Week"
+2026-03-24,Tuesday,C,,"S1-3 Test Week"
+2026-03-25,Wednesday,D,,"S1-3 Test Week"
+2026-03-26,Thursday,E,,
+2026-03-27,Friday,F,Special Timetable,"Easter Service"
+2026-03-28,Saturday,,,
+2026-03-29,Sunday,,,
+2026-03-30,Monday,,Special Timetable,"Other Learning Experiences (OLE) Days"
+2026-03-31,Tuesday,,Special Timetable,"Other Learning Experiences (OLE) Days"
+2026-04-01,Wednesday,,Special Timetable,"Other Learning Experiences (OLE) Days"
+2026-04-02,Thursday,,School Holiday,"Easter Holiday"
+2026-04-03,Friday,,School Holiday,"Easter Holiday"
+2026-04-04,Saturday,,School Holiday,"Easter Holiday"
+2026-04-05,Sunday,,School Holiday,"Easter Holiday"
+2026-04-06,Monday,,School Holiday,"Easter Holiday; The day following Ching Ming Festival"
+2026-04-07,Tuesday,,School Holiday,"Easter Holiday"
+2026-04-08,Wednesday,,School Holiday,"Easter Holiday"
+2026-04-09,Thursday,,School Holiday,"Easter Holiday"
+2026-04-10,Friday,,School Holiday,"Easter Holiday"
+2026-04-11,Saturday,,School Holiday,"Easter Holiday"
+2026-04-12,Sunday,,,
+2026-04-13,Monday,G,,
+2026-04-14,Tuesday,H,,
+2026-04-15,Wednesday,A,,
+2026-04-16,Thursday,B,,
+2026-04-17,Friday,C,,
+2026-04-18,Saturday,,,
+2026-04-19,Sunday,,,
+2026-04-20,Monday,D,,
+2026-04-21,Tuesday,E,,
+2026-04-22,Wednesday,G,,
+2026-04-23,Thursday,F,,
+2026-04-24,Friday,,Special Timetable,"School Anniversary Celebration"
+2026-04-25,Saturday,,,
+2026-04-26,Sunday,,,
+2026-04-27,Monday,H,,
+2026-04-28,Tuesday,A,,
+2026-04-29,Wednesday,B,,
+2026-04-30,Thursday,C,,
+2026-05-01,Friday,,School Holiday,"Labour Day"
+2026-05-02,Saturday,,,
+2026-05-03,Sunday,,,
+2026-05-04,Monday,D,,
+2026-05-05,Tuesday,E,,
+2026-05-06,Wednesday,G,,
+2026-05-07,Thursday,H,,
+2026-05-08,Friday,A,,
+2026-05-09,Saturday,,,
+2026-05-10,Sunday,,,
+2026-05-11,Monday,,,
+2026-05-12,Tuesday,,,
+2026-05-13,Wednesday,,,
+2026-05-14,Thursday,,,
+2026-05-15,Friday,F,,"Summer Timetable"
+2026-05-16,Saturday,,Special Timetable,"Summer Timetable; Speech Day"
+2026-05-17,Sunday,,,
+2026-05-18,Monday,G,,"Summer Timetable"
+2026-05-19,Tuesday,H,,"Summer Timetable"
+2026-05-20,Wednesday,A,,"Summer Timetable"
+2026-05-21,Thursday,B,,"Summer Timetable"
+2026-05-22,Friday,C,,"Summer Timetable"
+2026-05-23,Saturday,,,
+2026-05-24,Sunday,,,
+2026-05-25,Monday,,School Holiday,"Summer Timetable; The day following the Birthday of the Buddha"
+2026-05-26,Tuesday,,,"Summer Timetable"
+2026-05-27,Wednesday,,,"Summer Timetable"
+2026-05-28,Thursday,,,"Summer Timetable"
+2026-05-29,Friday,,,
+2026-05-30,Saturday,,,
+2026-05-31,Sunday,,,
+2026-06-01,Monday,H,,
+2026-06-02,Tuesday,A,,
+2026-06-03,Wednesday,,,"S1-5 Final Examination"
+2026-06-04,Thursday,,,"S1-5 Final Examination"
+2026-06-05,Friday,,,"S1-5 Final Examination"
+2026-06-06,Saturday,,,
+2026-06-07,Sunday,,,
+2026-06-08,Monday,,,"S1-5 Final Examination"
+2026-06-09,Tuesday,,,"S1-5 Final Examination"
+2026-06-10,Wednesday,,,"S1-5 Final Examination"
+2026-06-11,Thursday,,,"S1-5 Final Examination"
+2026-06-12,Friday,,,"S1-5 Final Examination"
+2026-06-13,Saturday,,,
+2026-06-14,Sunday,,,
+2026-06-15,Monday,,,"S1-5 Final Examination"
+2026-06-16,Tuesday,,,"S1-5 Final Examination"
+2026-06-17,Wednesday,,,"S1-5 Final Examination; S3 TSA (written)"
+2026-06-18,Thursday,,,"S1-5 Final Examination; S3 TSA (written)"
+2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"
+2026-06-20,Saturday,,,
+2026-06-21,Sunday,,,
+2026-06-22,Monday,,Special Timetable,"S1-5 Final Examination (Reserve); Staff Development Day"
+2026-06-23,Tuesday,,Special Timetable,"Markers' Meetings"
+2026-06-24,Wednesday,,,"S3 TSA (written) (Reserve); S1-5 Post-Exam Feedback Days"
+2026-06-25,Thursday,,,"S1-5 Post-Exam Feedback Days"
+2026-06-26,Friday,,,"S1-5 Post-Exam Feedback Days"
+2026-06-27,Saturday,,,
+2026-06-28,Sunday,,,
+2026-06-29,Monday,,Special Timetable,"Musical Rehearsal"
+2026-06-30,Tuesday,,Special Timetable,"Musical Rehearsal"
+2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"
+2026-07-02,Thursday,,Special Timetable,"Musical Rehearsal; Teachers' Meetings / Promotion Meetings"
+2026-07-03,Friday,,Special Timetable,"Musical Rehearsal; General Staff Meeting"
+2026-07-04,Saturday,,,
+2026-07-05,Sunday,,,
+2026-07-06,Monday,,Special Timetable,"Musical Shows"
+2026-07-07,Tuesday,,Special Timetable,"Musical Shows; Release of SSPA Results"
+2026-07-08,Wednesday,,Special Timetable,"Musical Shows"
+2026-07-09,Thursday,,,"Musical Shows (Reserve); S4-5 Supplementary Lessons/SBA"
+2026-07-10,Friday,,,"S4-5 Supplementary Lessons/SBA"
+2026-07-11,Saturday,,,
+2026-07-12,Sunday,,,
+2026-07-13,Monday,,Special Timetable,"School Closing Ceremony"
+2026-07-14,Tuesday,,School Holiday,"Summer Vacation; School Closing Ceremony (Reserve); Pre-S1 Hong Kong Attainment Test; S4-5 Re-exam"
+2026-07-15,Wednesday,,School Holiday,"Summer Vacation; S4-5 Re-exam; Release of HKDSE Exam Results (S6)"
+2026-07-16,Thursday,,School Holiday,"Summer Vacation; Careers Counselling (S6); S4-5 SBA"
+2026-07-17,Friday,,School Holiday,"Summer Vacation; S4-5 SBA (Reserve)"
+2026-07-18,Saturday,,School Holiday,"Summer Vacation"
+2026-07-19,Sunday,,School Holiday,"Summer Vacation"
+2026-07-20,Monday,,School Holiday,"Summer Vacation"
+2026-07-21,Tuesday,,School Holiday,"Summer Vacation"
+2026-07-22,Wednesday,,School Holiday,"Summer Vacation"
+2026-07-23,Thursday,,School Holiday,"Summer Vacation"
+2026-07-24,Friday,,School Holiday,"Summer Vacation"
+2026-07-25,Saturday,,School Holiday,"Summer Vacation"
+2026-07-26,Sunday,,School Holiday,"Summer Vacation"
+2026-07-27,Monday,,School Holiday,"Summer Vacation"
+2026-07-28,Tuesday,,School Holiday,"Summer Vacation; Release of S3 Subject Selection Results (tentative)"
+2026-07-29,Wednesday,,School Holiday,"Summer Vacation"
+2026-07-30,Thursday,,School Holiday,"Summer Vacation"
+2026-07-31,Friday,,School Holiday,"Summer Vacation"
+2026-08-01,Saturday,,School Holiday,"Summer Vacation"
+2026-08-02,Sunday,,School Holiday,"Summer Vacation"
+2026-08-03,Monday,,School Holiday,"Summer Vacation"
+2026-08-04,Tuesday,,School Holiday,"Summer Vacation"
+2026-08-05,Wednesday,,School Holiday,"Summer Vacation"
+2026-08-06,Thursday,,School Holiday,"Summer Vacation"
+2026-08-07,Friday,,School Holiday,"Summer Vacation"
+2026-08-08,Saturday,,School Holiday,"Summer Vacation"
+2026-08-09,Sunday,,School Holiday,"Summer Vacation"
+2026-08-10,Monday,,School Holiday,"Summer Vacation"
+2026-08-11,Tuesday,,School Holiday,"Summer Vacation"
+2026-08-12,Wednesday,,School Holiday,"Summer Vacation"
+2026-08-13,Thursday,,School Holiday,"Summer Vacation"
+2026-08-14,Friday,,School Holiday,"Summer Vacation"
+2026-08-15,Saturday,,School Holiday,"Summer Vacation"
+2026-08-16,Sunday,,School Holiday,"Summer Vacation"
+2026-08-17,Monday,,School Holiday,"Summer Vacation"
+2026-08-18,Tuesday,,School Holiday,"Summer Vacation"
+2026-08-19,Wednesday,,School Holiday,"Summer Vacation"
+2026-08-20,Thursday,,School Holiday,"Summer Vacation"
+2026-08-21,Friday,,School Holiday,"Summer Vacation"
+2026-08-22,Saturday,,School Holiday,"Summer Vacation"
+2026-08-23,Sunday,,School Holiday,"Summer Vacation"
+2026-08-24,Monday,,School Holiday,"Summer Vacation"
+2026-08-25,Tuesday,,School Holiday,"Summer Vacation"
+2026-08-26,Wednesday,,School Holiday,"Summer Vacation"
+2026-08-27,Thursday,,School Holiday,"Summer Vacation"
+2026-08-28,Friday,,School Holiday,"Summer Vacation"
+2026-08-29,Saturday,,School Holiday,"Summer Vacation"
+2026-08-30,Sunday,,School Holiday,"Summer Vacation"
+2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
+
+            const timetableData = {
+                'A': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: '1X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'ENG' }, { period: '4', subject: '2X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'CHIN' }, { period: '6', subject: 'CTP' }, { period: '7', subject: '' } ],
+                'B': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '1X' }, { period: '2', subject: '3X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CS' }, { period: '4', subject: 'MATH' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'CHIN' }, { period: '6', subject: 'CHIN' }, { period: '7', subject: '' } ],
+                'C': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: 'ENG' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CHIN' }, { period: '4', subject: '2X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '3X' }, { period: '6', subject: 'ASS' }, { period: '7', subject: '' } ],
+                'D': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'ENG' }, { period: '2', subject: 'ENG' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: '1X' }, { period: '4', subject: '3X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'PE'}, { period: '6', subject: '2X' }, { period: '7', subject: '' } ],
+                'E': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: 'CHIN' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'ENG' }, { period: '4', subject: '1X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '2X' }, { period: '6', subject: '3X' }, { period: '7', subject: '' } ],
+                'F': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '3X' }, { period: '2', subject: '2X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'MATH' }, { period: '4', subject: 'CS' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'IA' }, { period: '6', subject: 'ASS' }, { period: '7', subject: '' } ],
+                'G': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '2X' }, { period: '2', subject: '3X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'MATH' }, { period: '4', subject: 'CHIN' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'ENG' }, { period: '6', subject: '1X' }, { period: '7', subject: '' } ],
+                'H': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'RS' }, { period: '2', subject: 'CS' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CHIN' }, { period: '4', subject: 'ENG\nENG CF ac' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '1X' }, { period: '6', subject: 'PE' }, { period: '7', subject: '' } ]
+            };
+
+            // --- Schedule Logic ---
+            function initializeSchedule() {
+                const allEvents = parseCSV(csvData);
+
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+
+                document.getElementById('today-date').textContent = formatDisplayDate(today);
+                document.getElementById('tomorrow-date').textContent = formatDisplayDate(tomorrow);
+
+                const todayLookup = formatLookupDate(today);
+                const tomorrowLookup = formatLookupDate(tomorrow);
+
+                const todaysEvents = allEvents.filter(event => event.Date === todayLookup);
+                const tomorrowsEvents = allEvents.filter(event => event.Date === tomorrowLookup);
+
+                renderEvents(document.getElementById('today-events'), todaysEvents);
+                renderTimetable(document.getElementById('today-timetable'), todaysEvents.length > 0 ? todaysEvents[0] : null);
+
+                renderEvents(document.getElementById('tomorrow-events'), tomorrowsEvents);
+                renderTimetable(document.getElementById('tomorrow-timetable'), tomorrowsEvents.length > 0 ? tomorrowsEvents[0] : null);
+            }
+
+            function parseCSV(csvText) {
+                const lines = csvText.trim().split('\n');
+                const headers = lines[0].split(',');
+                const data = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (values.length === headers.length) {
+                        const entry = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            entry[headers[j]] = values[j].replace(/"/g, '');
+                        }
+                        data.push(entry);
+                    }
+                }
+                return data;
+            }
+
+            function formatDisplayDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            function formatLookupDate(date) {
+                return date.toISOString().split('T')[0];
+            }
+
+            function renderEvents(element, eventsForDay) {
+                if (!eventsForDay || eventsForDay.length === 0) {
+                    element.innerHTML = '<p class="text-gray-500 italic dark:text-gray-400">No events scheduled.</p>';
+                    return;
+                }
+
+                const event = eventsForDay[0];
+                let html = '';
+                
+                if(event.CycleDay){
+                     html += `<div class="flex items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                <span class="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span>
+                                <span class="text-gray-800 dark:text-gray-100 font-semibold">${event.CycleDay}</span>
+                              </div>`;
+                }
+
+                if (event.Type) {
+                     html += `<div class="flex items-center bg-blue-50 dark:bg-blue-900/50 p-3 rounded-lg">
+                                <span class="bg-blue-100 dark:bg-blue-500/50 text-blue-800 dark:text-blue-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span>
+                                <span class="text-gray-800 dark:text-gray-100">${event.Type}</span>
+                              </div>`;
+                }
+
+                if (event.Events) {
+                    const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>');
+                     html += `<div class="flex items-start bg-green-50 dark:bg-green-900/50 p-3 rounded-lg">
+                                <span class="bg-green-100 dark:bg-green-500/50 text-green-800 dark:text-green-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span>
+                                <span class="text-gray-800 dark:text-gray-100">${eventItems}</span>
+                              </div>`;
+                }
+
+                element.innerHTML = html || '<p class="text-gray-500 italic dark:text-gray-400">No specific events listed.</p>';
+            }
+
+            function renderTimetable(element, eventData) {
+                if (!eventData || !eventData.CycleDay || !timetableData[eventData.CycleDay]) {
+                    element.innerHTML = ''; 
+                    return;
+                }
+
+                const cycleDay = eventData.CycleDay;
+                const schedule = timetableData[cycleDay];
+
+                let tableHtml = `
+                    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-200 mt-6 mb-3">Timetable (Day ${cycleDay})</h3>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/4">Period</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                `;
+
+                schedule.forEach(item => {
+                    if (item.period.toLowerCase() === 'recess' || item.period.toLowerCase() === 'lunch time') {
+                         tableHtml += `
+                            <tr>
+                                <td colspan="2" class="px-4 py-2 text-center bg-gray-100 dark:bg-gray-900 font-medium text-sm text-gray-600 dark:text-gray-400">${item.subject}</td>
+                            </tr>
+                        `;
+                    } else {
+                        tableHtml += `
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${item.period}</td>
+                                <td class="px-4 py-3 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-400">${item.subject || ''}</td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                tableHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                element.innerHTML = tableHtml;
+            }
 
             // --- Helper functions for managing recent peer connections ---
             function getRecentPeers() {
@@ -804,7 +1271,6 @@
                     }
                     connections.push(conn);
                     updateConnectionStatus();
-                    updatePeerSelectDropdown();
                     if (conn.metadata.isInitiator) {
                          addRecentPeer(conn.peer);
                     }
@@ -821,7 +1287,6 @@
                         connections.splice(index, 1);
                     }
                     updateConnectionStatus();
-                    updatePeerSelectDropdown();
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
                 });
             }
@@ -864,11 +1329,6 @@
             }
 
             function handleRemoteData(data) {
-                if (data.type === 'FILE_TRANSFER') {
-                    handleReceivedFile(data);
-                    return;
-                }
-                
                 let tasks = getTasks();
                 let taskUpdated = false;
                 let taskIndex = -1;
@@ -921,86 +1381,10 @@
                 remotePeerIdInput.value = lastPeerId;
             }
 
-            // --- File Transfer Logic ---
-            function updatePeerSelectDropdown() {
-                peerSelect.innerHTML = '';
-                if (connections.length === 0) {
-                    const option = document.createElement('option');
-                    option.textContent = 'No peers connected';
-                    peerSelect.appendChild(option);
-                    peerSelect.disabled = true;
-                    sendFileButton.disabled = true;
-                } else {
-                    connections.forEach(conn => {
-                        const option = document.createElement('option');
-                        option.value = conn.peer;
-                        option.textContent = conn.peer;
-                        peerSelect.appendChild(option);
-                    });
-                    peerSelect.disabled = false;
-                    sendFileButton.disabled = false;
-                }
-            }
-            
-            sendFileButton.addEventListener('click', () => {
-                const peerId = peerSelect.value;
-                const file = fileInput.files[0];
-
-                if (!peerId || peerId === 'No peers connected') {
-                    showNotification('Please select a peer to send the file to.');
-                    return;
-                }
-                if (!file) {
-                    showNotification('Please select a file to send.');
-                    return;
-                }
-
-                const conn = connections.find(c => c.peer === peerId);
-                if (!conn) {
-                    showNotification('Connection to that peer was lost.');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const fileData = event.target.result;
-                    const payload = {
-                        type: 'FILE_TRANSFER',
-                        file: fileData,
-                        fileName: file.name,
-                        fileType: file.type
-                    };
-                    conn.send(payload);
-                    showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
-                };
-                reader.readAsArrayBuffer(file);
-            });
-
-            function handleReceivedFile(data) {
-                const { file, fileName, fileType } = data;
-                const blob = new Blob([file], { type: fileType });
-                const url = URL.createObjectURL(blob);
-
-                const li = document.createElement('li');
-                const fileNameSpan = document.createElement('span');
-                fileNameSpan.textContent = fileName;
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = fileName;
-                downloadLink.textContent = 'Download';
-                downloadLink.className = 'download-link';
-                
-                li.appendChild(fileNameSpan);
-                li.appendChild(downloadLink);
-                receivedFilesList.appendChild(li);
-
-                showNotification(`You received a file: ${fileName}`, 'info');
-            }
-
 
             // --- View Switching Logic ---
             function showView(viewToShow) {
-                [mainView, sharingView, fileTransferView].forEach(view => {
+                [mainView, sharingView, scheduleView].forEach(view => {
                     view.style.display = 'none';
                 });
                 viewToShow.style.display = 'block';
@@ -1008,7 +1392,7 @@
             }
 
             toggleSharingButton.addEventListener('click', () => showView(sharingView));
-            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
+            toggleScheduleButton.addEventListener('click', () => showView(scheduleView));
             backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
 
 
@@ -1030,9 +1414,11 @@
             // --- Theme Logic ---
             function setTheme(theme) {
                 if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
                     document.body.classList.add('dark-mode');
                     themeCheckbox.checked = true;
                 } else {
+                    document.documentElement.classList.remove('dark');
                     document.body.classList.remove('dark-mode');
                     themeCheckbox.checked = false;
                 }
@@ -1045,7 +1431,7 @@
             });
 
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
 
             // --- Timer Logic ---
@@ -1095,6 +1481,7 @@
             // --- Task Logic ---
             loadTasks();
             checkReminders(); 
+            initializeSchedule();
 
             taskForm.addEventListener('submit', (e) => {
                 e.preventDefault();
