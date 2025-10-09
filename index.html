@@ -65,18 +65,12 @@
             max-width: 700px;
             border: 1px solid var(--border-color);
             transition: background-color 0.3s, border-color 0.3s;
-            position: relative; 
-            overflow: hidden; 
+            position: relative; /* Added for positioning the theme switch */
+            overflow: hidden; /* Ensures smooth view transitions */
         }
 
-        .main-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
         h1, h2 {
+            text-align: center;
             color: var(--text-color);
             margin-bottom: 20px;
             font-weight: 700;
@@ -84,8 +78,6 @@
 
         h1 {
             font-size: 2.25rem;
-            margin-bottom: 0;
-            text-align: left;
         }
         
         h2 {
@@ -93,16 +85,17 @@
             margin-top: 40px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
-            text-align: center;
         }
         
         /* --- Top Controls Container --- */
         .top-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
             display: flex;
             align-items: center;
             gap: 15px;
             z-index: 10;
-            flex-shrink: 0;
         }
 
         /* --- Dark Mode Toggle --- */
@@ -268,41 +261,28 @@
             cursor: pointer;
             font-size: 1rem;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, opacity 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
         
-        .button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            transform: none;
-            box-shadow: none;
-        }
-
         .button.green { background-color: var(--success-color); }
         .button.orange { background-color: var(--warning-color); }
-        .button.red { background-color: var(--danger-color); }
 
-        .button:hover:not(:disabled), #task-form button:hover:not(:disabled) {
+        .button:hover, #task-form button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px var(--shadow-color);
         }
 
-        .button.green:hover:not(:disabled) {
+        .button.green:hover {
              box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
              background-color: #30b852;
         }
         
-        .button.orange:hover:not(:disabled) {
+        .button.orange:hover {
              box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
              background-color: #ff8c00;
         }
-
-        .button.red:hover:not(:disabled) {
-            box-shadow: 0 6px 20px rgba(255, 59, 48, 0.3);
-            background-color: #e02b21;
-        }
         
-        #toggle-sharing-button, #toggle-file-transfer-button, #toggle-settings-button {
+        #toggle-sharing-button, #toggle-file-transfer-button {
             position: relative; 
             width: auto;
             padding: 10px 16px;
@@ -316,13 +296,13 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover, #toggle-settings-button:hover {
+        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover {
             background-color: var(--text-color);
             transform: translateY(-1px);
         }
 
         /* --- View Switching --- */
-        #sharing-view, #file-transfer-view, #settings-view {
+        #sharing-view, #file-transfer-view {
             display: none;
         }
         
@@ -504,7 +484,7 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
         
-        /* --- Sharing & File Transfer & Settings Sections --- */
+        /* --- Sharing & File Transfer Sections --- */
         .section-container {
             margin-top: 20px;
             padding: 20px;
@@ -512,7 +492,7 @@
             border-radius: 16px;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 15px;
         }
         
         .section-part {
@@ -566,40 +546,47 @@
         body.dark-mode #connection-status.connected {
              background-color: #1c4b2a;
         }
+
+        #received-files-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #received-files-list li {
+            background-color: var(--input-bg-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        #received-files-list .download-link {
+            text-decoration: none;
+            color: white;
+            background-color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
         
         @media (max-width: 600px) {
              .container {
                 padding: 20px;
             }
-            .main-header {
-                padding-top: 30px; 
-            }
-            h1 {
-                font-size: 1.75rem;
-            }
             .top-controls {
-                gap: 8px;
-                position: absolute;
-                top: 25px;
-                right: 20px;
+                gap: 5px;
             }
             .theme-switch-wrapper span {
-                display: none;
+                display: none; /* Hide text on small screens */
             }
             #timer {
                 font-size: 2rem;
             }
              #task-form {
                 grid-template-columns: 1fr;
-            }
-            .task-item {
-                padding: 12px 15px;
-            }
-            .task-name {
-                font-size: 1rem;
-            }
-            .task-info {
-                font-size: 0.8rem;
             }
         }
     </style>
@@ -609,24 +596,21 @@
     <div id="notification" class="notification"></div>
 
     <div class="container">
+        <div class="top-controls">
+            <button id="toggle-file-transfer-button">File Transfer</button>
+            <button id="toggle-sharing-button">Sharing</button>
+            <div class="theme-switch-wrapper">
+                <span>☀️</span>
+                <label class="theme-switch" for="theme-checkbox">
+                    <input type="checkbox" id="theme-checkbox" />
+                    <div class="slider"></div>
+                </label>
+                <span>🌙</span>
+            </div>
+        </div>
         
         <div id="main-view">
-            <div class="main-header">
-                <h1>My To-Do List</h1>
-                <div class="top-controls">
-                    <button id="toggle-settings-button">Settings</button>
-                    <button id="toggle-sharing-button">Sharing</button>
-                    <div class="theme-switch-wrapper">
-                        <span>☀️</span>
-                        <label class="theme-switch" for="theme-checkbox">
-                            <input type="checkbox" id="theme-checkbox" />
-                            <div class="slider"></div>
-                        </label>
-                        <span>🌙</span>
-                    </div>
-                </div>
-            </div>
-            
+            <h1>My To-Do List</h1>
             <div id="timer-container">
                 <span id="timer">00:00:00</span>
                 <span id="timer-date">Loading date...</span>
@@ -660,10 +644,9 @@
                 <h2>Real-Time Sharing</h2>
                 
                 <div class="section-part">
-                    <h3>Your Connection</h3>
+                    <h3>Set Your Persistent ID</h3>
                     <input type="text" id="my-peer-id-input" class="input-field" placeholder="e.g., my-work-laptop">
                     <button id="set-peer-id-button" class="button orange">Set ID & Reconnect</button>
-                    <button id="disconnect-button" class="button red">Disconnect</button>
                     <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
                 </div>
                 
@@ -676,32 +659,22 @@
             </div>
         </div>
 
-        <div id="settings-view">
+        <div id="file-transfer-view">
             <button class="back-button">← Back to Tasks</button>
-            <div class="section-container">
-                <h2>Settings</h2>
-                <div class="section-part">
-                    <h3>Theme</h3>
-                    <select id="theme-select" class="input-field">
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                    </select>
-                </div>
-                <div class="section-part">
-                    <h3>Font</h3>
-                    <select id="font-select" class="input-field">
-                        <option value="'Inter', sans-serif">Inter (Default)</option>
-                        <option value="'Roboto Slab', serif">Roboto Slab</option>
-                        <option value="'Source Code Pro', monospace">Source Code Pro</option>
-                        <option value="'Lora', serif">Lora</option>
-                    </select>
-                </div>
-                <div class="section-part">
-                    <h3>Background Image</h3>
-                    <input type="text" id="background-image-input" class="input-field" placeholder="Enter Unsplash photo ID or URL">
-                    <button id="apply-background-button" class="button">Apply Background</button>
-                    <button id="clear-background-button" class="button red">Clear Background</button>
-                </div>
+             <div class="section-container">
+                 <h2>Peer-to-Peer File Transfer</h2>
+                 <div class="section-part">
+                     <h3>Send a File</h3>
+                     <select id="peer-select" class="input-field"></select>
+                     <input type="file" id="file-input" class="input-field">
+                     <button id="send-file-button" class="button">Send File</button>
+                 </div>
+                 <div class="section-part">
+                     <h3>Received Files</h3>
+                     <ul id="received-files-list">
+                         <!-- Received files will appear here -->
+                     </ul>
+                 </div>
             </div>
         </div>
 
@@ -719,38 +692,35 @@
             const timerElement = document.getElementById('timer');
             const timerDateElement = document.getElementById('timer-date');
             const notificationElement = document.getElementById('notification');
+            const themeCheckbox = document.getElementById('theme-checkbox');
             const searchInput = document.getElementById('search-input');
             
             // --- View Switching Elements ---
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
-            const settingsView = document.getElementById('settings-view');
+            const fileTransferView = document.getElementById('file-transfer-view');
             const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const toggleSettingsButton = document.getElementById('toggle-settings-button');
+            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
             const backButtons = document.querySelectorAll('.back-button');
+            const topControls = document.querySelector('.top-controls');
 
             // --- WebRTC Elements ---
             const myPeerIdInput = document.getElementById('my-peer-id-input');
             const setPeerIdButton = document.getElementById('set-peer-id-button');
-            const disconnectButton = document.getElementById('disconnect-button');
             const activePeerIdElement = document.getElementById('active-peer-id');
             const remotePeerIdInput = document.getElementById('remote-peer-id-input');
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
-            // --- Settings Elements ---
-            const themeCheckbox = document.getElementById('theme-checkbox'); // Keep for icon toggle
-            const themeSelect = document.getElementById('theme-select');
-            const fontSelect = document.getElementById('font-select');
-            const backgroundImageInput = document.getElementById('background-image-input');
-            const applyBackgroundButton = document.getElementById('apply-background-button');
-            const clearBackgroundButton = document.getElementById('clear-background-button');
+            // --- File Transfer Elements ---
+            const peerSelect = document.getElementById('peer-select');
+            const fileInput = document.getElementById('file-input');
+            const sendFileButton = document.getElementById('send-file-button');
+            const receivedFilesList = document.getElementById('received-files-list');
 
             // --- WebRTC State ---
             let peer;
             const connections = [];
-            let peerInitRetries = 0;
-            const MAX_PEER_INIT_RETRIES = 3;
 
             // --- Helper functions for managing recent peer connections ---
             function getRecentPeers() {
@@ -770,36 +740,13 @@
                 localStorage.setItem('lastConnectedPeerId', peerId);
             }
 
-            // --- WebRTC Initialization and Control ---
-            function disconnectFromPeers() {
-                if (peer) {
-                    peer.destroy();
-                }
-                connections.forEach(conn => conn.close());
-                connections.length = 0; // Clear the array
-                updateConnectionStatus();
-                activePeerIdElement.textContent = "Disconnected";
-                showNotification('You have been disconnected.', 'info');
-            }
-
-            disconnectButton.addEventListener('click', disconnectFromPeers);
-            
-            function setConnectionButtonsState(enabled) {
-                setPeerIdButton.disabled = !enabled;
-                connectButton.disabled = !enabled;
-            }
-
+            // --- WebRTC Initialization ---
             function initializePeer(requestedId) {
                 if (peer) { peer.destroy(); }
-                activePeerIdElement.textContent = "Connecting...";
-                setConnectionButtonsState(false);
-
                 peer = new Peer(requestedId);
 
                 peer.on('open', (id) => {
-                    peerInitRetries = 0; 
                     activePeerIdElement.textContent = id;
-                    setConnectionButtonsState(true);
                     activePeerIdElement.addEventListener('click', () => {
                         navigator.clipboard.writeText(id);
                         showNotification('Your active ID has been copied!', 'info');
@@ -808,9 +755,9 @@
                     const recentPeers = getRecentPeers();
                     if (recentPeers.length > 0) {
                         setTimeout(() => {
-                            showNotification(`Attempting to reconnect to recent peers...`, 'info');
+                            showNotification(`Reconnecting to recent peers...`, 'info');
                             recentPeers.forEach(peerId => connectToPeer(peerId));
-                        }, 1000); 
+                        }, 500);
                     }
                 });
                 
@@ -822,23 +769,11 @@
                 peer.on('error', (err) => {
                     console.error('PeerJS error:', err);
                     if (err.type === 'unavailable-id') {
-                        if (peerInitRetries < MAX_PEER_INIT_RETRIES) {
-                            peerInitRetries++;
-                            const delay = 2000 * peerInitRetries; 
-                            showNotification(`ID "${requestedId}" is busy. Retrying in ${delay/1000}s...`, 'info');
-                            setTimeout(() => initializePeer(requestedId), delay);
-                        } else {
-                            showNotification(`ID "${requestedId}" is unavailable. Please choose another.`, 'error');
-                            activePeerIdElement.textContent = 'Failed to connect';
-                            setPeerIdButton.disabled = false; // Only enable this button
-                            connectButton.disabled = true; // Keep this disabled
-                        }
+                         showNotification(`ID "${requestedId}" is already taken. Please choose another.`);
                     } else {
                          showNotification(`Connection error: ${err.message}`);
-                         activePeerIdElement.textContent = 'Error';
-                         setPeerIdButton.disabled = false; // Only enable this button
-                         connectButton.disabled = true; // Keep this disabled
                     }
+                    activePeerIdElement.textContent = 'Error';
                 });
             }
             
@@ -849,9 +784,8 @@
                     return;
                 }
                 localStorage.setItem('myPeerId', newId);
-                showNotification(`Setting ID to "${newId}" and reconnecting...`, 'info');
-                disconnectFromPeers();
-                setTimeout(() => initializePeer(newId), 500); 
+                showNotification(`Setting ID to "${newId}"...`, 'info');
+                initializePeer(newId);
             });
 
             const savedPeerId = localStorage.getItem('myPeerId');
@@ -860,22 +794,20 @@
                 initializePeer(savedPeerId);
             } else {
                  activePeerIdElement.textContent = "Set an ID to connect";
-                 setConnectionButtonsState(true); // Enable button if no ID is saved
             }
             
             function setupConnection(conn) {
                 conn.on('open', () => {
-                    showNotification(`Connection established with ${conn.peer}`, 'info');
                     if (connections.some(c => c.peer === conn.peer)) {
                         conn.close();
                         return;
                     }
                     connections.push(conn);
                     updateConnectionStatus();
-
-                    // Add the other party to recent peers, regardless of who initiated
-                    addRecentPeer(conn.peer);
-                    
+                    updatePeerSelectDropdown();
+                    if (conn.metadata.isInitiator) {
+                         addRecentPeer(conn.peer);
+                    }
                     conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
                 });
 
@@ -889,42 +821,21 @@
                         connections.splice(index, 1);
                     }
                     updateConnectionStatus();
+                    updatePeerSelectDropdown();
                     showNotification(`Disconnected from ${conn.peer}`, 'info');
-                });
-
-                conn.on('error', (err) => {
-                    console.error(`Connection error with ${conn.peer}:`, err);
-                    showNotification(`Error with peer ${conn.peer}: ${err.message}`, 'error');
                 });
             }
             
-            async function connectToPeer(remoteId) {
-                if (setPeerIdButton.disabled || connectButton.disabled) {
-                    showNotification('Please wait for the current connection to be ready.', 'info');
-                    return;
-                }
-                if (!peer || peer.destroyed || peer.disconnected) {
-                    showNotification('Your connection is not active. Please set your ID.', 'error');
+            function connectToPeer(remoteId) {
+                 if (!peer || peer.disconnected) {
+                    showNotification('You must set your ID before connecting.', 'error');
                     return;
                 }
                 if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) {
                     return;
                 }
-                
                 showNotification(`Attempting to connect to ${remoteId}...`, 'info');
-                connectButton.disabled = true; // Disable during this attempt
-
                 const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
-                
-                conn.on('open', () => {
-                    connectButton.disabled = false; // Re-enable on success
-                });
-
-                conn.on('error', (err) => {
-                    connectButton.disabled = false; // Re-enable on error
-                    showNotification(`Could not connect to peer: ${err.message}`, 'error');
-                });
-
                 setupConnection(conn);
             }
 
@@ -953,6 +864,11 @@
             }
 
             function handleRemoteData(data) {
+                if (data.type === 'FILE_TRANSFER') {
+                    handleReceivedFile(data);
+                    return;
+                }
+                
                 let tasks = getTasks();
                 let taskUpdated = false;
                 let taskIndex = -1;
@@ -1005,72 +921,94 @@
                 remotePeerIdInput.value = lastPeerId;
             }
 
-            // --- Settings Logic ---
-            const GOOGLE_FONTS_BASE_URL = "https://fonts.googleapis.com/css2?family=";
-
-            function applyFont(fontFamily) {
-                if (!fontFamily) return;
-
-                const fontName = fontFamily.split(',')[0].replace(/'/g, "").replace(/\s/g, '+');
-                
-                const oldFontLink = document.getElementById('dynamic-font-link');
-                if (oldFontLink) {
-                    oldFontLink.remove();
-                }
-
-                const fontUrl = `${GOOGLE_FONTS_BASE_URL}${fontName}:wght@400;700&display=swap`;
-                const link = document.createElement('link');
-                link.id = 'dynamic-font-link';
-                link.rel = 'stylesheet';
-                link.href = fontUrl;
-                document.head.appendChild(link);
-                
-                document.body.style.fontFamily = fontFamily;
-                localStorage.setItem('font', fontFamily);
-            }
-
-            function applyBackgroundImage(imageUrl) {
-                if (imageUrl) {
-                    let finalUrl = imageUrl;
-                    if (finalUrl.includes('unsplash.com/photos/')) {
-                        const photoId = finalUrl.split('unsplash.com/photos/')[1];
-                        finalUrl = `https://source.unsplash.com/${photoId}/1920x1080`;
-                    } else if (!finalUrl.startsWith('http')) {
-                        finalUrl = `https://source.unsplash.com/${finalUrl}/1920x1080`;
-                    }
-                    document.body.style.backgroundImage = `url('${finalUrl}')`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundAttachment = 'fixed';
-                    localStorage.setItem('backgroundImage', finalUrl);
+            // --- File Transfer Logic ---
+            function updatePeerSelectDropdown() {
+                peerSelect.innerHTML = '';
+                if (connections.length === 0) {
+                    const option = document.createElement('option');
+                    option.textContent = 'No peers connected';
+                    peerSelect.appendChild(option);
+                    peerSelect.disabled = true;
+                    sendFileButton.disabled = true;
                 } else {
-                    document.body.style.backgroundImage = 'none';
-                    localStorage.removeItem('backgroundImage');
+                    connections.forEach(conn => {
+                        const option = document.createElement('option');
+                        option.value = conn.peer;
+                        option.textContent = conn.peer;
+                        peerSelect.appendChild(option);
+                    });
+                    peerSelect.disabled = false;
+                    sendFileButton.disabled = false;
                 }
             }
+            
+            sendFileButton.addEventListener('click', () => {
+                const peerId = peerSelect.value;
+                const file = fileInput.files[0];
 
-            themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
-            fontSelect.addEventListener('change', (e) => applyFont(e.target.value));
-            applyBackgroundButton.addEventListener('click', () => applyBackgroundImage(backgroundImageInput.value));
-            clearBackgroundButton.addEventListener('click', () => {
-                backgroundImageInput.value = '';
-                applyBackgroundImage(null);
+                if (!peerId || peerId === 'No peers connected') {
+                    showNotification('Please select a peer to send the file to.');
+                    return;
+                }
+                if (!file) {
+                    showNotification('Please select a file to send.');
+                    return;
+                }
+
+                const conn = connections.find(c => c.peer === peerId);
+                if (!conn) {
+                    showNotification('Connection to that peer was lost.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const fileData = event.target.result;
+                    const payload = {
+                        type: 'FILE_TRANSFER',
+                        file: fileData,
+                        fileName: file.name,
+                        fileType: file.type
+                    };
+                    conn.send(payload);
+                    showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
+                };
+                reader.readAsArrayBuffer(file);
             });
+
+            function handleReceivedFile(data) {
+                const { file, fileName, fileType } = data;
+                const blob = new Blob([file], { type: fileType });
+                const url = URL.createObjectURL(blob);
+
+                const li = document.createElement('li');
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.textContent = fileName;
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = fileName;
+                downloadLink.textContent = 'Download';
+                downloadLink.className = 'download-link';
+                
+                li.appendChild(fileNameSpan);
+                li.appendChild(downloadLink);
+                receivedFilesList.appendChild(li);
+
+                showNotification(`You received a file: ${fileName}`, 'info');
+            }
+
 
             // --- View Switching Logic ---
             function showView(viewToShow) {
-                [mainView, sharingView, settingsView].forEach(view => {
+                [mainView, sharingView, fileTransferView].forEach(view => {
                     view.style.display = 'none';
                 });
                 viewToShow.style.display = 'block';
-                const mainHeader = mainView.querySelector('.main-header');
-                if (mainHeader) {
-                    mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
-                }
+                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
             }
 
             toggleSharingButton.addEventListener('click', () => showView(sharingView));
-            toggleSettingsButton.addEventListener('click', () => showView(settingsView));
+            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
             backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
 
 
@@ -1094,11 +1032,9 @@
                 if (theme === 'dark') {
                     document.body.classList.add('dark-mode');
                     themeCheckbox.checked = true;
-                    themeSelect.value = 'dark';
                 } else {
                     document.body.classList.remove('dark-mode');
                     themeCheckbox.checked = false;
-                    themeSelect.value = 'light';
                 }
                 localStorage.setItem('theme', theme);
             }
@@ -1108,22 +1044,9 @@
                 setTheme(newTheme);
             });
 
-            // Initial load from storage
             const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-
-            const savedFont = localStorage.getItem('font');
-            if (savedFont) {
-                fontSelect.value = savedFont;
-                applyFont(savedFont);
-            }
-
-            const savedBg = localStorage.getItem('backgroundImage');
-            if (savedBg) {
-                backgroundImageInput.value = savedBg;
-                applyBackgroundImage(savedBg);
-            }
 
             // --- Timer Logic ---
             function updateTimer() {
@@ -1356,18 +1279,6 @@
                 div.appendChild(document.createTextNode(str));
                 return div.innerHTML;
             }
-
-             // --- Final View Switching Fix ---
-             const mainHeader = mainView.querySelector('.main-header');
-             const originalShowView = showView;
-
-             showView = function(viewToShow) {
-                 originalShowView(viewToShow);
-                 if (mainHeader) {
-                     mainHeader.style.display = (viewToShow === mainView) ? 'flex' : 'none';
-                 }
-             }
-
         });
     </script>
 </body>
