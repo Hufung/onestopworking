@@ -46,6 +46,10 @@
             --input-bg-color: #2a2a2a;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -261,7 +265,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer; /* MODIFICATION: Changed cursor to pointer */
+            cursor: pointer;
         }
         .calendar-task { background-color: var(--primary-light-color); color: var(--primary-color); }
         .calendar-event { background-color: var(--warning-color); color: white; opacity: 0.9; }
@@ -288,6 +292,86 @@
             background-color: var(--danger-color);
             color: white;
         }
+
+        /* --- Tutorial Styles --- */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3000;
+            background-color: transparent;
+            display: none;
+            transition: background-color 0.5s;
+        }
+        #tutorial-overlay.active {
+             background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        #tutorial-spotlight {
+            position: absolute;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        #tutorial-tooltip {
+            position: absolute;
+            background-color: var(--main-color);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 350px;
+            transition: all 0.5s ease-in-out;
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        #tutorial-tooltip.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #tutorial-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        #tutorial-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #tutorial-skip-btn {
+            background: none;
+            border: none;
+            color: var(--text-light-color);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #tutorial-next-btn {
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #tutorial-step-counter {
+            font-size: 0.9rem;
+            color: var(--text-light-color);
+            margin-right: 15px;
+        }
+
 
         @media (max-width: 768px) {
             .app-container { padding: 15px; }
@@ -449,6 +533,22 @@
         </div>
     </div>
 
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay">
+        <div id="tutorial-spotlight"></div>
+        <div id="tutorial-tooltip">
+            <div id="tutorial-text"></div>
+            <div id="tutorial-nav">
+                <button id="tutorial-skip-btn">Skip</button>
+                <div>
+                    <span id="tutorial-step-counter"></span>
+                    <button id="tutorial-next-btn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Main application logic -->
     <script>
         // --- TAB SWITCHING LOGIC ---
@@ -472,6 +572,173 @@
         
         // --- TO-DO APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- TUTORIAL LOGIC ---
+            const tutorialOverlay = document.getElementById('tutorial-overlay');
+            if (tutorialOverlay) {
+                const hasVisited = localStorage.getItem('hasVisitedBefore');
+
+                if (!hasVisited) {
+                    const spotlight = document.getElementById('tutorial-spotlight');
+                    const tooltip = document.getElementById('tutorial-tooltip');
+                    const tutorialText = document.getElementById('tutorial-text');
+                    const stepCounter = document.getElementById('tutorial-step-counter');
+                    const nextBtn = document.getElementById('tutorial-next-btn');
+                    const skipBtn = document.getElementById('tutorial-skip-btn');
+                    
+                    let currentStep = 0;
+
+                    const steps = [
+                        {
+                            element: null, 
+                            text: "Welcome to your Dashboard! Let's take a quick tour of the features.",
+                            position: 'center'
+                        },
+                        {
+                            element: '.app-nav',
+                            text: "Use these tabs to switch between your 'To-Do List' and your 'School Schedule'.",
+                            position: 'bottom'
+                        },
+                        {
+                            element: '#task-form',
+                            text: "Here you can add new tasks. Just type a name, pick a deadline, and click 'Add Task'.",
+                            position: 'bottom'
+                        },
+                        {
+                            element: '.view-switcher',
+                            text: "You can view your tasks as a simple list or on a full calendar.",
+                            position: 'bottom'
+                        },
+                        {
+                            element: '.top-controls',
+                            text: "Use these buttons to share your to-do list in real-time or transfer files with a peer.",
+                            position: 'bottom'
+                        },
+                        {
+                            element: '#show-schedule-btn',
+                            text: "Now, let's check the Schedule app. Click 'Next' and we'll switch over.",
+                            position: 'bottom',
+                            action: () => showScheduleBtn.click()
+                        },
+                        {
+                            element: '#schedule-view-wrapper .container',
+                            text: "The first time you visit, you'll be asked for your class (e.g., 5D) to fetch the correct timetable.",
+                            position: 'top'
+                        },
+                        {
+                            element: null,
+                            text: "That's it! You're all set. Enjoy using your dashboard.",
+                            position: 'center'
+                        }
+                    ];
+
+                    function endTutorial() {
+                        tutorialOverlay.classList.remove('active');
+                        tooltip.classList.remove('active');
+                        setTimeout(() => {
+                            tutorialOverlay.style.display = 'none';
+                        }, 500);
+                        localStorage.setItem('hasVisitedBefore', 'true');
+                        
+                        const savedClass = localStorage.getItem('userClass');
+                        if (!savedClass) {
+                            document.getElementById('class-modal').style.display = 'flex';
+                        }
+                    }
+
+                    function showStep(stepIndex) {
+                        if (stepIndex >= steps.length) {
+                            endTutorial();
+                            return;
+                        }
+                        
+                        const step = steps[stepIndex];
+                        
+                        if (step.action) {
+                            step.action();
+                        }
+
+                        tooltip.classList.remove('active');
+                        
+                        const targetElement = step.element ? document.querySelector(step.element) : null;
+
+                        if(targetElement) {
+                             targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                        } else {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                        
+                        // Delay positioning until scroll is likely complete
+                        setTimeout(() => {
+                            tutorialText.innerHTML = step.text;
+                            stepCounter.textContent = `${stepIndex + 1} / ${steps.length}`;
+                            
+                            if (stepIndex === steps.length - 1) {
+                                nextBtn.textContent = 'Finish';
+                            } else {
+                                nextBtn.textContent = 'Next';
+                            }
+                            
+                            if (targetElement) {
+                                const rect = targetElement.getBoundingClientRect();
+                                
+                                spotlight.style.display = 'block';
+                                spotlight.style.width = `${rect.width + 20}px`;
+                                spotlight.style.height = `${rect.height + 20}px`;
+                                spotlight.style.top = `${rect.top - 10}px`;
+                                spotlight.style.left = `${rect.left - 10}px`;
+                                
+                                let tooltipTop, tooltipLeft;
+
+                                if (step.position === 'bottom') {
+                                    tooltipTop = rect.bottom + 20;
+                                } else if (step.position === 'top') {
+                                    tooltipTop = rect.top - tooltip.offsetHeight - 20;
+                                }
+                                tooltipLeft = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+                                // Boundary checks
+                                if (tooltipLeft < 10) tooltipLeft = 10;
+                                if (tooltipLeft + tooltip.offsetWidth > window.innerWidth - 10) {
+                                    tooltipLeft = window.innerWidth - tooltip.offsetWidth - 10;
+                                }
+                                if (tooltipTop < 10) tooltipTop = 10;
+                                if (tooltipTop + tooltip.offsetHeight > window.innerHeight - 10) {
+                                    tooltipTop = window.innerHeight - tooltip.offsetHeight - 10;
+                                }
+                                
+                                tooltip.style.top = `${tooltipTop}px`;
+                                tooltip.style.left = `${tooltipLeft}px`;
+                                tooltip.style.transform = 'translate(0, 0)';
+
+                            } else { 
+                                spotlight.style.display = 'none';
+                                tooltip.style.top = '50%';
+                                tooltip.style.left = '50%';
+                                tooltip.style.transform = 'translate(-50%, -50%)';
+                            }
+                            tooltip.classList.add('active');
+                        }, 600); 
+                    }
+
+                    nextBtn.onclick = () => {
+                        currentStep++;
+                        showStep(currentStep);
+                    };
+
+                    skipBtn.onclick = endTutorial;
+                    
+                    setTimeout(() => {
+                         tutorialOverlay.style.display = 'block';
+                         setTimeout(() => { 
+                            tutorialOverlay.classList.add('active');
+                            showStep(currentStep);
+                         }, 10);
+                    }, 500);
+                }
+            }
+
+
             const taskForm = document.getElementById('task-form');
             if (!taskForm) return;
 
@@ -1147,10 +1414,14 @@
             
             document.addEventListener("DOMContentLoaded", () => {
                 const savedClass = localStorage.getItem('userClass');
+                const hasVisited = localStorage.getItem('hasVisitedBefore');
+
                 if (savedClass) {
                     fetchAndRenderSchedule(savedClass);
-                } else {
+                } else if (hasVisited) {
                     modal.style.display = 'flex';
+                    scheduleSubtitle.textContent = "Please enter your class to begin.";
+                } else {
                     scheduleSubtitle.textContent = "Please enter your class to begin.";
                 }
             });
