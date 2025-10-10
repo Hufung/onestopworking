@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | To-Do & Schedule</title>
     
+    <!-- Google Fonts for a modern look (used by both apps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- PeerJS Library for WebRTC (for To-Do app) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
+    <!-- Tailwind CSS (for Schedule app) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- CSS styles are embedded here -->
     <style>
         /* --- Base Styles & To-Do App --- */
         :root {
@@ -87,146 +91,111 @@
             box-shadow: 0 4px 15px var(--shadow-color);
         }
 
-        /* Hide app wrappers by default */
         #todo-view-wrapper, #schedule-view-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
         }
-
+        
+        /* --- Class Input Modal --- */
+        #class-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--main-color);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content h2 { color: var(--text-color); font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
+        .modal-content p { color: var(--text-light-color); margin-bottom: 20px; }
+        #class-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+        }
+        #class-form button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
 
         /* --- To-Do App Specific Styles --- */
-        #todo-view-wrapper .container {
-            background: var(--main-color);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 700px;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #todo-view-wrapper h1, #todo-view-wrapper h2 {
-            text-align: center;
-            color: var(--text-color);
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        #todo-view-wrapper h1 { font-size: 2.25rem; }
-        #todo-view-wrapper h2 {
-            font-size: 1.5rem;
-            margin-top: 40px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
+        #todo-view-wrapper .container { background: var(--main-color); padding: 40px; border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); width: 100%; max-width: 700px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
+        
+        /* Alignement Fix: Add padding to main view to avoid overlap with controls */
+        #todo-view-wrapper #main-view {
+            padding-top: 40px;
         }
         
-        #todo-view-wrapper .top-controls {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 10;
+        #todo-view-wrapper h1, #todo-view-wrapper h2 { text-align: center; color: var(--text-color); margin-bottom: 20px; font-weight: 700; }
+        
+        /* Alignement Fix: Ensure h1 respects parent's padding */
+        #todo-view-wrapper h1 { 
+            font-size: 2.25rem; 
+            margin-top: 0;
         }
-        #todo-view-wrapper .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-light-color);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        #todo-view-wrapper .theme-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
+        #todo-view-wrapper h2 { font-size: 1.5rem; margin-top: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        #todo-view-wrapper .top-controls { position: absolute; top: 25px; right: 25px; display: flex; align-items: center; gap: 15px; z-index: 10; }
+        #todo-view-wrapper .theme-switch-wrapper { display: flex; align-items: center; gap: 10px; color: var(--text-light-color); font-size: 0.9rem; font-weight: 500; }
+        #todo-view-wrapper .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         #todo-view-wrapper .theme-switch input { opacity: 0; width: 0; height: 0; }
-        #todo-view-wrapper .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s; border-radius: 34px;
-        }
-        #todo-view-wrapper .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px; left: 4px;
-            bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
-        }
+        #todo-view-wrapper .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        #todo-view-wrapper .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         #todo-view-wrapper input:checked + .slider { background-color: var(--primary-color); }
         #todo-view-wrapper input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
         #todo-view-wrapper input:checked + .slider:before { transform: translateX(24px); }
-        
-        #timer-container {
-            text-align: center; margin-bottom: 30px;margin-top:20px; background-color: var(--timer-bg-color); padding: 15px 20px;padding-top: 30px;
-            border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 5px rgba(0,0,0,0.5);
-            transition: background-color 0.3s;
-        }
-        #timer {
-            font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; font-weight: bold; color: var(--success-color);
-            letter-spacing: 2px; text-shadow: 0 0 5px var(--success-color), 0 0 10px var(--success-color);
-        }
-        #timer-date {
-            display: block; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #a0a0a0; margin-top: 5px; text-shadow: none; letter-spacing: normal;
-        }
-
-        #task-form {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; align-items: center;
-        }
-        #task-form input[type="text"], .input-field {
-            grid-column: 1 / -1; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
-            background-color: var(--input-bg-color); color: var(--text-color);
-        }
-        #task-form input[type="text"]:focus, .input-field:focus {
-            border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--shadow-color); outline: none;
-        }
+        #timer-container { text-align: center; margin-bottom: 30px; background-color: var(--timer-bg-color); padding: 15px 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 5px rgba(0,0,0,0.5); transition: background-color 0.3s; }
+        #timer { font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; font-weight: bold; color: var(--success-color); letter-spacing: 2px; text-shadow: 0 0 5px var(--success-color), 0 0 10px var(--success-color); }
+        #timer-date { display: block; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #a0a0a0; margin-top: 5px; text-shadow: none; letter-spacing: normal; }
+        #task-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; align-items: center; }
+        #task-form input[type="text"], .input-field { grid-column: 1 / -1; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s; background-color: var(--input-bg-color); color: var(--text-color); }
+        #task-form input[type="text"]:focus, .input-field:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--shadow-color); outline: none; }
         #task-form input::placeholder, .input-field::placeholder { color: var(--text-light-color); opacity: 0.7; }
-        .date-picker {
-            display: flex; align-items: center; gap: 10px; background-color: var(--input-bg-color); padding: 10px 14px;
-            border-radius: 12px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s;
-        }
+        .date-picker { display: flex; align-items: center; gap: 10px; background-color: var(--input-bg-color); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
         .date-picker label { font-weight: 500; color: var(--text-light-color); font-size: 0.9rem; white-space: nowrap; }
-        #task-form input[type="date"] {
-            padding: 4px; border: none; border-radius: 4px; background: transparent; font-family: inherit; font-size: 0.95rem; color: var(--text-color); width: 100%;
-        }
+        #task-form input[type="date"] { padding: 4px; border: none; border-radius: 4px; background: transparent; font-family: inherit; font-size: 0.95rem; color: var(--text-color); width: 100%; }
         body.dark-mode #task-form input[type="date"] { color-scheme: dark; }
-
-        .button, #task-form button {
-            grid-column: 1 / -1; padding: 16px 20px; background: var(--primary-color); color: white; border: none; border-radius: 12px;
-            cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-        }
+        .button, #task-form button { grid-column: 1 / -1; padding: 16px 20px; background: var(--primary-color); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; }
         .button.green { background-color: var(--success-color); }
         .button.orange { background-color: var(--warning-color); }
         .button:hover, #task-form button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow-color); }
         .button.green:hover { box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3); background-color: #30b852; }
         .button.orange:hover { box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3); background-color: #ff8c00; }
-        #toggle-sharing-button, #toggle-file-transfer-button {
-            position: relative; width: auto; padding: 10px 16px; background: var(--text-light-color); color: var(--bg-color);
-            border: none; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
-            transition: background-color 0.2s, transform 0.2s;
-        }
+        #toggle-sharing-button, #toggle-file-transfer-button { position: relative; width: auto; padding: 10px 16px; background: var(--text-light-color); color: var(--bg-color); border: none; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s, transform 0.2s; }
         #toggle-sharing-button:hover, #toggle-file-transfer-button:hover { background-color: var(--text-color); transform: translateY(-1px); }
-
         #sharing-view, #file-transfer-view { display: none; }
-        .back-button {
-            background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 10px 16px; border-radius: 12px;
-            cursor: pointer; font-weight: 600; margin-bottom: 30px; transition: background-color 0.2s, color 0.2s;
-            display: inline-flex; align-items: center; gap: 8px;
-        }
+        .back-button { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; margin-bottom: 30px; transition: background-color 0.2s, color 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .back-button:hover { background-color: var(--input-bg-color); }
-
         #search-container { margin-bottom: 20px; }
         #search-input { width: 100%; }
         #task-list { list-style: none; padding: 0; margin: 0; }
-        .task-item {
-            display: flex; align-items: center; background: var(--main-color); padding: 15px 20px; border: 1px solid var(--border-color);
-            border-radius: 16px; margin-bottom: 12px; transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out;
-            gap: 15px; overflow: hidden; max-height: 100px;
-        }
+        .task-item { display: flex; align-items: center; background: var(--main-color); padding: 15px 20px; border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 12px; transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out; gap: 15px; overflow: hidden; max-height: 100px; }
         .task-item.hidden { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-width: 0; }
         .task-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.04); border-color: #d8d8d8; }
         body.dark-mode .task-item:hover { border-color: #444; }
@@ -240,48 +209,27 @@
         .complete-checkbox { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-color); }
         .deadline-text { cursor: pointer; color: var(--danger-color); font-weight: 500; transition: color 0.3s; }
         .deadline-text:hover { text-decoration: underline; color: #d92b21; }
-        .deadline-status {
-            font-weight: 500; font-size: 0.85em; padding: 3px 8px; border-radius: 10px; color: white; margin-left: 8px;
-            display: inline-block; vertical-align: middle;
-        }
+        .deadline-status { font-weight: 500; font-size: 0.85em; padding: 3px 8px; border-radius: 10px; color: white; margin-left: 8px; display: inline-block; vertical-align: middle; }
         .deadline-status.future { background-color: var(--success-color); opacity: 0.8; }
         .deadline-status.today { background-color: var(--warning-color); }
         .deadline-status.overdue { background-color: var(--danger-color); }
-
-        .notification {
-            position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px;
-            color: white; font-weight: 500; z-index: 1000; opacity: 0; visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s, top 0.3s;
-        }
+        .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s, top 0.3s; }
         .notification.show { opacity: 1; visibility: visible; top: 90px; }
         .notification.error { background-color: var(--danger-color); box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
         .notification.reminder, .notification.info { background-color: var(--primary-color); box-shadow: 0 4px 15px var(--shadow-color); }
-        
-        .section-container {
-            margin-top: 20px; padding: 20px; border: 1px solid var(--border-color); border-radius: 16px;
-            display: flex; flex-direction: column; gap: 15px;
-        }
+        .section-container { margin-top: 20px; padding: 20px; border: 1px solid var(--border-color); border-radius: 16px; display: flex; flex-direction: column; gap: 15px; }
         .section-part { display: flex; flex-direction: column; gap: 10px; }
         .section-part h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-color); }
         #active-peer-id-container { font-size: 0.9rem; color: var(--text-light-color); }
-        #active-peer-id {
-            font-weight: 600; color: var(--text-color); background-color: var(--input-bg-color); padding: 5px 10px;
-            border-radius: 8px; user-select: all; cursor: copy;
-        }
+        #active-peer-id { font-weight: 600; color: var(--text-color); background-color: var(--input-bg-color); padding: 5px 10px; border-radius: 8px; user-select: all; cursor: copy; }
         #connection-status { font-weight: 500; padding: 8px 12px; border-radius: 8px; text-align: center; word-break: break-all; }
         #connection-status.disconnected { background-color: #ffebeb; color: var(--danger-color); }
         body.dark-mode #connection-status.disconnected { background-color: #4f2525; }
         #connection-status.connected { background-color: #e3fcef; color: var(--success-color); }
         body.dark-mode #connection-status.connected { background-color: #1c4b2a; }
         #received-files-list { list-style-type: none; padding: 0; margin: 0; }
-        #received-files-list li {
-            background-color: var(--input-bg-color); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 8px; font-size: 0.9rem;
-        }
-        #received-files-list .download-link {
-            text-decoration: none; color: white; background-color: var(--primary-color); padding: 5px 10px; border-radius: 6px;
-            font-weight: 500; font-size: 0.85rem;
-        }
+        #received-files-list li { background-color: var(--input-bg-color); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
+        #received-files-list .download-link { text-decoration: none; color: white; background-color: var(--primary-color); padding: 5px 10px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; }
         
         @media (max-width: 768px) {
             .app-container { padding: 15px; }
@@ -290,6 +238,7 @@
         @media (max-width: 600px) {
             .app-container { padding-top: 10px; }
             #todo-view-wrapper .container { padding: 20px; border-radius: 16px; }
+            #todo-view-wrapper #main-view { padding-top: 50px; } /* More padding for mobile */
             #todo-view-wrapper h1 { font-size: 1.8rem; }
             #todo-view-wrapper h2 { font-size: 1.3rem; }
             #todo-view-wrapper .top-controls { top: 15px; right: 15px; gap: 8px; }
@@ -305,6 +254,7 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Main Tab Navigation -->
         <nav class="app-nav">
             <button id="show-todo-btn" class="active">To-Do List</button>
             <button id="show-schedule-btn">Schedule</button>
@@ -312,6 +262,7 @@
         
         <div id="notification" class="notification"></div>
 
+        <!-- Wrapper for To-Do App -->
         <div id="todo-view-wrapper">
             <div class="container">
                 <div class="top-controls">
@@ -327,15 +278,26 @@
                     </div>
                 </div>
                 <div id="main-view">
-                    <h1> </h1>
-                    <div id="timer-container"><span id="timer">00:00:00</span><span id="timer-date">Loading date...</span></div>
+                    <h1>My To-Do List</h1>
+                    <div id="timer-container">
+                        <span id="timer">00:00:00</span>
+                        <span id="timer-date">Loading date...</span>
+                    </div>
                     <form id="task-form">
                         <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
-                        <div class="date-picker"><label for="task-deadline-input">Deadline:</label><input type="date" id="task-deadline-input"></div>
-                        <div class="date-picker"><label for="task-finish-date-input">Finished:</label><input type="date" id="task-finish-date-input"></div>
+                        <div class="date-picker">
+                            <label for="task-deadline-input">Deadline:</label>
+                            <input type="date" id="task-deadline-input">
+                        </div>
+                        <div class="date-picker">
+                            <label for="task-finish-date-input">Finished:</label>
+                            <input type="date" id="task-finish-date-input">
+                        </div>
                         <button type="submit">Add Task</button>
                     </form>
-                    <div id="search-container"><input type="text" id="search-input" class="input-field" placeholder="Search for a task..."></div>
+                    <div id="search-container">
+                        <input type="text" id="search-input" class="input-field" placeholder="Search for a task...">
+                    </div>
                     <ul id="task-list"></ul>
                 </div>
                 <div id="sharing-view">
@@ -375,11 +337,12 @@
             </div>
         </div>
 
+        <!-- Wrapper for Schedule App -->
         <div id="schedule-view-wrapper" style="display: none;">
             <div class="container mx-auto p-4 max-w-5xl">
                 <header class="text-center mb-8">
                     <h1 class="text-4xl font-bold text-gray-800">School Schedule</h1>
-                    <p class="text-gray-500 mt-2">At a glance view for today and tomorrow's events and classes.</p>
+                    <p id="schedule-subtitle" class="text-gray-500 mt-2">Loading your schedule...</p>
                 </header>
                 <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
@@ -398,8 +361,20 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal for Class Input -->
+    <div id="class-modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Enter Your Class</h2>
+            <p>Please enter your class to fetch your schedule (e.g., 5D).</p>
+            <form id="class-form">
+                <input type="text" id="class-input" placeholder="e.g., 5D" required>
+                <button type="submit">Save & View Schedule</button>
+            </form>
+        </div>
+    </div>
 
-
+    <!-- Main application logic -->
     <script>
         // --- TAB SWITCHING LOGIC ---
         const showTodoBtn = document.getElementById('show-todo-btn');
@@ -413,10 +388,9 @@
             showTodoBtn.classList.add('active');
             showScheduleBtn.classList.remove('active');
         });
-
         showScheduleBtn.addEventListener('click', () => {
             todoWrapper.style.display = 'none';
-            scheduleWrapper.style.display = 'block'; // Use block for this layout
+            scheduleWrapper.style.display = 'block';
             showScheduleBtn.classList.add('active');
             showTodoBtn.classList.remove('active');
         });
@@ -424,7 +398,7 @@
         // --- TO-DO APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             const taskForm = document.getElementById('task-form');
-            if (!taskForm) return; // Prevent script from running on the wrong view initially
+            if (!taskForm) return;
 
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
@@ -435,7 +409,6 @@
             const notificationElement = document.getElementById('notification');
             const themeCheckbox = document.getElementById('theme-checkbox');
             const searchInput = document.getElementById('search-input');
-            
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
             const fileTransferView = document.getElementById('file-transfer-view');
@@ -443,14 +416,12 @@
             const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
             const backButtons = document.querySelectorAll('.back-button');
             const topControls = document.querySelector('.top-controls');
-
             const myPeerIdInput = document.getElementById('my-peer-id-input');
             const setPeerIdButton = document.getElementById('set-peer-id-button');
             const activePeerIdElement = document.getElementById('active-peer-id');
             const remotePeerIdInput = document.getElementById('remote-peer-id-input');
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
-            
             const peerSelect = document.getElementById('peer-select');
             const fileInput = document.getElementById('file-input');
             const sendFileButton = document.getElementById('send-file-button');
@@ -459,261 +430,102 @@
             let peer;
             const connections = [];
 
-            function getRecentPeers() {
-                const peers = localStorage.getItem('recentPeerIds');
-                return peers ? JSON.parse(peers) : [];
-            }
-            function addRecentPeer(peerId) {
-                let recentPeers = getRecentPeers().filter(p => p !== peerId);
-                recentPeers.unshift(peerId);
-                if (recentPeers.length > 5) recentPeers.pop();
-                localStorage.setItem('recentPeerIds', JSON.stringify(recentPeers));
-                localStorage.setItem('lastConnectedPeerId', peerId);
-            }
-            function initializePeer(requestedId) {
-                if (peer) { peer.destroy(); }
-                peer = new Peer(requestedId);
-                peer.on('open', (id) => {
-                    activePeerIdElement.textContent = id;
-                    activePeerIdElement.addEventListener('click', () => {
-                        navigator.clipboard.writeText(id);
-                        showNotification('Your active ID has been copied!', 'info');
-                    });
-                    const recentPeers = getRecentPeers();
-                    if (recentPeers.length > 0) {
-                        setTimeout(() => {
-                            showNotification(`Reconnecting to recent peers...`, 'info');
-                            recentPeers.forEach(peerId => connectToPeer(peerId));
-                        }, 500);
-                    }
-                });
-                peer.on('connection', (conn) => {
-                    showNotification(`Incoming connection from ${conn.peer}`, 'info');
-                    setupConnection(conn);
-                });
-                peer.on('error', (err) => {
-                    console.error('PeerJS error:', err);
-                    showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is already taken.` : `Connection error: ${err.message}`);
-                    activePeerIdElement.textContent = 'Error';
-                });
-            }
-            setPeerIdButton.addEventListener('click', () => {
-                const newId = myPeerIdInput.value.trim();
-                if (!newId) return showNotification('Please enter a persistent ID.');
-                localStorage.setItem('myPeerId', newId);
-                showNotification(`Setting ID to "${newId}"...`, 'info');
-                initializePeer(newId);
-            });
+            function getRecentPeers() { const p = localStorage.getItem('recentPeerIds'); return p ? JSON.parse(p) : []; }
+            function addRecentPeer(peerId) { let p = getRecentPeers().filter(id => id !== peerId); p.unshift(peerId); if (p.length > 5) p.pop(); localStorage.setItem('recentPeerIds', JSON.stringify(p)); localStorage.setItem('lastConnectedPeerId', peerId); }
+            function initializePeer(requestedId) { if (peer) peer.destroy(); peer = new Peer(requestedId); peer.on('open', (id) => { activePeerIdElement.textContent = id; activePeerIdElement.onclick = () => { navigator.clipboard.writeText(id); showNotification('Your active ID has been copied!', 'info'); }; const recent = getRecentPeers(); if (recent.length > 0) setTimeout(() => { showNotification('Reconnecting to recent peers...', 'info'); recent.forEach(connectToPeer); }, 500); }); peer.on('connection', (conn) => { showNotification(`Incoming connection from ${conn.peer}`, 'info'); setupConnection(conn); }); peer.on('error', (err) => { console.error('PeerJS error:', err); showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is taken.` : `Connection error: ${err.message}`); activePeerIdElement.textContent = 'Error'; }); }
+            setPeerIdButton.onclick = () => { const id = myPeerIdInput.value.trim(); if (!id) { showNotification('Please enter a persistent ID.'); return; } localStorage.setItem('myPeerId', id); showNotification(`Setting ID to "${id}"...`, 'info'); initializePeer(id); };
             const savedPeerId = localStorage.getItem('myPeerId');
-            if (savedPeerId) {
-                myPeerIdInput.value = savedPeerId;
-                initializePeer(savedPeerId);
-            } else { activePeerIdElement.textContent = "Set an ID to connect"; }
-            function setupConnection(conn) {
-                conn.on('open', () => {
-                    if (connections.some(c => c.peer === conn.peer)) return conn.close();
-                    connections.push(conn);
-                    updateConnectionStatus();
-                    updatePeerSelectDropdown();
-                    if (conn.metadata.isInitiator) addRecentPeer(conn.peer);
-                    conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
-                });
-                conn.on('data', (data) => handleRemoteData(data));
-                conn.on('close', () => {
-                    const index = connections.findIndex(c => c.peer === conn.peer);
-                    if (index > -1) connections.splice(index, 1);
-                    updateConnectionStatus();
-                    updatePeerSelectDropdown();
-                    showNotification(`Disconnected from ${conn.peer}`, 'info');
-                });
-            }
-            function connectToPeer(remoteId) {
-                 if (!peer || peer.disconnected) return showNotification('You must set your ID before connecting.', 'error');
-                if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) return;
-                showNotification(`Attempting to connect to ${remoteId}...`, 'info');
-                const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
-                setupConnection(conn);
-            }
-            connectButton.addEventListener('click', () => connectToPeer(remotePeerIdInput.value.trim()));
-            function updateConnectionStatus() {
-                if (connections.length > 0) {
-                    const peerIds = connections.map(c => c.peer).join(', ');
-                    connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${peerIds}`;
-                    connectionStatusElement.className = 'connected';
-                } else {
-                    connectionStatusElement.textContent = 'Status: Not Connected';
-                    connectionStatusElement.className = 'disconnected';
-                }
-            }
-            function broadcast(data) { connections.forEach(conn => conn.open && conn.send(data)); }
-            function handleRemoteData(data) {
-                if (data.type === 'FILE_TRANSFER') return handleReceivedFile(data);
-                let tasks = getTasks(); let taskUpdated = false; let taskIndex;
-                switch (data.type) {
-                    case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); taskUpdated = true; } break;
-                    case 'TOGGLE_COMPLETE': taskIndex = tasks.findIndex(t => t.id == data.taskId); if (taskIndex > -1) { Object.assign(tasks[taskIndex], { isCompleted: data.isCompleted, finishDate: data.finishDate }); taskUpdated = true; } break;
-                    case 'DELETE_TASK': const initialLength = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < initialLength) taskUpdated = true; break;
-                    case 'UPDATE_TASK': taskIndex = tasks.findIndex(t => t.id == data.taskId); if (taskIndex > -1) { Object.assign(tasks[taskIndex], data.updatedFields); taskUpdated = true; } break;
-                    case 'SYNC_ALL': const taskMap = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(remoteTask => taskMap.set(remoteTask.id, remoteTask)); tasks = Array.from(taskMap.values()); taskUpdated = true; break;
-                }
-                if (taskUpdated) { saveTasks(tasks); loadTasks(); }
-            }
-            const lastPeerId = localStorage.getItem('lastConnectedPeerId');
-            if (lastPeerId) remotePeerIdInput.value = lastPeerId;
-            function updatePeerSelectDropdown() {
-                peerSelect.innerHTML = '';
-                if (connections.length === 0) {
-                    peerSelect.innerHTML = '<option>No peers connected</option>';
-                    peerSelect.disabled = true; sendFileButton.disabled = true;
-                } else {
-                    connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; });
-                    peerSelect.disabled = false; sendFileButton.disabled = false;
-                }
-            }
-            sendFileButton.addEventListener('click', () => {
-                const peerId = peerSelect.value; const file = fileInput.files[0];
-                if (!peerId || peerId === 'No peers connected') return showNotification('Please select a peer.');
-                if (!file) return showNotification('Please select a file.');
-                const conn = connections.find(c => c.peer === peerId);
-                if (!conn) return showNotification('Connection lost.');
-                const reader = new FileReader();
-                reader.onload = (event) => conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type });
-                reader.readAsArrayBuffer(file);
-                showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
-            });
-            function handleReceivedFile({ file, fileName, fileType }) {
-                const blob = new Blob([file], { type: fileType });
-                const url = URL.createObjectURL(blob);
-                receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`;
-                showNotification(`You received a file: ${fileName}`, 'info');
-            }
-            function showView(viewToShow) {
-                [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none');
-                viewToShow.style.display = 'block';
-                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
-            }
-            toggleSharingButton.addEventListener('click', () => showView(sharingView));
-            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
-            backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                taskList.querySelectorAll('.task-item').forEach(task => {
-                    const taskName = task.querySelector('.task-name').textContent.toLowerCase();
-                    task.classList.toggle('hidden', !taskName.includes(searchTerm));
-                });
-            });
-            function setTheme(theme) {
-                document.body.classList.toggle('dark-mode', theme === 'dark');
-                themeCheckbox.checked = theme === 'dark';
-                localStorage.setItem('theme', theme);
-            }
-            themeCheckbox.addEventListener('change', () => setTheme(themeCheckbox.checked ? 'dark' : 'light'));
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-            function updateTimer() {
-                const now = new Date();
-                timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            }
-            updateTimer(); setInterval(updateTimer, 1000); 
-            function showNotification(message, type = 'error') {
-                notificationElement.textContent = message;
-                notificationElement.className = `notification ${type} show`;
-                setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); 
-            }
-            function checkReminders() {
-                const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); 
-                const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
-                let notificationDelay = 0;
-                tasks.forEach(task => {
-                    if (!task.isCompleted && !remindedTasks.includes(task.id) && now.getTime() === new Date(task.deadline + 'T00:00:00').getTime()) {
-                        setTimeout(() => {
-                            const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
-                            showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
-                        }, notificationDelay);
-                        notificationDelay += 500; remindedTasks.push(task.id);
-                    }
-                });
-                sessionStorage.setItem('remindedTasks', JSON.stringify(remindedTasks));
-            }
-            taskForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const taskName = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value;
-                if (taskName === '' || deadline === '') return showNotification('Task name and deadline are required.');
-                const task = { id: Date.now(), name: taskName, deadline, isCompleted: false, finishDate: finishDate || null };
-                let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks();
-                broadcast({ type: 'ADD_TASK', task });
-                taskForm.reset(); taskNameInput.focus();
-            });
-            taskList.addEventListener('change', (e) => { if (e.target.classList.contains('complete-checkbox')) toggleComplete(Number(e.target.closest('.task-item').dataset.id)); });
-            taskList.addEventListener('click', (e) => {
-                const taskItem = e.target.closest('.task-item'); if (!taskItem) return;
-                const taskId = Number(taskItem.dataset.id);
-                if (e.target.closest('.deadline-text')) {
-                    taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; taskItem.style.opacity = '0'; taskItem.style.transform = 'translateX(-20px)';
-                    setTimeout(() => deleteTask(taskId), 300);
-                } else if (e.target.classList.contains('task-name')) makeEditable(e.target, taskId, 'name');
-            });
-            function makeEditable(element, taskId, field) {
-                const originalValue = getTaskById(taskId)[field];
-                const input = document.createElement('input'); input.type = 'text'; input.value = originalValue; input.className = 'edit-input-field';
-                element.replaceWith(input); input.focus();
-                const saveChanges = () => {
-                    const newValue = input.value.trim();
-                    if (newValue && newValue !== originalValue) updateTask(taskId, { [field]: newValue });
-                    else loadTasks();
-                };
-                input.addEventListener('blur', saveChanges);
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') loadTasks(); });
-            }
-            function addTaskToDOM(task) {
-                const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id;
-                const deadlineDate = new Date(task.deadline + 'T00:00:00'); let deadlineStatusHTML = '';
-                if (!task.isCompleted) {
-                    const now = new Date(); now.setHours(0, 0, 0, 0); const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) deadlineStatusHTML = `<span class="deadline-status future">${diffDays} day${diffDays === 1 ? '' : 's'} left</span>`;
-                    else if (diffDays === 0) deadlineStatusHTML = `<span class="deadline-status today">Due today</span>`;
-                    else { const overdueDays = Math.abs(diffDays); deadlineStatusHTML = `<span class="deadline-status overdue">Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}</span>`; }
-                }
-                li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadlineDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${deadlineStatusHTML} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`;
-                taskList.appendChild(li);
-            }
+            if (savedPeerId) { myPeerIdInput.value = savedPeerId; initializePeer(savedPeerId); } else { activePeerIdElement.textContent = "Set an ID to connect"; }
+            function setupConnection(conn) { conn.on('open', () => { if (connections.some(c => c.peer === conn.peer)) { conn.close(); return; } connections.push(conn); updateConnectionStatus(); updatePeerSelectDropdown(); if (conn.metadata.isInitiator) addRecentPeer(conn.peer); conn.send({ type: 'SYNC_ALL', tasks: getTasks() }); }); conn.on('data', handleRemoteData); conn.on('close', () => { const index = connections.findIndex(c => c.peer === conn.peer); if (index > -1) connections.splice(index, 1); updateConnectionStatus(); updatePeerSelectDropdown(); showNotification(`Disconnected from ${conn.peer}`, 'info'); }); }
+            function connectToPeer(remoteId) { if (!peer || peer.disconnected) { showNotification('You must set your ID before connecting.', 'error'); return; } if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) return; showNotification(`Attempting to connect to ${remoteId}...`, 'info'); const conn = peer.connect(remoteId, { metadata: { isInitiator: true } }); setupConnection(conn); }
+            connectButton.onclick = () => connectToPeer(remotePeerIdInput.value.trim());
+            function updateConnectionStatus() { if (connections.length > 0) { const ids = connections.map(c => c.peer).join(', '); connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${ids}`; connectionStatusElement.className = 'connected'; } else { connectionStatusElement.textContent = 'Status: Not Connected'; connectionStatusElement.className = 'disconnected'; } }
+            function broadcast(data) { connections.forEach(conn => { if (conn.open) conn.send(data); }); }
+            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); } }
+            const lastPeerId = localStorage.getItem('lastConnectedPeerId'); if (lastPeerId) remotePeerIdInput.value = lastPeerId;
+            function updatePeerSelectDropdown() { peerSelect.innerHTML = ''; if (connections.length === 0) { peerSelect.innerHTML = '<option>No peers connected</option>'; peerSelect.disabled = true; sendFileButton.disabled = true; } else { connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; }); peerSelect.disabled = false; sendFileButton.disabled = false; } }
+            sendFileButton.onclick = () => { const peerId = peerSelect.value; const file = fileInput.files[0]; if (!peerId || peerId === 'No peers connected') { showNotification('Please select a peer.'); return; } if (!file) { showNotification('Please select a file.'); return; } const conn = connections.find(c => c.peer === peerId); if (!conn) { showNotification('Connection lost.'); return; } const reader = new FileReader(); reader.onload = (event) => { conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type }); showNotification(`Sending ${file.name} to ${peerId}...`, 'info'); }; reader.readAsArrayBuffer(file); };
+            function handleReceivedFile({ file, fileName, fileType }) { const blob = new Blob([file], { type: fileType }); const url = URL.createObjectURL(blob); receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`; showNotification(`You received a file: ${fileName}`, 'info'); }
+            function showView(viewToShow) { [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none'); viewToShow.style.display = 'block'; topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none'; }
+            toggleSharingButton.onclick = () => showView(sharingView);
+            toggleFileTransferButton.onclick = () => showView(fileTransferView);
+            backButtons.forEach(button => button.onclick = () => showView(mainView));
+            searchInput.oninput = (e) => { const term = e.target.value.toLowerCase(); taskList.querySelectorAll('.task-item').forEach(task => { const name = task.querySelector('.task-name').textContent.toLowerCase(); task.classList.toggle('hidden', !name.includes(term)); }); };
+            function setTheme(theme) { document.body.classList.toggle('dark-mode', theme === 'dark'); themeCheckbox.checked = theme === 'dark'; localStorage.setItem('theme', theme); }
+            themeCheckbox.onchange = () => setTheme(themeCheckbox.checked ? 'dark' : 'light');
+            const savedTheme = localStorage.getItem('theme'); const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+            function showNotification(message, type = 'error') { notificationElement.textContent = message; notificationElement.className = `notification ${type} show`; setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); }
+            function updateTimer() { const now = new Date(); timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
+            updateTimer(); setInterval(updateTimer, 1000);
+            function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
+            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
+            taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) toggleComplete(Number(e.target.closest('.task-item').dataset.id)); };
+            taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
+            function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') loadTasks(); }; }
+            function addTaskToDOM(task) { const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id; const deadline = new Date(task.deadline + 'T00:00:00'); let status = ''; if (!task.isCompleted) { const now = new Date(); now.setHours(0, 0, 0, 0); const diff = Math.ceil((deadline - now) / 864e5); if (diff > 0) status = `<span class="deadline-status future">${diff} day${diff === 1 ? '' : 's'} left</span>`; else if (diff === 0) status = `<span class="deadline-status today">Due today</span>`; else { const overdue = Math.abs(diff); status = `<span class="deadline-status overdue">Overdue by ${overdue} day${overdue === 1 ? '' : 's'}</span>`; } } li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadline.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${status} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`; taskList.appendChild(li); }
             function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
             function getTaskById(id) { return getTasks().find(task => task.id === id); }
             function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
-            function loadTasks() {
-                const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-                taskList.innerHTML = ''; tasks.forEach(task => addTaskToDOM(task));
-            }
-            function updateTask(taskId, updatedFields) {
-                let tasks = getTasks(); const taskIndex = tasks.findIndex(t => t.id == taskId);
-                if (taskIndex > -1) { tasks[taskIndex] = { ...tasks[taskIndex], ...updatedFields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId, updatedFields }); }
-                loadTasks();
-            }
-            function toggleComplete(id) {
-                const tasks = getTasks(); const taskIndex = tasks.findIndex(t => t.id == id);
-                if (taskIndex > -1) {
-                    const task = tasks[taskIndex]; task.isCompleted = !task.isCompleted;
-                    if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0];
-                    saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate });
-                }
-                loadTasks();
-            }
-            function deleteTask(id) {
-                let tasks = getTasks().filter(t => t.id != id);
-                saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks();
-            }
-            function escapeHTML(str) { const div = document.createElement('div'); div.appendChild(document.createTextNode(str)); return div.innerHTML; }
+            function loadTasks() { const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
+            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); }
+            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); }
+            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); }
+            function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
             
             loadTasks();
             checkReminders(); 
         });
 
-
         // --- SCHEDULE APP LOGIC ---
         (function() {
+            const API_URL = 'https://iot.spyc.hk/timetable';
+            let classTimetableData = null; 
+
+            const modal = document.getElementById('class-modal');
+            const classForm = document.getElementById('class-form');
+            const classInput = document.getElementById('class-input');
+            const scheduleSubtitle = document.getElementById('schedule-subtitle');
+
             const csvData = `Date,DayOfWeek,CycleDay,Type,Events
+2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
+2025-09-02,Tuesday,A,,Summer Timetable
+2025-09-03,Wednesday,C,,Summer Timetable
+2025-09-04,Thursday,F,,Summer Timetable
+2025-09-05,Friday,B,,Summer Timetable
+2025-09-06,Saturday,,,
+2025-09-07,Sunday,,,
+2025-09-08,Monday,D,,Summer Timetable
+2025-09-09,Tuesday,E,,Summer Timetable
+2025-09-10,Wednesday,G,,Summer Timetable
+2025-09-11,Thursday,H,,Summer Timetable
+2025-09-12,Friday,A,,Summer Timetable
+2025-09-13,Saturday,,,
+2025-09-14,Sunday,,Special Timetable,"Education Sunday"
+2025-09-15,Monday,B,,Summer Timetable
+2025-09-16,Tuesday,C,,Summer Timetable
+2025-09-17,Wednesday,D,,Summer Timetable
+2025-09-18,Thursday,E,,Summer Timetable
+2025-09-19,Friday,F,,Summer Timetable
+2025-09-20,Saturday,,,
+2025-09-21,Sunday,,,
+2025-09-22,Monday,G,,Summer Timetable
+2025-09-23,Tuesday,H,,Summer Timetable
+2025-09-24,Wednesday,A,,
+2025-09-25,Thursday,B,,
+2025-09-26,Friday,C,,
+2025-09-27,Saturday,,,
+2025-09-28,Sunday,,,
+2025-09-29,Monday,,,
+2025-09-30,Tuesday,,,
+2025-10-01,Wednesday,,School Holiday,"The National Day"
+2025-10-02,Thursday,F,,
+2025-10-03,Friday,G,,
+2025-10-04,Saturday,,,
+2025-10-05,Sunday,,,
+2025-10-06,Monday,H,,
+2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"
+2025-10-08,Wednesday,A,,
+2025-10-09,Thursday,B,,
 2025-10-10,Friday,C,,
 2025-10-11,Saturday,,,
 2025-10-12,Sunday,,,
@@ -1040,17 +852,97 @@
 2026-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
-            const timetableData = {'A':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'1X'},{p:'R',s:'Recess'},{p:'3',s:'ENG'},{p:'4',s:'2X'},{p:'L',s:'Lunch'},{p:'5',s:'CHIN'},{p:'6',s:'CTP'},{p:'7',s:''}], 'B':[{p:'0',s:'CTP'},{p:'1',s:'1X'},{p:'2',s:'3X'},{p:'R',s:'Recess'},{p:'3',s:'CS'},{p:'4',s:'MATH'},{p:'L',s:'Lunch'},{p:'5',s:'CHIN'},{p:'6',s:'CHIN'},{p:'7',s:''}], 'C':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'ENG'},{p:'R',s:'Recess'},{p:'3',s:'CHIN'},{p:'4',s:'2X'},{p:'L',s:'Lunch'},{p:'5',s:'3X'},{p:'6',s:'ASS'},{p:'7',s:''}], 'D':[{p:'0',s:'CTP'},{p:'1',s:'ENG'},{p:'2',s:'ENG'},{p:'R',s:'Recess'},{p:'3',s:'1X'},{p:'4',s:'3X'},{p:'L',s:'Lunch'},{p:'5',s:'PE'},{p:'6',s:'2X'},{p:'7',s:''}], 'E':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'CHIN'},{p:'R',s:'Recess'},{p:'3',s:'ENG'},{p:'4',s:'1X'},{p:'L',s:'Lunch'},{p:'5',s:'2X'},{p:'6',s:'3X'},{p:'7',s:''}], 'F':[{p:'0',s:'CTP'},{p:'1',s:'3X'},{p:'2',s:'2X'},{p:'R',s:'Recess'},{p:'3',s:'MATH'},{p:'4',s:'CS'},{p:'L',s:'Lunch'},{p:'5',s:'IA'},{p:'6',s:'ASSL'},{p:'7',s:''}], 'G':[{p:'0',s:'CTP'},{p:'1',s:'2X'},{p:'2',s:'3X'},{p:'R',s:'Recess'},{p:'3',s:'MATH'},{p:'4',s:'CHIN'},{p:'L',s:'Lunch'},{p:'5',s:'ENG'},{p:'6',s:'1X'},{p:'7',s:''}], 'H':[{p:'0',s:'CTP'},{p:'1',s:'RS'},{p:'2',s:'CS'},{p:'R',s:'Recess'},{p:'3',s:'CHIN'},{p:'4',s:'ENG\nENG CF ac'},{p:'L',s:'Lunch'},{p:'5',s:'1X'},{p:'6',s:'PE'},{p:'7',s:''}]};
-            Object.keys(timetableData).forEach(k => timetableData[k] = timetableData[k].map(i => ({ period: i.p === 'R' ? 'Recess' : (i.p === 'L' ? 'Lunch Time' : i.p), subject: i.s })));
-            function parseCSV(t){const n=t.trim().split("\n"),e=n[0].split(","),s=[];for(let t=1;t<n.length;t++){const i=n[t].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);if(i.length===e.length){const t={};for(let n=0;n<e.length;n++)t[e[n]]=i[n].replace(/"/g,"");s.push(t)}}return s}
-            function formatDisplayDate(t){return t.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
-            function formatLookupDate(t){return t.toISOString().split("T")[0]}
-            function renderEvents(t,n){if(!n||0===n.length)return void(t.innerHTML='<p class="text-gray-500 italic">No events scheduled.</p>');const e=n[0];let s="";e.CycleDay&&(s+=`<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${e.CycleDay}</span></div>`),e.Type&&(s+=`<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${e.Type}</span></div>`),e.Events&&(s+=`<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span><span class="text-gray-800">${e.Events.split(";").map(t=>t.trim()).join("<br>")}</span></div>`),t.innerHTML=s||'<p class="text-gray-500 italic">No specific events listed.</p>'}
-            function renderTimetable(t,n){if(!n||!n.CycleDay||!timetableData[n.CycleDay])return void(t.innerHTML="");const e=n.CycleDay,s=timetableData[e];let i=`\n                <h3 class="text-xl font-bold text-gray-700 mt-6 mb-3">Timetable (Day ${e})</h3>\n                <div class="overflow-x-auto rounded-lg border border-gray-200">\n                    <table class="min-w-full divide-y divide-gray-200">\n                        <thead class="bg-gray-50">\n                            <tr>\n                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Period</th>\n                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>\n                            </tr>\n                        </thead>\n                        <tbody class="bg-white divide-y divide-gray-200">\n            `;s.forEach(t=>{"recess"===t.period.toLowerCase()||"lunch time"===t.period.toLowerCase()?i+=`\n                        <tr>\n                            <td colspan="2" class="px-4 py-2 text-center bg-gray-100 font-medium text-sm text-gray-600">${t.subject}</td>\n                        </tr>\n                    `:i+=`\n                        <tr>\n                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${t.period}</td>\n                            <td class="px-4 py-3 whitespace-pre-wrap text-sm text-gray-600">${t.subject||""}</td>\n                        </tr>\n                    `}),i+="\n                        </tbody>\n                    </table>\n                </div>\n            ",t.innerHTML=i}
-            document.addEventListener("DOMContentLoaded",()=>{const t=parseCSV(csvData),n=new Date,e=new Date(n);e.setDate(n.getDate()+1),document.getElementById("today-date").textContent=formatDisplayDate(n),document.getElementById("tomorrow-date").textContent=formatDisplayDate(e);const s=formatLookupDate(n),i=formatLookupDate(e),o=t.filter(t=>t.Date===s),a=t.filter(t=>t.Date===i);renderEvents(document.getElementById("today-events"),o),renderTimetable(document.getElementById("today-timetable"),o.length>0?o[0]:null),renderEvents(document.getElementById("tomorrow-events"),a),renderTimetable(document.getElementById("tomorrow-timetable"),a.length>0?a[0]:null)});
-            // I minified the schedule's script and data to save space as it's static.
-            // A small change was made to the original schedule script to use the real current date.
+            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
+            function formatDisplayDate(date) { return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
+            function formatLookupDate(date) { return date.toISOString().split('T')[0]; }
+            function renderEvents(element, eventsForDay) { if (!eventsForDay || eventsForDay.length === 0) { element.innerHTML = '<p class="text-gray-500 italic">No events scheduled.</p>'; return; } const event = eventsForDay[0]; let html = ''; if (event.CycleDay) { html += `<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${event.CycleDay}</span></div>`; } if (event.Type) { html += `<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${event.Type}</span></div>`; } if (event.Events) { const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>'); html += `<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span><span class="text-gray-800">${eventItems}</span></div>`; } element.innerHTML = html || '<p class="text-gray-500 italic">No specific events listed.</p>'; }
+            
+            function renderTimetable(element, eventData) {
+                if (!eventData || !eventData.CycleDay || !classTimetableData || !classTimetableData[eventData.CycleDay]) {
+                    element.innerHTML = ''; return;
+                }
+                const cycleDay = eventData.CycleDay;
+                const schedule = classTimetableData[cycleDay];
+                let tableHtml = `<h3 class="text-xl font-bold text-gray-700 mt-6 mb-3">Timetable (Day ${cycleDay})</h3><div class="overflow-x-auto rounded-lg border border-gray-200"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">`;
+                
+                schedule.forEach(item => {
+                    let subject = item.subject || "";
+                    const match = subject.match(/\[([1-3]X)\]/);
+                    if (match) {
+                        subject = match[1];
+                    }
+                    if (subject.toLowerCase().includes('recess') || subject.toLowerCase().includes('lunch')) {
+                        tableHtml += `<tr><td class="px-4 py-2 text-center bg-gray-100 font-medium text-sm text-gray-600">${subject}</td></tr>`;
+                    } else {
+                        tableHtml += `<tr><td class="px-4 py-3 whitespace-pre-wrap text-sm text-gray-600">${subject}</td></tr>`;
+                    }
+                });
+                tableHtml += `</tbody></table></div>`;
+                element.innerHTML = tableHtml;
+            }
+
+            async function fetchAndRenderSchedule(userClass) {
+                scheduleSubtitle.textContent = `Loading schedule for class ${userClass}...`;
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error(`Network response error`);
+                    const data = await response.json();
+
+                    if (!data[userClass]) {
+                        alert(`Class "${userClass}" not found. Please try again.`);
+                        localStorage.removeItem('userClass');
+                        modal.style.display = 'flex';
+                        scheduleSubtitle.textContent = "Please enter your class to begin.";
+                        return;
+                    }
+                    classTimetableData = data[userClass];
+                    scheduleSubtitle.textContent = `Showing schedule for class ${userClass}.`;
+                    
+                    const allEvents = parseCSV(csvData);
+                    const today = new Date(); 
+                    const tomorrow = new Date();
+                    tomorrow.setDate(today.getDate() + 1);
+
+                    document.getElementById('today-date').textContent = formatDisplayDate(today);
+                    document.getElementById('tomorrow-date').textContent = formatDisplayDate(tomorrow);
+
+                    const todaysEvents = allEvents.filter(e => e.Date === formatLookupDate(today));
+                    const tomorrowsEvents = allEvents.filter(e => e.Date === formatLookupDate(tomorrow));
+
+                    renderEvents(document.getElementById('today-events'), todaysEvents);
+                    renderTimetable(document.getElementById('today-timetable'), todaysEvents.length > 0 ? todaysEvents[0] : null);
+
+                    renderEvents(document.getElementById('tomorrow-events'), tomorrowsEvents);
+                    renderTimetable(document.getElementById('tomorrow-timetable'), tomorrowsEvents.length > 0 ? tomorrowsEvents[0] : null);
+
+                } catch (error) {
+                    console.error('Failed to fetch timetable:', error);
+                    scheduleSubtitle.textContent = "Could not load schedule. Please try again later.";
+                    alert("Error fetching schedule. Please check your internet or try again.");
+                }
+            }
+
+            classForm.onsubmit = (e) => {
+                e.preventDefault();
+                const userClass = classInput.value.trim().toUpperCase();
+                if (userClass) {
+                    localStorage.setItem('userClass', userClass);
+                    modal.style.display = 'none';
+                    fetchAndRenderSchedule(userClass);
+                }
+            };
+            
+            document.addEventListener("DOMContentLoaded", () => {
+                const savedClass = localStorage.getItem('userClass');
+                if (savedClass) {
+                    fetchAndRenderSchedule(savedClass);
+                } else {
+                    modal.style.display = 'flex';
+                    scheduleSubtitle.textContent = "Please enter your class to begin.";
+                }
+            });
         })();
     </script>
 </body>
 </html>
+
