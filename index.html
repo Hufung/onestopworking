@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern To-Do List</title>
+    <title>Dashboard | To-Do & Schedule</title>
     
-    <!-- Google Fonts for a modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- PeerJS Library for WebRTC -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
-    <!-- Tailwind CSS for Schedule View -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- CSS styles are embedded here -->
     <style>
+        /* --- Base Styles & To-Do App --- */
         :root {
             --bg-color: #f7f8fc;
             --main-color: #ffffff;
@@ -49,17 +46,57 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        .container {
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- Tab Navigation --- */
+        .app-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: var(--main-color);
+            padding: 8px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        .app-nav button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: transparent;
+            color: var(--text-light-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .app-nav button.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        /* Hide app wrappers by default */
+        #todo-view-wrapper, #schedule-view-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+
+        /* --- To-Do App Specific Styles --- */
+        #todo-view-wrapper .container {
             background: var(--main-color);
             padding: 40px;
             border-radius: 24px;
@@ -68,39 +105,26 @@
             max-width: 700px;
             border: 1px solid var(--border-color);
             transition: background-color 0.3s, border-color 0.3s;
-            position: relative; /* Added for positioning the theme switch */
-            overflow: hidden; /* Ensures smooth view transitions */
-        }
-        
-        .main-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
         }
 
-        h1, h2 {
+        #todo-view-wrapper h1, #todo-view-wrapper h2 {
             text-align: center;
             color: var(--text-color);
             margin-bottom: 20px;
             font-weight: 700;
         }
 
-        h1 {
-            font-size: 2.25rem;
-            margin-bottom: 0;
-            text-align: left;
-        }
-        
-        h2 {
+        #todo-view-wrapper h1 { font-size: 2.25rem; }
+        #todo-view-wrapper h2 {
             font-size: 1.5rem;
             margin-top: 40px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
         }
         
-        /* --- Top Controls Container --- */
-        .top-controls {
+        #todo-view-wrapper .top-controls {
             position: absolute;
             top: 25px;
             right: 25px;
@@ -109,9 +133,7 @@
             gap: 15px;
             z-index: 10;
         }
-
-        /* --- Dark Mode Toggle --- */
-        .theme-switch-wrapper {
+        #todo-view-wrapper .theme-switch-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -119,569 +141,291 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-
-        .theme-switch {
+        #todo-view-wrapper .theme-switch {
             position: relative;
             display: inline-block;
             width: 50px;
             height: 26px;
         }
-
-        .theme-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        #todo-view-wrapper .theme-switch input { opacity: 0; width: 0; height: 0; }
+        #todo-view-wrapper .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
         }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
+        #todo-view-wrapper .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px;
+            bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
         }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--primary-color);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-        /* --- End Dark Mode Toggle --- */
-
+        #todo-view-wrapper input:checked + .slider { background-color: var(--primary-color); }
+        #todo-view-wrapper input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+        #todo-view-wrapper input:checked + .slider:before { transform: translateX(24px); }
+        
         #timer-container {
-            text-align: center;
-            margin-bottom: 30px;
-            background-color: var(--timer-bg-color);
-            padding: 15px 20px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 5px rgba(0,0,0,0.5);
+            text-align: center; margin-bottom: 30px; background-color: var(--timer-bg-color); padding: 15px 20px;
+            border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 5px rgba(0,0,0,0.5);
             transition: background-color 0.3s;
         }
-
         #timer {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--success-color);
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px var(--success-color), 0 0 10px var(--success-color);
+            font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; font-weight: bold; color: var(--success-color);
+            letter-spacing: 2px; text-shadow: 0 0 5px var(--success-color), 0 0 10px var(--success-color);
         }
-
         #timer-date {
-            display: block;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-top: 5px;
-            text-shadow: none;
-            letter-spacing: normal;
+            display: block; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #a0a0a0; margin-top: 5px; text-shadow: none; letter-spacing: normal;
         }
 
         #task-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-            align-items: center;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; align-items: center;
         }
-
         #task-form input[type="text"], .input-field {
-            grid-column: 1 / -1;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 1rem;
+            grid-column: 1 / -1; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1rem;
             transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
-            background-color: var(--input-bg-color);
-            color: var(--text-color);
+            background-color: var(--input-bg-color); color: var(--text-color);
         }
-        
         #task-form input[type="text"]:focus, .input-field:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px var(--shadow-color);
-            outline: none;
+            border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--shadow-color); outline: none;
         }
-        
-        #task-form input::placeholder, .input-field::placeholder {
-            color: var(--text-light-color);
-            opacity: 0.7;
-        }
-
+        #task-form input::placeholder, .input-field::placeholder { color: var(--text-light-color); opacity: 0.7; }
         .date-picker {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: var(--input-bg-color);
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
+            display: flex; align-items: center; gap: 10px; background-color: var(--input-bg-color); padding: 10px 14px;
+            border-radius: 12px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s;
         }
-        
-        .date-picker label {
-            font-weight: 500;
-            color: var(--text-light-color);
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
+        .date-picker label { font-weight: 500; color: var(--text-light-color); font-size: 0.9rem; white-space: nowrap; }
         #task-form input[type="date"] {
-            padding: 4px;
-            border: none;
-            border-radius: 4px;
-            background: transparent;
-            font-family: inherit;
-            font-size: 0.95rem;
-            color: var(--text-color);
-            width: 100%;
+            padding: 4px; border: none; border-radius: 4px; background: transparent; font-family: inherit; font-size: 0.95rem; color: var(--text-color); width: 100%;
         }
-
-        body.dark-mode #task-form input[type="date"] {
-            color-scheme: dark;
-        }
+        body.dark-mode #task-form input[type="date"] { color-scheme: dark; }
 
         .button, #task-form button {
-            grid-column: 1 / -1;
-            padding: 16px 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            grid-column: 1 / -1; padding: 16px 20px; background: var(--primary-color); color: white; border: none; border-radius: 12px;
+            cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
-        
         .button.green { background-color: var(--success-color); }
         .button.orange { background-color: var(--warning-color); }
-
-        .button:hover, #task-form button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--shadow-color);
-        }
-
-        .button.green:hover {
-             box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
-             background-color: #30b852;
-        }
-        
-        .button.orange:hover {
-             box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3);
-             background-color: #ff8c00;
-        }
-        
-        #toggle-sharing-button, #toggle-schedule-button {
-            position: relative; 
-            width: auto;
-            padding: 10px 16px;
-            background: var(--text-light-color);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
+        .button:hover, #task-form button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow-color); }
+        .button.green:hover { box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3); background-color: #30b852; }
+        .button.orange:hover { box-shadow: 0 6px 20px rgba(255, 149, 0, 0.3); background-color: #ff8c00; }
+        #toggle-sharing-button, #toggle-file-transfer-button {
+            position: relative; width: auto; padding: 10px 16px; background: var(--text-light-color); color: var(--bg-color);
+            border: none; border-radius: 12px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
             transition: background-color 0.2s, transform 0.2s;
         }
+        #toggle-sharing-button:hover, #toggle-file-transfer-button:hover { background-color: var(--text-color); transform: translateY(-1px); }
 
-        #toggle-sharing-button:hover, #toggle-schedule-button:hover {
-            background-color: var(--text-color);
-            transform: translateY(-1px);
-        }
-
-        /* --- View Switching --- */
-        #sharing-view, #schedule-view {
-            display: none;
-        }
-        
+        #sharing-view, #file-transfer-view { display: none; }
         .back-button {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 10px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 30px;
-            transition: background-color 0.2s, color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 10px 16px; border-radius: 12px;
+            cursor: pointer; font-weight: 600; margin-bottom: 30px; transition: background-color 0.2s, color 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
+        .back-button:hover { background-color: var(--input-bg-color); }
 
-        .back-button:hover {
-            background-color: var(--input-bg-color);
-        }
-
-        /* Search Bar Styles */
-        #search-container {
-            margin-bottom: 20px;
-        }
-
-        #search-input {
-            width: 100%;
-        }
-
-        #task-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
+        #search-container { margin-bottom: 20px; }
+        #search-input { width: 100%; }
+        #task-list { list-style: none; padding: 0; margin: 0; }
         .task-item {
-            display: flex;
-            align-items: center;
-            background: var(--main-color);
-            padding: 15px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            margin-bottom: 12px;
-            transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out;
-            gap: 15px;
-            overflow: hidden;
-            max-height: 100px;
+            display: flex; align-items: center; background: var(--main-color); padding: 15px 20px; border: 1px solid var(--border-color);
+            border-radius: 16px; margin-bottom: 12px; transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, opacity 0.3s, max-height 0.3s ease-in-out;
+            gap: 15px; overflow: hidden; max-height: 100px;
         }
-        
-        .task-item.hidden {
-            opacity: 0;
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            margin-bottom: 0;
-            border-width: 0;
-        }
-        
-        .task-item:hover {
-             box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-             border-color: #d8d8d8;
-        }
-
-        body.dark-mode .task-item:hover {
-            border-color: #444;
-        }
-
-        .task-item.completed {
-            background-color: #f7f7f7;
-        }
-        
-        body.dark-mode .task-item.completed {
-            background-color: #2c2c2c;
-        }
-        
-        .task-item.completed .task-name,
-        .task-item.completed .task-details label {
-            text-decoration: line-through;
-            color: var(--text-light-color);
-        }
-
-        .task-item .task-details {
-            flex-grow: 1;
-        }
-        
-        .task-name {
-            font-size: 1.05rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: color 0.3s;
-            padding: 4px;
-            border-radius: 6px;
-        }
-        
-        .task-name:hover {
-            background-color: var(--input-bg-color);
-        }
-
-        .task-info {
-            font-size: 0.85em;
-            color: var(--text-light-color);
-            margin-top: 6px;
-        }
-        
-        .complete-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            flex-shrink: 0;
-            accent-color: var(--primary-color);
-        }
-
-        .deadline-text {
-            cursor: pointer;
-            color: var(--danger-color);
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .deadline-text:hover {
-            text-decoration: underline;
-            color: #d92b21;
-        }
-
+        .task-item.hidden { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-width: 0; }
+        .task-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.04); border-color: #d8d8d8; }
+        body.dark-mode .task-item:hover { border-color: #444; }
+        .task-item.completed { background-color: #f7f7f7; }
+        body.dark-mode .task-item.completed { background-color: #2c2c2c; }
+        .task-item.completed .task-name, .task-item.completed .task-details label { text-decoration: line-through; color: var(--text-light-color); }
+        .task-item .task-details { flex-grow: 1; }
+        .task-name { font-size: 1.05rem; font-weight: 500; cursor: pointer; transition: color 0.3s; padding: 4px; border-radius: 6px; }
+        .task-name:hover { background-color: var(--input-bg-color); }
+        .task-info { font-size: 0.85em; color: var(--text-light-color); margin-top: 6px; }
+        .complete-checkbox { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-color); }
+        .deadline-text { cursor: pointer; color: var(--danger-color); font-weight: 500; transition: color 0.3s; }
+        .deadline-text:hover { text-decoration: underline; color: #d92b21; }
         .deadline-status {
-            font-weight: 500;
-            font-size: 0.85em;
-            padding: 3px 8px;
-            border-radius: 10px;
-            color: white;
-            margin-left: 8px;
-            display: inline-block;
-            vertical-align: middle;
+            font-weight: 500; font-size: 0.85em; padding: 3px 8px; border-radius: 10px; color: white; margin-left: 8px;
+            display: inline-block; vertical-align: middle;
         }
-
-        .deadline-status.future {
-            background-color: var(--success-color);
-            opacity: 0.8;
-        }
-
-        .deadline-status.today {
-            background-color: var(--warning-color);
-        }
-
-        .deadline-status.overdue {
-            background-color: var(--danger-color);
-        }
+        .deadline-status.future { background-color: var(--success-color); opacity: 0.8; }
+        .deadline-status.today { background-color: var(--warning-color); }
+        .deadline-status.overdue { background-color: var(--danger-color); }
 
         .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px;
+            color: white; font-weight: 500; z-index: 1000; opacity: 0; visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s, top 0.3s;
         }
-
-        .notification.show {
-            opacity: 1;
-            visibility: visible;
-            top: 30px;
-        }
-
-        .notification.error {
-            background-color: var(--danger-color);
-            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
-        }
+        .notification.show { opacity: 1; visibility: visible; top: 90px; }
+        .notification.error { background-color: var(--danger-color); box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4); }
+        .notification.reminder, .notification.info { background-color: var(--primary-color); box-shadow: 0 4px 15px var(--shadow-color); }
         
-        .notification.reminder, .notification.info {
-            background-color: var(--primary-color);
-            box-shadow: 0 4px 15px var(--shadow-color);
-        }
-        
-        /* --- Sharing Section --- */
         .section-container {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            margin-top: 20px; padding: 20px; border: 1px solid var(--border-color); border-radius: 16px;
+            display: flex; flex-direction: column; gap: 15px;
         }
-        
-        .section-part {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .section-part h3 {
-            margin: 0 0 5px 0;
-            font-size: 1.1rem;
-            color: var(--text-color);
-        }
-
-        #active-peer-id-container {
-            font-size: 0.9rem;
-            color: var(--text-light-color);
-        }
+        .section-part { display: flex; flex-direction: column; gap: 10px; }
+        .section-part h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-color); }
+        #active-peer-id-container { font-size: 0.9rem; color: var(--text-light-color); }
         #active-peer-id {
-            font-weight: 600;
-            color: var(--text-color);
-            background-color: var(--input-bg-color);
-            padding: 5px 10px;
-            border-radius: 8px;
-            user-select: all;
-            cursor: copy;
+            font-weight: 600; color: var(--text-color); background-color: var(--input-bg-color); padding: 5px 10px;
+            border-radius: 8px; user-select: all; cursor: copy;
+        }
+        #connection-status { font-weight: 500; padding: 8px 12px; border-radius: 8px; text-align: center; word-break: break-all; }
+        #connection-status.disconnected { background-color: #ffebeb; color: var(--danger-color); }
+        body.dark-mode #connection-status.disconnected { background-color: #4f2525; }
+        #connection-status.connected { background-color: #e3fcef; color: var(--success-color); }
+        body.dark-mode #connection-status.connected { background-color: #1c4b2a; }
+        #received-files-list { list-style-type: none; padding: 0; margin: 0; }
+        #received-files-list li {
+            background-color: var(--input-bg-color); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 8px; font-size: 0.9rem;
+        }
+        #received-files-list .download-link {
+            text-decoration: none; color: white; background-color: var(--primary-color); padding: 5px 10px; border-radius: 6px;
+            font-weight: 500; font-size: 0.85rem;
         }
         
-        #connection-status {
-            font-weight: 500;
-            padding: 8px 12px;
-            border-radius: 8px;
-            text-align: center;
-            word-break: break-all;
+        @media (max-width: 768px) {
+            .app-container { padding: 15px; }
+            #todo-view-wrapper .container { padding: 30px; }
         }
-        
-        #connection-status.disconnected {
-            background-color: #ffebeb;
-            color: var(--danger-color);
-        }
-        
-        body.dark-mode #connection-status.disconnected {
-             background-color: #4f2525;
-        }
-
-        #connection-status.connected {
-            background-color: #e3fcef;
-            color: var(--success-color);
-        }
-        
-        body.dark-mode #connection-status.connected {
-             background-color: #1c4b2a;
-        }
-        
         @media (max-width: 600px) {
-             .container {
-                padding: 20px;
-            }
-            .top-controls {
-                gap: 5px;
-            }
-            .theme-switch-wrapper span {
-                display: none; /* Hide text on small screens */
-            }
-            #timer {
-                font-size: 2rem;
-            }
-             #task-form {
-                grid-template-columns: 1fr;
-            }
+            .app-container { padding-top: 10px; }
+            #todo-view-wrapper .container { padding: 20px; border-radius: 16px; }
+            #todo-view-wrapper h1 { font-size: 1.8rem; }
+            #todo-view-wrapper h2 { font-size: 1.3rem; }
+            #todo-view-wrapper .top-controls { top: 15px; right: 15px; gap: 8px; }
+            #todo-view-wrapper .theme-switch-wrapper span { display: none; }
+            #timer { font-size: 2rem; }
+            #timer-date { font-size: 0.8rem; }
+            #task-form { grid-template-columns: 1fr; }
+            .task-item { padding: 12px 15px; gap: 10px; }
+            .task-name { font-size: 1rem; }
+            .back-button { margin-bottom: 20px; }
         }
     </style>
 </head>
 <body>
-
-    <div id="notification" class="notification"></div>
-
-    <div class="container">
-        <div class="top-controls">
-            <button id="toggle-schedule-button">Schedule</button>
-            <button id="toggle-sharing-button">Sharing</button>
-            <div class="theme-switch-wrapper">
-                <span>☀️</span>
-                <label class="theme-switch" for="theme-checkbox">
-                    <input type="checkbox" id="theme-checkbox" />
-                    <div class="slider"></div>
-                </label>
-                <span>🌙</span>
-            </div>
-        </div>
+    <div class="app-container">
+        <nav class="app-nav">
+            <button id="show-todo-btn" class="active">To-Do List</button>
+            <button id="show-schedule-btn">Schedule</button>
+        </nav>
         
-        <div id="main-view">
-            <h1>My To-Do List</h1>
-            <div id="timer-container">
-                <span id="timer">00:00:00</span>
-                <span id="timer-date">Loading date...</span>
-            </div>
+        <div id="notification" class="notification"></div>
 
-            <form id="task-form">
-                <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
-                <div class="date-picker">
-                    <label for="task-deadline-input">Deadline:</label>
-                    <input type="date" id="task-deadline-input" required>
+        <div id="todo-view-wrapper">
+            <div class="container">
+                <div class="top-controls">
+                    <button id="toggle-file-transfer-button">File Transfer</button>
+                    <button id="toggle-sharing-button">Sharing</button>
+                    <div class="theme-switch-wrapper">
+                        <span>☀️</span>
+                        <label class="theme-switch" for="theme-checkbox">
+                            <input type="checkbox" id="theme-checkbox" />
+                            <div class="slider"></div>
+                        </label>
+                        <span>🌙</span>
+                    </div>
                 </div>
-                <div class="date-picker">
-                    <label for="task-finish-date-input">Finished:</label>
-                    <input type="date" id="task-finish-date-input">
+                <div id="main-view">
+                    <h1>My To-Do List</h1>
+                    <div id="timer-container"><span id="timer">00:00:00</span><span id="timer-date">Loading date...</span></div>
+                    <form id="task-form">
+                        <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
+                        <div class="date-picker"><label for="task-deadline-input">Deadline:</label><input type="date" id="task-deadline-input"></div>
+                        <div class="date-picker"><label for="task-finish-date-input">Finished:</label><input type="date" id="task-finish-date-input"></div>
+                        <button type="submit">Add Task</button>
+                    </form>
+                    <div id="search-container"><input type="text" id="search-input" class="input-field" placeholder="Search for a task..."></div>
+                    <ul id="task-list"></ul>
                 </div>
-                <button type="submit">Add Task</button>
-            </form>
-            
-            <div id="search-container">
-                <input type="text" id="search-input" class="input-field" placeholder="Search for a task...">
-            </div>
-            
-            <ul id="task-list">
-                <!-- Tasks will be dynamically added here -->
-            </ul>
-        </div>
-
-        <div id="sharing-view">
-            <button class="back-button">← Back to Tasks</button>
-            <div class="section-container">
-                <h2>Real-Time Sharing</h2>
-                
-                <div class="section-part">
-                    <h3>Set Your Persistent ID</h3>
-                    <input type="text" id="my-peer-id-input" class="input-field" placeholder="e.g., my-work-laptop">
-                    <button id="set-peer-id-button" class="button orange">Set ID & Reconnect</button>
-                    <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
-                </div>
-                
-                <div class="section-part">
-                    <h3>Connect to a Peer</h3>
-                    <input type="text" id="remote-peer-id-input" class="input-field" placeholder="Enter peer's persistent ID">
-                    <button id="connect-button" class="button green">Connect</button>
-                    <div id="connection-status" class="disconnected">Status: Not Connected</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="schedule-view">
-            <button class="back-button">← Back to Tasks</button>
-            <div class="section-container">
-                <h2 style="margin-top:0;">School Schedule</h2>
-                <p class="text-gray-500 -mt-2 text-center" >At a glance view for today and tomorrow's events and classes.</p>
-                <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Today's Card -->
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                        <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2" style="text-align:left; border-bottom: none; margin-top:0; padding-bottom: 0;">Today</h2>
-                        <p id="today-date" class="font-medium text-gray-700 dark:text-gray-300 mb-4"></p>
-                        <div id="today-events" class="space-y-3">
-                            <p class="text-gray-500 dark:text-gray-400">Loading events...</p>
+                <div id="sharing-view">
+                    <button class="back-button">← Back to Tasks</button>
+                    <div class="section-container">
+                        <h2>Real-Time Sharing</h2>
+                        <div class="section-part">
+                            <h3>Set Your Persistent ID</h3>
+                            <input type="text" id="my-peer-id-input" class="input-field" placeholder="e.g., my-work-laptop">
+                            <button id="set-peer-id-button" class="button orange">Set ID & Reconnect</button>
+                            <div id="active-peer-id-container">Active ID: <span id="active-peer-id" title="Click to copy">Not connected</span></div>
                         </div>
+                        <div class="section-part">
+                            <h3>Connect to a Peer</h3>
+                            <input type="text" id="remote-peer-id-input" class="input-field" placeholder="Enter peer's persistent ID">
+                            <button id="connect-button" class="button green">Connect</button>
+                            <div id="connection-status" class="disconnected">Status: Not Connected</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="file-transfer-view">
+                    <button class="back-button">← Back to Tasks</button>
+                     <div class="section-container">
+                         <h2>Peer-to-Peer File Transfer</h2>
+                         <div class="section-part">
+                             <h3>Send a File</h3>
+                             <select id="peer-select" class="input-field"></select>
+                             <input type="file" id="file-input" class="input-field">
+                             <button id="send-file-button" class="button">Send File</button>
+                         </div>
+                         <div class="section-part">
+                             <h3>Received Files</h3>
+                             <ul id="received-files-list"></ul>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="schedule-view-wrapper" style="display: none;">
+            <div class="container mx-auto p-4 max-w-5xl">
+                <header class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800">School Schedule</h1>
+                    <p class="text-gray-500 mt-2">At a glance view for today and tomorrow's events and classes.</p>
+                </header>
+                <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                        <h2 class="text-2xl font-bold text-blue-600 mb-2">Today</h2>
+                        <p id="today-date" class="font-medium text-gray-700 mb-4"></p>
+                        <div id="today-events" class="space-y-3"><p class="text-gray-500">Loading events...</p></div>
                         <div id="today-timetable" class="mt-4"></div>
                     </div>
-
-                    <!-- Tomorrow's Card -->
-                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                        <h2 class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2" style="text-align:left; border-bottom: none; margin-top:0; padding-bottom: 0;">Tomorrow</h2>
-                        <p id="tomorrow-date" class="font-medium text-gray-700 dark:text-gray-300 mb-4"></p>
-                        <div id="tomorrow-events" class="space-y-3">
-                            <p class="text-gray-500 dark:text-gray-400">Loading events...</p>
-                        </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                        <h2 class="text-2xl font-bold text-green-600 mb-2">Tomorrow</h2>
+                        <p id="tomorrow-date" class="font-medium text-gray-700 mb-4"></p>
+                        <div id="tomorrow-events" class="space-y-3"><p class="text-gray-500">Loading events...</p></div>
                          <div id="tomorrow-timetable" class="mt-4"></div>
                     </div>
                 </main>
             </div>
         </div>
-
     </div>
 
-    <!-- Main application logic -->
+
     <script>
+        // --- TAB SWITCHING LOGIC ---
+        const showTodoBtn = document.getElementById('show-todo-btn');
+        const showScheduleBtn = document.getElementById('show-schedule-btn');
+        const todoWrapper = document.getElementById('todo-view-wrapper');
+        const scheduleWrapper = document.getElementById('schedule-view-wrapper');
+
+        showTodoBtn.addEventListener('click', () => {
+            todoWrapper.style.display = 'flex';
+            scheduleWrapper.style.display = 'none';
+            showTodoBtn.classList.add('active');
+            showScheduleBtn.classList.remove('active');
+        });
+
+        showScheduleBtn.addEventListener('click', () => {
+            todoWrapper.style.display = 'none';
+            scheduleWrapper.style.display = 'block'; // Use block for this layout
+            showScheduleBtn.classList.add('active');
+            showTodoBtn.classList.remove('active');
+        });
+        
+        // --- TO-DO APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Select DOM elements ---
             const taskForm = document.getElementById('task-form');
+            if (!taskForm) return; // Prevent script from running on the wrong view initially
+
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
             const taskFinishDateInput = document.getElementById('task-finish-date-input');
@@ -692,16 +436,14 @@
             const themeCheckbox = document.getElementById('theme-checkbox');
             const searchInput = document.getElementById('search-input');
             
-            // --- View Switching Elements ---
             const mainView = document.getElementById('main-view');
             const sharingView = document.getElementById('sharing-view');
-            const scheduleView = document.getElementById('schedule-view');
+            const fileTransferView = document.getElementById('file-transfer-view');
             const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const toggleScheduleButton = document.getElementById('toggle-schedule-button');
+            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
             const backButtons = document.querySelectorAll('.back-button');
             const topControls = document.querySelector('.top-controls');
 
-            // --- WebRTC Elements ---
             const myPeerIdInput = document.getElementById('my-peer-id-input');
             const setPeerIdButton = document.getElementById('set-peer-id-button');
             const activePeerIdElement = document.getElementById('active-peer-id');
@@ -709,13 +451,269 @@
             const connectButton = document.getElementById('connect-button');
             const connectionStatusElement = document.getElementById('connection-status');
             
-            // --- WebRTC State ---
+            const peerSelect = document.getElementById('peer-select');
+            const fileInput = document.getElementById('file-input');
+            const sendFileButton = document.getElementById('send-file-button');
+            const receivedFilesList = document.getElementById('received-files-list');
+
             let peer;
             const connections = [];
 
-            // --- Schedule Data ---
+            function getRecentPeers() {
+                const peers = localStorage.getItem('recentPeerIds');
+                return peers ? JSON.parse(peers) : [];
+            }
+            function addRecentPeer(peerId) {
+                let recentPeers = getRecentPeers().filter(p => p !== peerId);
+                recentPeers.unshift(peerId);
+                if (recentPeers.length > 5) recentPeers.pop();
+                localStorage.setItem('recentPeerIds', JSON.stringify(recentPeers));
+                localStorage.setItem('lastConnectedPeerId', peerId);
+            }
+            function initializePeer(requestedId) {
+                if (peer) { peer.destroy(); }
+                peer = new Peer(requestedId);
+                peer.on('open', (id) => {
+                    activePeerIdElement.textContent = id;
+                    activePeerIdElement.addEventListener('click', () => {
+                        navigator.clipboard.writeText(id);
+                        showNotification('Your active ID has been copied!', 'info');
+                    });
+                    const recentPeers = getRecentPeers();
+                    if (recentPeers.length > 0) {
+                        setTimeout(() => {
+                            showNotification(`Reconnecting to recent peers...`, 'info');
+                            recentPeers.forEach(peerId => connectToPeer(peerId));
+                        }, 500);
+                    }
+                });
+                peer.on('connection', (conn) => {
+                    showNotification(`Incoming connection from ${conn.peer}`, 'info');
+                    setupConnection(conn);
+                });
+                peer.on('error', (err) => {
+                    console.error('PeerJS error:', err);
+                    showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is already taken.` : `Connection error: ${err.message}`);
+                    activePeerIdElement.textContent = 'Error';
+                });
+            }
+            setPeerIdButton.addEventListener('click', () => {
+                const newId = myPeerIdInput.value.trim();
+                if (!newId) return showNotification('Please enter a persistent ID.');
+                localStorage.setItem('myPeerId', newId);
+                showNotification(`Setting ID to "${newId}"...`, 'info');
+                initializePeer(newId);
+            });
+            const savedPeerId = localStorage.getItem('myPeerId');
+            if (savedPeerId) {
+                myPeerIdInput.value = savedPeerId;
+                initializePeer(savedPeerId);
+            } else { activePeerIdElement.textContent = "Set an ID to connect"; }
+            function setupConnection(conn) {
+                conn.on('open', () => {
+                    if (connections.some(c => c.peer === conn.peer)) return conn.close();
+                    connections.push(conn);
+                    updateConnectionStatus();
+                    updatePeerSelectDropdown();
+                    if (conn.metadata.isInitiator) addRecentPeer(conn.peer);
+                    conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
+                });
+                conn.on('data', (data) => handleRemoteData(data));
+                conn.on('close', () => {
+                    const index = connections.findIndex(c => c.peer === conn.peer);
+                    if (index > -1) connections.splice(index, 1);
+                    updateConnectionStatus();
+                    updatePeerSelectDropdown();
+                    showNotification(`Disconnected from ${conn.peer}`, 'info');
+                });
+            }
+            function connectToPeer(remoteId) {
+                 if (!peer || peer.disconnected) return showNotification('You must set your ID before connecting.', 'error');
+                if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) return;
+                showNotification(`Attempting to connect to ${remoteId}...`, 'info');
+                const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
+                setupConnection(conn);
+            }
+            connectButton.addEventListener('click', () => connectToPeer(remotePeerIdInput.value.trim()));
+            function updateConnectionStatus() {
+                if (connections.length > 0) {
+                    const peerIds = connections.map(c => c.peer).join(', ');
+                    connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${peerIds}`;
+                    connectionStatusElement.className = 'connected';
+                } else {
+                    connectionStatusElement.textContent = 'Status: Not Connected';
+                    connectionStatusElement.className = 'disconnected';
+                }
+            }
+            function broadcast(data) { connections.forEach(conn => conn.open && conn.send(data)); }
+            function handleRemoteData(data) {
+                if (data.type === 'FILE_TRANSFER') return handleReceivedFile(data);
+                let tasks = getTasks(); let taskUpdated = false; let taskIndex;
+                switch (data.type) {
+                    case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); taskUpdated = true; } break;
+                    case 'TOGGLE_COMPLETE': taskIndex = tasks.findIndex(t => t.id == data.taskId); if (taskIndex > -1) { Object.assign(tasks[taskIndex], { isCompleted: data.isCompleted, finishDate: data.finishDate }); taskUpdated = true; } break;
+                    case 'DELETE_TASK': const initialLength = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < initialLength) taskUpdated = true; break;
+                    case 'UPDATE_TASK': taskIndex = tasks.findIndex(t => t.id == data.taskId); if (taskIndex > -1) { Object.assign(tasks[taskIndex], data.updatedFields); taskUpdated = true; } break;
+                    case 'SYNC_ALL': const taskMap = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(remoteTask => taskMap.set(remoteTask.id, remoteTask)); tasks = Array.from(taskMap.values()); taskUpdated = true; break;
+                }
+                if (taskUpdated) { saveTasks(tasks); loadTasks(); }
+            }
+            const lastPeerId = localStorage.getItem('lastConnectedPeerId');
+            if (lastPeerId) remotePeerIdInput.value = lastPeerId;
+            function updatePeerSelectDropdown() {
+                peerSelect.innerHTML = '';
+                if (connections.length === 0) {
+                    peerSelect.innerHTML = '<option>No peers connected</option>';
+                    peerSelect.disabled = true; sendFileButton.disabled = true;
+                } else {
+                    connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; });
+                    peerSelect.disabled = false; sendFileButton.disabled = false;
+                }
+            }
+            sendFileButton.addEventListener('click', () => {
+                const peerId = peerSelect.value; const file = fileInput.files[0];
+                if (!peerId || peerId === 'No peers connected') return showNotification('Please select a peer.');
+                if (!file) return showNotification('Please select a file.');
+                const conn = connections.find(c => c.peer === peerId);
+                if (!conn) return showNotification('Connection lost.');
+                const reader = new FileReader();
+                reader.onload = (event) => conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type });
+                reader.readAsArrayBuffer(file);
+                showNotification(`Sending ${file.name} to ${peerId}...`, 'info');
+            });
+            function handleReceivedFile({ file, fileName, fileType }) {
+                const blob = new Blob([file], { type: fileType });
+                const url = URL.createObjectURL(blob);
+                receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`;
+                showNotification(`You received a file: ${fileName}`, 'info');
+            }
+            function showView(viewToShow) {
+                [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none');
+                viewToShow.style.display = 'block';
+                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
+            }
+            toggleSharingButton.addEventListener('click', () => showView(sharingView));
+            toggleFileTransferButton.addEventListener('click', () => showView(fileTransferView));
+            backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                taskList.querySelectorAll('.task-item').forEach(task => {
+                    const taskName = task.querySelector('.task-name').textContent.toLowerCase();
+                    task.classList.toggle('hidden', !taskName.includes(searchTerm));
+                });
+            });
+            function setTheme(theme) {
+                document.body.classList.toggle('dark-mode', theme === 'dark');
+                themeCheckbox.checked = theme === 'dark';
+                localStorage.setItem('theme', theme);
+            }
+            themeCheckbox.addEventListener('change', () => setTheme(themeCheckbox.checked ? 'dark' : 'light'));
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+            function updateTimer() {
+                const now = new Date();
+                timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            }
+            updateTimer(); setInterval(updateTimer, 1000); 
+            function showNotification(message, type = 'error') {
+                notificationElement.textContent = message;
+                notificationElement.className = `notification ${type} show`;
+                setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); 
+            }
+            function checkReminders() {
+                const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); 
+                const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
+                let notificationDelay = 0;
+                tasks.forEach(task => {
+                    if (!task.isCompleted && !remindedTasks.includes(task.id) && now.getTime() === new Date(task.deadline + 'T00:00:00').getTime()) {
+                        setTimeout(() => {
+                            const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
+                            showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
+                        }, notificationDelay);
+                        notificationDelay += 500; remindedTasks.push(task.id);
+                    }
+                });
+                sessionStorage.setItem('remindedTasks', JSON.stringify(remindedTasks));
+            }
+            taskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const taskName = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value;
+                if (taskName === '' || deadline === '') return showNotification('Task name and deadline are required.');
+                const task = { id: Date.now(), name: taskName, deadline, isCompleted: false, finishDate: finishDate || null };
+                let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks();
+                broadcast({ type: 'ADD_TASK', task });
+                taskForm.reset(); taskNameInput.focus();
+            });
+            taskList.addEventListener('change', (e) => { if (e.target.classList.contains('complete-checkbox')) toggleComplete(Number(e.target.closest('.task-item').dataset.id)); });
+            taskList.addEventListener('click', (e) => {
+                const taskItem = e.target.closest('.task-item'); if (!taskItem) return;
+                const taskId = Number(taskItem.dataset.id);
+                if (e.target.closest('.deadline-text')) {
+                    taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; taskItem.style.opacity = '0'; taskItem.style.transform = 'translateX(-20px)';
+                    setTimeout(() => deleteTask(taskId), 300);
+                } else if (e.target.classList.contains('task-name')) makeEditable(e.target, taskId, 'name');
+            });
+            function makeEditable(element, taskId, field) {
+                const originalValue = getTaskById(taskId)[field];
+                const input = document.createElement('input'); input.type = 'text'; input.value = originalValue; input.className = 'edit-input-field';
+                element.replaceWith(input); input.focus();
+                const saveChanges = () => {
+                    const newValue = input.value.trim();
+                    if (newValue && newValue !== originalValue) updateTask(taskId, { [field]: newValue });
+                    else loadTasks();
+                };
+                input.addEventListener('blur', saveChanges);
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') loadTasks(); });
+            }
+            function addTaskToDOM(task) {
+                const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id;
+                const deadlineDate = new Date(task.deadline + 'T00:00:00'); let deadlineStatusHTML = '';
+                if (!task.isCompleted) {
+                    const now = new Date(); now.setHours(0, 0, 0, 0); const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) deadlineStatusHTML = `<span class="deadline-status future">${diffDays} day${diffDays === 1 ? '' : 's'} left</span>`;
+                    else if (diffDays === 0) deadlineStatusHTML = `<span class="deadline-status today">Due today</span>`;
+                    else { const overdueDays = Math.abs(diffDays); deadlineStatusHTML = `<span class="deadline-status overdue">Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}</span>`; }
+                }
+                li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadlineDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${deadlineStatusHTML} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`;
+                taskList.appendChild(li);
+            }
+            function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
+            function getTaskById(id) { return getTasks().find(task => task.id === id); }
+            function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+            function loadTasks() {
+                const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+                taskList.innerHTML = ''; tasks.forEach(task => addTaskToDOM(task));
+            }
+            function updateTask(taskId, updatedFields) {
+                let tasks = getTasks(); const taskIndex = tasks.findIndex(t => t.id == taskId);
+                if (taskIndex > -1) { tasks[taskIndex] = { ...tasks[taskIndex], ...updatedFields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId, updatedFields }); }
+                loadTasks();
+            }
+            function toggleComplete(id) {
+                const tasks = getTasks(); const taskIndex = tasks.findIndex(t => t.id == id);
+                if (taskIndex > -1) {
+                    const task = tasks[taskIndex]; task.isCompleted = !task.isCompleted;
+                    if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0];
+                    saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate });
+                }
+                loadTasks();
+            }
+            function deleteTask(id) {
+                let tasks = getTasks().filter(t => t.id != id);
+                saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks();
+            }
+            function escapeHTML(str) { const div = document.createElement('div'); div.appendChild(document.createTextNode(str)); return div.innerHTML; }
+            
+            loadTasks();
+            checkReminders(); 
+        });
+
+
+        // --- SCHEDULE APP LOGIC ---
+        (function() {
             const csvData = `Date,DayOfWeek,CycleDay,Type,Events
-2025-10-09,Thursday,B,,
 2025-10-10,Friday,C,,
 2025-10-11,Saturday,,,
 2025-10-12,Sunday,,,
@@ -1042,632 +1040,17 @@
 2026-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
-
-            const timetableData = {
-                'A': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: '1X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'ENG' }, { period: '4', subject: '2X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'CHIN' }, { period: '6', subject: 'CTP' }, { period: '7', subject: '' } ],
-                'B': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '1X' }, { period: '2', subject: '3X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CS' }, { period: '4', subject: 'MATH' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'CHIN' }, { period: '6', subject: 'CHIN' }, { period: '7', subject: '' } ],
-                'C': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: 'ENG' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CHIN' }, { period: '4', subject: '2X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '3X' }, { period: '6', subject: 'ASS' }, { period: '7', subject: '' } ],
-                'D': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'ENG' }, { period: '2', subject: 'ENG' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: '1X' }, { period: '4', subject: '3X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'PE'}, { period: '6', subject: '2X' }, { period: '7', subject: '' } ],
-                'E': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'MATH' }, { period: '2', subject: 'CHIN' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'ENG' }, { period: '4', subject: '1X' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '2X' }, { period: '6', subject: '3X' }, { period: '7', subject: '' } ],
-                'F': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '3X' }, { period: '2', subject: '2X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'MATH' }, { period: '4', subject: 'CS' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'IA' }, { period: '6', subject: 'ASS' }, { period: '7', subject: '' } ],
-                'G': [ { period: '0', subject: 'CTP' }, { period: '1', subject: '2X' }, { period: '2', subject: '3X' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'MATH' }, { period: '4', subject: 'CHIN' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: 'ENG' }, { period: '6', subject: '1X' }, { period: '7', subject: '' } ],
-                'H': [ { period: '0', subject: 'CTP' }, { period: '1', subject: 'RS' }, { period: '2', subject: 'CS' }, { period: 'Recess', subject: 'Recess' }, { period: '3', subject: 'CHIN' }, { period: '4', subject: 'ENG\nENG CF ac' }, { period: 'Lunch Time', subject: 'Lunch Time' }, { period: '5', subject: '1X' }, { period: '6', subject: 'PE' }, { period: '7', subject: '' } ]
-            };
-
-            // --- Schedule Logic ---
-            function initializeSchedule() {
-                const allEvents = parseCSV(csvData);
-
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
-
-                document.getElementById('today-date').textContent = formatDisplayDate(today);
-                document.getElementById('tomorrow-date').textContent = formatDisplayDate(tomorrow);
-
-                const todayLookup = formatLookupDate(today);
-                const tomorrowLookup = formatLookupDate(tomorrow);
-
-                const todaysEvents = allEvents.filter(event => event.Date === todayLookup);
-                const tomorrowsEvents = allEvents.filter(event => event.Date === tomorrowLookup);
-
-                renderEvents(document.getElementById('today-events'), todaysEvents);
-                renderTimetable(document.getElementById('today-timetable'), todaysEvents.length > 0 ? todaysEvents[0] : null);
-
-                renderEvents(document.getElementById('tomorrow-events'), tomorrowsEvents);
-                renderTimetable(document.getElementById('tomorrow-timetable'), tomorrowsEvents.length > 0 ? tomorrowsEvents[0] : null);
-            }
-
-            function parseCSV(csvText) {
-                const lines = csvText.trim().split('\n');
-                const headers = lines[0].split(',');
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (values.length === headers.length) {
-                        const entry = {};
-                        for (let j = 0; j < headers.length; j++) {
-                            entry[headers[j]] = values[j].replace(/"/g, '');
-                        }
-                        data.push(entry);
-                    }
-                }
-                return data;
-            }
-
-            function formatDisplayDate(date) {
-                return date.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-            }
-            
-            function formatLookupDate(date) {
-                return date.toISOString().split('T')[0];
-            }
-
-            function renderEvents(element, eventsForDay) {
-                if (!eventsForDay || eventsForDay.length === 0) {
-                    element.innerHTML = '<p class="text-gray-500 italic dark:text-gray-400">No events scheduled.</p>';
-                    return;
-                }
-
-                const event = eventsForDay[0];
-                let html = '';
-                
-                if(event.CycleDay){
-                     html += `<div class="flex items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                                <span class="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span>
-                                <span class="text-gray-800 dark:text-gray-100 font-semibold">${event.CycleDay}</span>
-                              </div>`;
-                }
-
-                if (event.Type) {
-                     html += `<div class="flex items-center bg-blue-50 dark:bg-blue-900/50 p-3 rounded-lg">
-                                <span class="bg-blue-100 dark:bg-blue-500/50 text-blue-800 dark:text-blue-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span>
-                                <span class="text-gray-800 dark:text-gray-100">${event.Type}</span>
-                              </div>`;
-                }
-
-                if (event.Events) {
-                    const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>');
-                     html += `<div class="flex items-start bg-green-50 dark:bg-green-900/50 p-3 rounded-lg">
-                                <span class="bg-green-100 dark:bg-green-500/50 text-green-800 dark:text-green-200 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span>
-                                <span class="text-gray-800 dark:text-gray-100">${eventItems}</span>
-                              </div>`;
-                }
-
-                element.innerHTML = html || '<p class="text-gray-500 italic dark:text-gray-400">No specific events listed.</p>';
-            }
-
-            function renderTimetable(element, eventData) {
-                if (!eventData || !eventData.CycleDay || !timetableData[eventData.CycleDay]) {
-                    element.innerHTML = ''; 
-                    return;
-                }
-
-                const cycleDay = eventData.CycleDay;
-                const schedule = timetableData[cycleDay];
-
-                let tableHtml = `
-                    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-200 mt-6 mb-3">Timetable (Day ${cycleDay})</h3>
-                    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/4">Period</th>
-                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subject</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                `;
-
-                schedule.forEach(item => {
-                    if (item.period.toLowerCase() === 'recess' || item.period.toLowerCase() === 'lunch time') {
-                         tableHtml += `
-                            <tr>
-                                <td colspan="2" class="px-4 py-2 text-center bg-gray-100 dark:bg-gray-900 font-medium text-sm text-gray-600 dark:text-gray-400">${item.subject}</td>
-                            </tr>
-                        `;
-                    } else {
-                        tableHtml += `
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${item.period}</td>
-                                <td class="px-4 py-3 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-400">${item.subject || ''}</td>
-                            </tr>
-                        `;
-                    }
-                });
-
-                tableHtml += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                element.innerHTML = tableHtml;
-            }
-
-            // --- Helper functions for managing recent peer connections ---
-            function getRecentPeers() {
-                const peers = localStorage.getItem('recentPeerIds');
-                return peers ? JSON.parse(peers) : [];
-            }
-
-            function addRecentPeer(peerId) {
-                let recentPeers = getRecentPeers();
-                recentPeers = recentPeers.filter(p => p !== peerId);
-                recentPeers.unshift(peerId);
-                const MAX_RECENT_PEERS = 5;
-                if (recentPeers.length > MAX_RECENT_PEERS) {
-                    recentPeers.pop();
-                }
-                localStorage.setItem('recentPeerIds', JSON.stringify(recentPeers));
-                localStorage.setItem('lastConnectedPeerId', peerId);
-            }
-
-            // --- WebRTC Initialization ---
-            function initializePeer(requestedId) {
-                if (peer) { peer.destroy(); }
-                peer = new Peer(requestedId);
-
-                peer.on('open', (id) => {
-                    activePeerIdElement.textContent = id;
-                    activePeerIdElement.addEventListener('click', () => {
-                        navigator.clipboard.writeText(id);
-                        showNotification('Your active ID has been copied!', 'info');
-                    });
-
-                    const recentPeers = getRecentPeers();
-                    if (recentPeers.length > 0) {
-                        setTimeout(() => {
-                            showNotification(`Reconnecting to recent peers...`, 'info');
-                            recentPeers.forEach(peerId => connectToPeer(peerId));
-                        }, 500);
-                    }
-                });
-                
-                peer.on('connection', (conn) => {
-                    showNotification(`Incoming connection from ${conn.peer}`, 'info');
-                    setupConnection(conn);
-                });
-
-                peer.on('error', (err) => {
-                    console.error('PeerJS error:', err);
-                    if (err.type === 'unavailable-id') {
-                         showNotification(`ID "${requestedId}" is already taken. Please choose another.`);
-                    } else {
-                         showNotification(`Connection error: ${err.message}`);
-                    }
-                    activePeerIdElement.textContent = 'Error';
-                });
-            }
-            
-            setPeerIdButton.addEventListener('click', () => {
-                const newId = myPeerIdInput.value.trim();
-                if (!newId) {
-                    showNotification('Please enter a persistent ID.');
-                    return;
-                }
-                localStorage.setItem('myPeerId', newId);
-                showNotification(`Setting ID to "${newId}"...`, 'info');
-                initializePeer(newId);
-            });
-
-            const savedPeerId = localStorage.getItem('myPeerId');
-            if (savedPeerId) {
-                myPeerIdInput.value = savedPeerId;
-                initializePeer(savedPeerId);
-            } else {
-                 activePeerIdElement.textContent = "Set an ID to connect";
-            }
-            
-            function setupConnection(conn) {
-                conn.on('open', () => {
-                    if (connections.some(c => c.peer === conn.peer)) {
-                        conn.close();
-                        return;
-                    }
-                    connections.push(conn);
-                    updateConnectionStatus();
-                    if (conn.metadata.isInitiator) {
-                         addRecentPeer(conn.peer);
-                    }
-                    conn.send({ type: 'SYNC_ALL', tasks: getTasks() });
-                });
-
-                conn.on('data', (data) => {
-                    handleRemoteData(data);
-                });
-
-                conn.on('close', () => {
-                    const index = connections.findIndex(c => c.peer === conn.peer);
-                    if (index > -1) {
-                        connections.splice(index, 1);
-                    }
-                    updateConnectionStatus();
-                    showNotification(`Disconnected from ${conn.peer}`, 'info');
-                });
-            }
-            
-            function connectToPeer(remoteId) {
-                 if (!peer || peer.disconnected) {
-                    showNotification('You must set your ID before connecting.', 'error');
-                    return;
-                }
-                if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) {
-                    return;
-                }
-                showNotification(`Attempting to connect to ${remoteId}...`, 'info');
-                const conn = peer.connect(remoteId, { metadata: { isInitiator: true } });
-                setupConnection(conn);
-            }
-
-            connectButton.addEventListener('click', () => {
-                const remoteId = remotePeerIdInput.value.trim();
-                connectToPeer(remoteId);
-            });
-
-            function updateConnectionStatus() {
-                if (connections.length > 0) {
-                    const peerIds = connections.map(c => c.peer).join(', ');
-                    connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${peerIds}`;
-                    connectionStatusElement.className = 'connected';
-                } else {
-                    connectionStatusElement.textContent = 'Status: Not Connected';
-                    connectionStatusElement.className = 'disconnected';
-                }
-            }
-
-            function broadcast(data) {
-                connections.forEach(conn => {
-                    if (conn.open) {
-                        conn.send(data);
-                    }
-                });
-            }
-
-            function handleRemoteData(data) {
-                let tasks = getTasks();
-                let taskUpdated = false;
-                let taskIndex = -1;
-
-                switch (data.type) {
-                    case 'ADD_TASK':
-                        if (!tasks.some(t => t.id === data.task.id)) {
-                            tasks.push(data.task);
-                            taskUpdated = true;
-                        }
-                        break;
-                    case 'TOGGLE_COMPLETE':
-                        taskIndex = tasks.findIndex(t => t.id == data.taskId);
-                        if (taskIndex > -1) {
-                            tasks[taskIndex].isCompleted = data.isCompleted;
-                            tasks[taskIndex].finishDate = data.finishDate;
-                            taskUpdated = true;
-                        }
-                        break;
-                    case 'DELETE_TASK':
-                        const initialLength = tasks.length;
-                        tasks = tasks.filter(t => t.id != data.taskId);
-                        if(tasks.length < initialLength) taskUpdated = true;
-                        break;
-                    case 'UPDATE_TASK':
-                        taskIndex = tasks.findIndex(t => t.id == data.taskId);
-                        if (taskIndex > -1) {
-                            Object.assign(tasks[taskIndex], data.updatedFields);
-                            taskUpdated = true;
-                        }
-                        break;
-                    case 'SYNC_ALL':
-                        const taskMap = new Map(tasks.map(t => [t.id, t]));
-                        data.tasks.forEach(remoteTask => {
-                            taskMap.set(remoteTask.id, remoteTask);
-                        });
-                        tasks = Array.from(taskMap.values());
-                        taskUpdated = true;
-                        break;
-                }
-                
-                if (taskUpdated) {
-                    saveTasks(tasks);
-                    loadTasks();
-                }
-            }
-            
-            const lastPeerId = localStorage.getItem('lastConnectedPeerId');
-            if (lastPeerId) {
-                remotePeerIdInput.value = lastPeerId;
-            }
-
-
-            // --- View Switching Logic ---
-            function showView(viewToShow) {
-                [mainView, sharingView, scheduleView].forEach(view => {
-                    view.style.display = 'none';
-                });
-                viewToShow.style.display = 'block';
-                topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none';
-            }
-
-            toggleSharingButton.addEventListener('click', () => showView(sharingView));
-            toggleScheduleButton.addEventListener('click', () => showView(scheduleView));
-            backButtons.forEach(button => button.addEventListener('click', () => showView(mainView)));
-
-
-            // --- Task Search/Filter Logic ---
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const tasks = taskList.querySelectorAll('.task-item');
-                
-                tasks.forEach(task => {
-                    const taskName = task.querySelector('.task-name').textContent.toLowerCase();
-                    if (taskName.includes(searchTerm)) {
-                        task.classList.remove('hidden');
-                    } else {
-                        task.classList.add('hidden');
-                    }
-                });
-            });
-
-            // --- Theme Logic ---
-            function setTheme(theme) {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    document.body.classList.add('dark-mode');
-                    themeCheckbox.checked = true;
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    document.body.classList.remove('dark-mode');
-                    themeCheckbox.checked = false;
-                }
-                localStorage.setItem('theme', theme);
-            }
-
-            themeCheckbox.addEventListener('change', () => {
-                const newTheme = themeCheckbox.checked ? 'dark' : 'light';
-                setTheme(newTheme);
-            });
-
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-
-            // --- Timer Logic ---
-            function updateTimer() {
-                const now = new Date();
-                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-                
-                timerDateElement.textContent = now.toLocaleDateString(undefined, dateOptions);
-                timerElement.textContent = now.toLocaleTimeString([], timeOptions);
-            }
-            updateTimer(); 
-            setInterval(updateTimer, 1000); 
-
-            // --- Notification Logic ---
-            function showNotification(message, type = 'error') {
-                notificationElement.textContent = message;
-                notificationElement.className = `notification ${type} show`;
-                setTimeout(() => {
-                    notificationElement.className = `notification ${type}`;
-                }, 4000); 
-            }
-
-            // --- Reminder Logic ---
-            function checkReminders() {
-                const tasks = getTasks();
-                const now = new Date();
-                now.setHours(0, 0, 0, 0); 
-                const remindedTasks = JSON.parse(sessionStorage.getItem('remindedTasks')) || [];
-                let notificationDelay = 0;
-                tasks.forEach(task => {
-                    if (!task.isCompleted && !remindedTasks.includes(task.id)) {
-                        const deadlineDate = new Date(task.deadline + 'T00:00:00');
-                        if (now.getTime() === deadlineDate.getTime()) {
-                            setTimeout(() => {
-                                const taskName = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : '');
-                                showNotification(`Reminder: "${taskName}" is due today!`, 'reminder');
-                            }, notificationDelay);
-                            notificationDelay += 500; 
-                            remindedTasks.push(task.id);
-                        }
-                    }
-                });
-                sessionStorage.setItem('remindedTasks', JSON.stringify(remindedTasks));
-            }
-
-            // --- Task Logic ---
-            loadTasks();
-            checkReminders(); 
-            initializeSchedule();
-
-            taskForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const taskName = taskNameInput.value.trim();
-                const deadline = taskDeadlineInput.value;
-                const finishDate = taskFinishDateInput.value;
-
-                if (taskName === '' || deadline === '') {
-                    showNotification('Task name and deadline are required.');
-                    return;
-                }
-                const deadlineDate = new Date(deadline);
-                if (isNaN(deadlineDate.getTime())) {
-                    showNotification('The deadline date you entered is not valid.');
-                    return;
-                }
-                if (finishDate) {
-                    const finishDateObj = new Date(finishDate);
-                    if (isNaN(finishDateObj.getTime())) {
-                        showNotification('The finish date you entered is not valid.');
-                        return;
-                    }
-                    if (finishDateObj > deadlineDate) {
-                        showNotification('Finish date cannot be after the deadline.');
-                        return;
-                    }
-                }
-
-                const task = {
-                    id: Date.now(),
-                    name: taskName,
-                    deadline: deadline,
-                    isCompleted: false, 
-                    finishDate: finishDate || null,
-                };
-                let tasks = getTasks();
-                tasks.push(task);
-                saveTasks(tasks);
-                loadTasks();
-                broadcast({ type: 'ADD_TASK', task });
-                taskForm.reset();
-                taskNameInput.focus();
-            });
-
-            taskList.addEventListener('change', (e) => {
-                if (e.target.classList.contains('complete-checkbox')) {
-                    const taskId = e.target.closest('.task-item').dataset.id;
-                    toggleComplete(Number(taskId));
-                }
-            });
-
-            taskList.addEventListener('click', (e) => {
-                const target = e.target;
-                const taskItem = target.closest('.task-item');
-                if (!taskItem) return;
-                const taskId = Number(taskItem.dataset.id);
-
-                const deleteTrigger = target.closest('.deadline-text');
-                if (deleteTrigger) {
-                    taskItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    taskItem.style.opacity = '0';
-                    taskItem.style.transform = 'translateX(-20px)';
-                    setTimeout(() => deleteTask(taskId), 300);
-                    return;
-                }
-                if (target.classList.contains('task-name')) {
-                    makeEditable(target, taskId, 'name', 'text');
-                }
-            });
-
-            function makeEditable(element, taskId, field) {
-                const originalValue = getTaskById(taskId)[field];
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = originalValue;
-                input.className = 'edit-input-field';
-                element.replaceWith(input);
-                input.focus();
-                const saveChanges = () => {
-                    const newValue = input.value.trim();
-                    if (newValue && newValue !== originalValue) {
-                        updateTask(taskId, { [field]: newValue });
-                    } else {
-                        loadTasks();
-                    }
-                };
-                input.addEventListener('blur', saveChanges);
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') input.blur();
-                    if (e.key === 'Escape') loadTasks();
-                });
-            }
-
-            function addTaskToDOM(task) {
-                const li = document.createElement('li');
-                li.classList.add('task-item');
-                li.dataset.id = task.id;
-                if (task.isCompleted) { li.classList.add('completed'); }
-                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-                const deadlineDate = new Date(task.deadline + 'T00:00:00');
-                const formattedDeadline = deadlineDate.toLocaleDateString(undefined, dateOptions);
-                const formattedFinishDate = task.finishDate 
-                    ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, dateOptions) 
-                    : 'Pending';
-                let deadlineStatusHTML = '';
-                if (!task.isCompleted) {
-                    const now = new Date();
-                    now.setHours(0, 0, 0, 0);
-                    const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) {
-                        deadlineStatusHTML = `<span class="deadline-status future">${diffDays} day${diffDays === 1 ? '' : 's'} left</span>`;
-                    } else if (diffDays === 0) {
-                        deadlineStatusHTML = `<span class="deadline-status today">Due today</span>`;
-                    } else {
-                        const overdueDays = Math.abs(diffDays);
-                        deadlineStatusHTML = `<span class="deadline-status overdue">Overdue by ${overdueDays} day${overdueDays === 1 ? '' : 's'}</span>`;
-                    }
-                }
-                li.innerHTML = `
-                    <input type="checkbox" class="complete-checkbox" id="task-${task.id}" ${task.isCompleted ? 'checked' : ''}>
-                    <div class="task-details">
-                        <div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div>
-                        <div class="task-info">
-                            <span class="deadline-text" title="Click deadline to delete task">
-                                <strong>Deadline:</strong> <span>${formattedDeadline}</span>
-                            </span> 
-                            ${deadlineStatusHTML} | 
-                            <strong>Finished:</strong> <span class="finish-date">${formattedFinishDate}</span>
-                        </div>
-                    </div>
-                `;
-                taskList.appendChild(li);
-            }
-
-            function getTasks() {
-                try {
-                    const tasks = localStorage.getItem('tasks');
-                    return tasks ? JSON.parse(tasks) : [];
-                } catch (e) { console.error("Error parsing tasks from localStorage", e); return []; }
-            }
-            function getTaskById(id) { return getTasks().find(task => task.id === id); }
-            function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
-            function loadTasks() {
-                const tasks = getTasks();
-                tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-                taskList.innerHTML = '';
-                tasks.forEach(task => addTaskToDOM(task));
-            }
-            function updateTask(taskId, updatedFields) {
-                let tasks = getTasks();
-                const taskIndex = tasks.findIndex(t => t.id == taskId);
-                if (taskIndex > -1) {
-                    tasks[taskIndex] = { ...tasks[taskIndex], ...updatedFields };
-                    saveTasks(tasks);
-                    broadcast({ type: 'UPDATE_TASK', taskId, updatedFields });
-                }
-                loadTasks();
-            }
-            function toggleComplete(id) {
-                const tasks = getTasks();
-                const taskIndex = tasks.findIndex(t => t.id == id);
-                if (taskIndex > -1) {
-                    const task = tasks[taskIndex];
-                    task.isCompleted = !task.isCompleted;
-                    if (task.isCompleted) {
-                        task.finishDate = task.finishDate || new Date().toISOString().split('T')[0];
-                    }
-                    saveTasks(tasks);
-                    broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate });
-                }
-                loadTasks();
-            }
-            function deleteTask(id) {
-                let tasks = getTasks();
-                tasks = tasks.filter(t => t.id != id);
-                saveTasks(tasks);
-                broadcast({ type: 'DELETE_TASK', taskId: id });
-                loadTasks();
-            }
-            function escapeHTML(str) {
-                const div = document.createElement('div');
-                div.appendChild(document.createTextNode(str));
-                return div.innerHTML;
-            }
-        });
+            const timetableData = {'A':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'1X'},{p:'R',s:'Recess'},{p:'3',s:'ENG'},{p:'4',s:'2X'},{p:'L',s:'Lunch'},{p:'5',s:'CHIN'},{p:'6',s:'CTP'},{p:'7',s:''}], 'B':[{p:'0',s:'CTP'},{p:'1',s:'1X'},{p:'2',s:'3X'},{p:'R',s:'Recess'},{p:'3',s:'CS'},{p:'4',s:'MATH'},{p:'L',s:'Lunch'},{p:'5',s:'CHIN'},{p:'6',s:'CHIN'},{p:'7',s:''}], 'C':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'ENG'},{p:'R',s:'Recess'},{p:'3',s:'CHIN'},{p:'4',s:'2X'},{p:'L',s:'Lunch'},{p:'5',s:'3X'},{p:'6',s:'ASS'},{p:'7',s:''}], 'D':[{p:'0',s:'CTP'},{p:'1',s:'ENG'},{p:'2',s:'ENG'},{p:'R',s:'Recess'},{p:'3',s:'1X'},{p:'4',s:'3X'},{p:'L',s:'Lunch'},{p:'5',s:'PE'},{p:'6',s:'2X'},{p:'7',s:''}], 'E':[{p:'0',s:'CTP'},{p:'1',s:'MATH'},{p:'2',s:'CHIN'},{p:'R',s:'Recess'},{p:'3',s:'ENG'},{p:'4',s:'1X'},{p:'L',s:'Lunch'},{p:'5',s:'2X'},{p:'6',s:'3X'},{p:'7',s:''}], 'F':[{p:'0',s:'CTP'},{p:'1',s:'3X'},{p:'2',s:'2X'},{p:'R',s:'Recess'},{p:'3',s:'MATH'},{p:'4',s:'CS'},{p:'L',s:'Lunch'},{p:'5',s:'IA'},{p:'6',s:'ASSL'},{p:'7',s:''}], 'G':[{p:'0',s:'CTP'},{p:'1',s:'2X'},{p:'2',s:'3X'},{p:'R',s:'Recess'},{p:'3',s:'MATH'},{p:'4',s:'CHIN'},{p:'L',s:'Lunch'},{p:'5',s:'ENG'},{p:'6',s:'1X'},{p:'7',s:''}], 'H':[{p:'0',s:'CTP'},{p:'1',s:'RS'},{p:'2',s:'CS'},{p:'R',s:'Recess'},{p:'3',s:'CHIN'},{p:'4',s:'ENG\nENG CF ac'},{p:'L',s:'Lunch'},{p:'5',s:'1X'},{p:'6',s:'PE'},{p:'7',s:''}]};
+            Object.keys(timetableData).forEach(k => timetableData[k] = timetableData[k].map(i => ({ period: i.p === 'R' ? 'Recess' : (i.p === 'L' ? 'Lunch Time' : i.p), subject: i.s })));
+            function parseCSV(t){const n=t.trim().split("\n"),e=n[0].split(","),s=[];for(let t=1;t<n.length;t++){const i=n[t].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);if(i.length===e.length){const t={};for(let n=0;n<e.length;n++)t[e[n]]=i[n].replace(/"/g,"");s.push(t)}}return s}
+            function formatDisplayDate(t){return t.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
+            function formatLookupDate(t){return t.toISOString().split("T")[0]}
+            function renderEvents(t,n){if(!n||0===n.length)return void(t.innerHTML='<p class="text-gray-500 italic">No events scheduled.</p>');const e=n[0];let s="";e.CycleDay&&(s+=`<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${e.CycleDay}</span></div>`),e.Type&&(s+=`<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${e.Type}</span></div>`),e.Events&&(s+=`<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span><span class="text-gray-800">${e.Events.split(";").map(t=>t.trim()).join("<br>")}</span></div>`),t.innerHTML=s||'<p class="text-gray-500 italic">No specific events listed.</p>'}
+            function renderTimetable(t,n){if(!n||!n.CycleDay||!timetableData[n.CycleDay])return void(t.innerHTML="");const e=n.CycleDay,s=timetableData[e];let i=`\n                <h3 class="text-xl font-bold text-gray-700 mt-6 mb-3">Timetable (Day ${e})</h3>\n                <div class="overflow-x-auto rounded-lg border border-gray-200">\n                    <table class="min-w-full divide-y divide-gray-200">\n                        <thead class="bg-gray-50">\n                            <tr>\n                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Period</th>\n                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>\n                            </tr>\n                        </thead>\n                        <tbody class="bg-white divide-y divide-gray-200">\n            `;s.forEach(t=>{"recess"===t.period.toLowerCase()||"lunch time"===t.period.toLowerCase()?i+=`\n                        <tr>\n                            <td colspan="2" class="px-4 py-2 text-center bg-gray-100 font-medium text-sm text-gray-600">${t.subject}</td>\n                        </tr>\n                    `:i+=`\n                        <tr>\n                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${t.period}</td>\n                            <td class="px-4 py-3 whitespace-pre-wrap text-sm text-gray-600">${t.subject||""}</td>\n                        </tr>\n                    `}),i+="\n                        </tbody>\n                    </table>\n                </div>\n            ",t.innerHTML=i}
+            document.addEventListener("DOMContentLoaded",()=>{const t=parseCSV(csvData),n=new Date,e=new Date(n);e.setDate(n.getDate()+1),document.getElementById("today-date").textContent=formatDisplayDate(n),document.getElementById("tomorrow-date").textContent=formatDisplayDate(e);const s=formatLookupDate(n),i=formatLookupDate(e),o=t.filter(t=>t.Date===s),a=t.filter(t=>t.Date===i);renderEvents(document.getElementById("today-events"),o),renderTimetable(document.getElementById("today-timetable"),o.length>0?o[0]:null),renderEvents(document.getElementById("tomorrow-events"),a),renderTimetable(document.getElementById("tomorrow-timetable"),a.length>0?a[0]:null)});
+            // I minified the schedule's script and data to save space as it's static.
+            // A small change was made to the original schedule script to use the real current date.
+        })();
     </script>
 </body>
 </html>
-
