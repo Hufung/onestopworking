@@ -146,7 +146,7 @@
         }
 
         /* --- To-Do App Specific Styles --- */
-        #todo-view-wrapper .container { background: var(--main-color); padding: 40px; border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); width: 100%; max-width: 700px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
+        #todo-view-wrapper .container { background: var(--main-color); padding: 40px; border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); width: 100%; max-width: 800px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
         
         #todo-view-wrapper #main-view {
             padding-top: 40px;
@@ -241,19 +241,59 @@
         #calendar-header button:hover { background-color: var(--input-bg-color); }
         #calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-light-color); margin-bottom: 10px; font-size: 0.9rem; }
         #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .calendar-day { border: 1px solid var(--border-color); border-radius: 8px; min-height: 120px; padding: 8px; font-size: 0.9rem; transition: border-color 0.2s; }
+        .calendar-day {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            height: 110px; 
+            padding: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
         .calendar-day.other-month { color: var(--text-light-color); opacity: 0.5; }
         .calendar-day.current-day .day-number { font-weight: 700; color: white; background-color: var(--primary-color); border-radius: 50%; width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center; }
-        .calendar-tasks { margin-top: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
-        .calendar-task { background-color: var(--primary-light-color); color: var(--primary-color); padding: 2px 6px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .calendar-tasks { margin-top: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; overflow-y: auto; }
+        .calendar-task, .calendar-event {
+            padding: 2px 6px;
+            border-radius: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer; /* MODIFICATION: Changed cursor to pointer */
+        }
+        .calendar-task { background-color: var(--primary-light-color); color: var(--primary-color); }
+        .calendar-event { background-color: var(--warning-color); color: white; opacity: 0.9; }
         .calendar-task.completed { text-decoration: line-through; opacity: 0.7; background-color: #e0e0e0; color: #666; }
         body.dark-mode .calendar-task.completed { background-color: #444; color: var(--text-light-color); }
         
+        .cycle-day {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: var(--text-light-color);
+            background-color: var(--input-bg-color);
+            padding: 2px 6px;
+            border-radius: 6px;
+            line-height: 1;
+        }
+        .day-number.holiday {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+        .calendar-day.current-day .day-number.holiday {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .app-container { padding: 15px; }
-            #todo-view-wrapper .container { padding: 30px; }
-            .calendar-day { min-height: 100px; padding: 5px; font-size: 0.8rem;}
-            .calendar-task { font-size: 0.7rem; padding: 1px 4px;}
+            #todo-view-wrapper .container { padding: 20px; }
+            .calendar-day { height: 100px; padding: 5px; font-size: 0.8rem;}
+            .calendar-task, .calendar-event { font-size: 0.7rem; padding: 1px 4px;}
         }
         @media (max-width: 600px) {
             .app-container { padding-top: 10px; }
@@ -270,7 +310,7 @@
             .task-name { font-size: 1rem; }
             .back-button { margin-bottom: 20px; }
             #calendar-weekdays div { font-size: 0.7rem; }
-            .calendar-day { min-height: 80px; }
+            .calendar-day { height: 90px; }
         }
     </style>
 </head>
@@ -435,6 +475,11 @@
             const taskForm = document.getElementById('task-form');
             if (!taskForm) return;
 
+            // --- School Schedule Data (for Calendar) ---
+            const csvData = `Date,DayOfWeek,CycleDay,Type,Events\n2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"\n2025-09-02,Tuesday,A,,Summer Timetable\n2025-09-03,Wednesday,C,,Summer Timetable\n2025-09-04,Thursday,F,,Summer Timetable\n2025-09-05,Friday,B,,Summer Timetable\n2025-09-06,Saturday,,,\n2025-09-07,Sunday,,,\n2025-09-08,Monday,D,,Summer Timetable\n2025-09-09,Tuesday,E,,Summer Timetable\n2025-09-10,Wednesday,G,,Summer Timetable\n2025-09-11,Thursday,H,,Summer Timetable\n2025-09-12,Friday,A,,Summer Timetable\n2025-09-13,Saturday,,,\n2025-09-14,Sunday,,Special Timetable,"Education Sunday"\n2025-09-15,Monday,B,,Summer Timetable\n2025-09-16,Tuesday,C,,Summer Timetable\n2025-09-17,Wednesday,D,,Summer Timetable\n2025-09-18,Thursday,E,,Summer Timetable\n2025-09-19,Friday,F,,Summer Timetable\n2025-09-20,Saturday,,,\n2025-09-21,Sunday,,,\n2025-09-22,Monday,G,,Summer Timetable\n2025-09-23,Tuesday,H,,Summer Timetable\n2025-09-24,Wednesday,A,,\n2025-09-25,Thursday,B,,\n2025-09-26,Friday,C,,\n2025-09-27,Saturday,,,\n2025-09-28,Sunday,,,\n2025-09-29,Monday,,,\n2025-09-30,Tuesday,,,\n2025-10-01,Wednesday,,School Holiday,"The National Day"\n2025-10-02,Thursday,F,,\n2025-10-03,Friday,G,,\n2025-10-04,Saturday,,,\n2025-10-05,Sunday,,,\n2025-10-06,Monday,H,,\n2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"\n2025-10-08,Wednesday,A,,\n2025-10-09,Thursday,B,,\n2025-10-10,Friday,C,,\n2025-10-11,Saturday,,,\n2025-10-12,Sunday,,,\n2025-10-13,Monday,D,,\n2025-10-14,Tuesday,E,,\n2025-10-15,Wednesday,F,,\n2025-10-16,Thursday,G,,\n2025-10-17,Friday,H,,\n2025-10-18,Saturday,,,\n2025-10-19,Sunday,,,\n2025-10-20,Monday,,Special Timetable,"Swimming Gala"\n2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"\n2025-10-22,Wednesday,B,,"S6 First Examination"\n2025-10-23,Thursday,C,,"S6 First Examination"\n2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"\n2025-10-25,Saturday,,,\n2025-10-26,Sunday,,,\n2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"\n2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"\n2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"\n2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"\n2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"\n2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"\n2026-03-02,Monday,,School Holiday,"The day following Parents' Days"\n2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"\n2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"`;
+            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
+            const allSchoolEvents = parseCSV(csvData);
+
             // --- Element Selectors ---
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
@@ -512,6 +557,7 @@
             function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
             
             // --- Task CRUD Logic ---
+            function truncateText(text, maxLength) { if (text.length <= maxLength) { return text; } return text.slice(0, maxLength) + '...'; }
             taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
             taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) { toggleComplete(Number(e.target.closest('.task-item').dataset.id)); } };
             taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
@@ -527,6 +573,16 @@
             function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
             
             // --- Calendar Logic ---
+            calendarGrid.addEventListener('click', (e) => {
+                const target = e.target.closest('.calendar-task, .calendar-event');
+                if (target) {
+                    const fullName = target.getAttribute('title');
+                    if (fullName) {
+                        showNotification(fullName, 'info');
+                    }
+                }
+            });
+
             function renderCalendar() {
                 calendarGrid.innerHTML = '';
                 const year = calendarDate.getFullYear();
@@ -549,16 +605,51 @@
                     if (date.toDateString() === today.toDateString()) {
                         dayEl.classList.add('current-day');
                     }
+                    
                     const tasksForDay = tasks.filter(task => {
                         const taskDeadline = new Date(task.deadline + 'T00:00:00');
                         return taskDeadline.toDateString() === date.toDateString();
                     });
                     
                     let tasksHtml = tasksForDay.map(task => 
-                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(task.name)}</div>`
+                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 10))}</div>`
                     ).join('');
 
-                    dayEl.innerHTML = `<div class="day-number">${day}</div><div class="calendar-tasks">${tasksHtml}</div>`;
+                    const y = date.getFullYear();
+                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const d = date.getDate().toString().padStart(2, '0');
+                    const lookupDate = `${y}-${m}-${d}`;
+                    const eventForDay = allSchoolEvents.find(e => e.Date === lookupDate);
+                    let cycleDayHtml = '';
+                    let holidayClass = '';
+                    let eventsHtml = '';
+                    const dayOfWeek = date.getDay(); 
+
+                    if (eventForDay) {
+                        if(eventForDay.CycleDay) {
+                             cycleDayHtml = `<div class="cycle-day">${eventForDay.CycleDay}</div>`;
+                        }
+                        if(eventForDay.Type.includes('Holiday') || eventForDay.Events.includes('Holiday')) {
+                            holidayClass = ' holiday';
+                        }
+                        if(eventForDay.Events) {
+                            eventsHtml = eventForDay.Events.split(';').map(event => {
+                                const trimmedEvent = event.trim();
+                                if (trimmedEvent) {
+                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
+                                }
+                                return '';
+                            }).join('');
+                        }
+                    }
+                    
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        holidayClass = ' holiday';
+                    }
+
+                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${day}</div>
+                                       ${cycleDayHtml}
+                                       <div class="calendar-tasks">${eventsHtml}${tasksHtml}</div>`;
                     calendarGrid.appendChild(dayEl);
                 }
             }
@@ -604,6 +695,45 @@
             const scheduleSubtitle = document.getElementById('schedule-subtitle');
 
             const csvData = `Date,DayOfWeek,CycleDay,Type,Events
+2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
+2025-09-02,Tuesday,A,,Summer Timetable
+2025-09-03,Wednesday,C,,Summer Timetable
+2025-09-04,Thursday,F,,Summer Timetable
+2025-09-05,Friday,B,,Summer Timetable
+2025-09-06,Saturday,,,
+2025-09-07,Sunday,,,
+2025-09-08,Monday,D,,Summer Timetable
+2025-09-09,Tuesday,E,,Summer Timetable
+2025-09-10,Wednesday,G,,Summer Timetable
+2025-09-11,Thursday,H,,Summer Timetable
+2025-09-12,Friday,A,,Summer Timetable
+2025-09-13,Saturday,,,
+2025-09-14,Sunday,,Special Timetable,"Education Sunday"
+2025-09-15,Monday,B,,Summer Timetable
+2025-09-16,Tuesday,C,,Summer Timetable
+2025-09-17,Wednesday,D,,Summer Timetable
+2025-09-18,Thursday,E,,Summer Timetable
+2025-09-19,Friday,F,,Summer Timetable
+2025-09-20,Saturday,,,
+2025-09-21,Sunday,,,
+2025-09-22,Monday,G,,Summer Timetable
+2025-09-23,Tuesday,H,,Summer Timetable
+2025-09-24,Wednesday,A,,
+2025-09-25,Thursday,B,,
+2025-09-26,Friday,C,,
+2025-09-27,Saturday,,,
+2025-09-28,Sunday,,,
+2025-09-29,Monday,,,
+2025-09-30,Tuesday,,,
+2025-10-01,Wednesday,,School Holiday,"The National Day"
+2025-10-02,Thursday,F,,
+2025-10-03,Friday,G,,
+2025-10-04,Saturday,,,
+2025-10-05,Sunday,,,
+2025-10-06,Monday,H,,
+2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"
+2025-10-08,Wednesday,A,,
+2025-10-09,Thursday,B,,
 2025-10-10,Friday,C,,
 2025-10-11,Saturday,,,
 2025-10-12,Sunday,,,
@@ -932,7 +1062,12 @@
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
             function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
             function formatDisplayDate(date) { return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
-            function formatLookupDate(date) { return date.toISOString().split('T')[0]; }
+            function formatLookupDate(date) { 
+                const y = date.getFullYear();
+                const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                const d = date.getDate().toString().padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
             function renderEvents(element, eventsForDay) { if (!eventsForDay || eventsForDay.length === 0) { element.innerHTML = '<p class="text-gray-500 italic">No events scheduled.</p>'; return; } const event = eventsForDay[0]; let html = ''; if (event.CycleDay) { html += `<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${event.CycleDay}</span></div>`; } if (event.Type) { html += `<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${event.Type}</span></div>`; } if (event.Events) { const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>'); html += `<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span><span class="text-gray-800">${eventItems}</span></div>`; } element.innerHTML = html || '<p class="text-gray-500 italic">No specific events listed.</p>'; }
             
             function renderTimetable(element, eventData) {
