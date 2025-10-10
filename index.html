@@ -148,19 +148,18 @@
         /* --- To-Do App Specific Styles --- */
         #todo-view-wrapper .container { background: var(--main-color); padding: 40px; border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); width: 100%; max-width: 700px; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
         
-        /* Alignement Fix: Add padding to main view to avoid overlap with controls */
         #todo-view-wrapper #main-view {
             padding-top: 40px;
         }
         
-        #todo-view-wrapper h1, #todo-view-wrapper h2 { text-align: center; color: var(--text-color); margin-bottom: 20px; font-weight: 700; }
+        #todo-view-wrapper h1, #todo-view-wrapper #main-view h2 { text-align: center; color: var(--text-color); margin-bottom: 20px; font-weight: 700; }
         
-        /* Alignement Fix: Ensure h1 respects parent's padding */
         #todo-view-wrapper h1 { 
             font-size: 2.25rem; 
             margin-top: 0;
         }
-        #todo-view-wrapper h2 { font-size: 1.5rem; margin-top: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        #sharing-view h2, #file-transfer-view h2 { font-size: 1.5rem; margin-top: 0px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        
         #todo-view-wrapper .top-controls { position: absolute; top: 25px; right: 25px; display: flex; align-items: center; gap: 15px; z-index: 10; }
         #todo-view-wrapper .theme-switch-wrapper { display: flex; align-items: center; gap: 10px; color: var(--text-light-color); font-size: 0.9rem; font-weight: 500; }
         #todo-view-wrapper .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
@@ -231,16 +230,37 @@
         #received-files-list li { background-color: var(--input-bg-color); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
         #received-files-list .download-link { text-decoration: none; color: white; background-color: var(--primary-color); padding: 5px 10px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; }
         
+        /* --- Calendar View Styles --- */
+        .view-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .view-switcher button { padding: 8px 16px; font-size: 0.9rem; font-weight: 600; border-radius: 10px; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-light-color); cursor: pointer; transition: background-color 0.2s, color 0.2s; }
+        .view-switcher button.active { background-color: var(--primary-light-color); color: var(--primary-color); border-color: var(--primary-light-color); }
+        #calendar-view { flex-direction: column; width: 100%;}
+        #calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        #calendar-header h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+        #calendar-header button { background: none; border: 1px solid var(--border-color); border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; cursor: pointer; transition: background-color 0.2s; }
+        #calendar-header button:hover { background-color: var(--input-bg-color); }
+        #calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-light-color); margin-bottom: 10px; font-size: 0.9rem; }
+        #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-day { border: 1px solid var(--border-color); border-radius: 8px; min-height: 120px; padding: 8px; font-size: 0.9rem; transition: border-color 0.2s; }
+        .calendar-day.other-month { color: var(--text-light-color); opacity: 0.5; }
+        .calendar-day.current-day .day-number { font-weight: 700; color: white; background-color: var(--primary-color); border-radius: 50%; width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center; }
+        .calendar-tasks { margin-top: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
+        .calendar-task { background-color: var(--primary-light-color); color: var(--primary-color); padding: 2px 6px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .calendar-task.completed { text-decoration: line-through; opacity: 0.7; background-color: #e0e0e0; color: #666; }
+        body.dark-mode .calendar-task.completed { background-color: #444; color: var(--text-light-color); }
+        
         @media (max-width: 768px) {
             .app-container { padding: 15px; }
             #todo-view-wrapper .container { padding: 30px; }
+            .calendar-day { min-height: 100px; padding: 5px; font-size: 0.8rem;}
+            .calendar-task { font-size: 0.7rem; padding: 1px 4px;}
         }
         @media (max-width: 600px) {
             .app-container { padding-top: 10px; }
             #todo-view-wrapper .container { padding: 20px; border-radius: 16px; }
-            #todo-view-wrapper #main-view { padding-top: 50px; } /* More padding for mobile */
+            #todo-view-wrapper #main-view { padding-top: 50px; }
             #todo-view-wrapper h1 { font-size: 1.8rem; }
-            #todo-view-wrapper h2 { font-size: 1.3rem; }
+            #sharing-view h2, #file-transfer-view h2, #calendar-header h2 { font-size: 1.3rem; }
             #todo-view-wrapper .top-controls { top: 15px; right: 15px; gap: 8px; }
             #todo-view-wrapper .theme-switch-wrapper span { display: none; }
             #timer { font-size: 2rem; }
@@ -249,6 +269,8 @@
             .task-item { padding: 12px 15px; gap: 10px; }
             .task-name { font-size: 1rem; }
             .back-button { margin-bottom: 20px; }
+            #calendar-weekdays div { font-size: 0.7rem; }
+            .calendar-day { min-height: 80px; }
         }
     </style>
 </head>
@@ -283,22 +305,35 @@
                         <span id="timer">00:00:00</span>
                         <span id="timer-date">Loading date...</span>
                     </div>
-                    <form id="task-form">
-                        <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
-                        <div class="date-picker">
-                            <label for="task-deadline-input">Deadline:</label>
-                            <input type="date" id="task-deadline-input">
-                        </div>
-                        <div class="date-picker">
-                            <label for="task-finish-date-input">Finished:</label>
-                            <input type="date" id="task-finish-date-input">
-                        </div>
-                        <button type="submit">Add Task</button>
-                    </form>
-                    <div id="search-container">
-                        <input type="text" id="search-input" class="input-field" placeholder="Search for a task...">
+                    
+                    <div class="view-switcher">
+                        <button id="show-list-view-btn" class="active">List</button>
+                        <button id="show-calendar-view-btn">Calendar</button>
                     </div>
-                    <ul id="task-list"></ul>
+
+                    <div id="list-view">
+                        <form id="task-form">
+                            <input type="text" id="task-name-input" class="input-field" placeholder="What do you need to do?" required>
+                            <div class="date-picker"> <label for="task-deadline-input">Deadline:</label> <input type="date" id="task-deadline-input"> </div>
+                            <div class="date-picker"> <label for="task-finish-date-input">Finished:</label> <input type="date" id="task-finish-date-input"> </div>
+                            <button type="submit">Add Task</button>
+                        </form>
+                        <div id="search-container"> <input type="text" id="search-input" class="input-field" placeholder="Search for a task..."> </div>
+                        <ul id="task-list"></ul>
+                    </div>
+                    
+                    <div id="calendar-view" style="display: none;">
+                        <div id="calendar-header">
+                            <button id="prev-month-btn">&lt;</button>
+                            <h2 id="month-year-header"></h2>
+                            <button id="next-month-btn">&gt;</button>
+                        </div>
+                        <div id="calendar-weekdays">
+                            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                        </div>
+                        <div id="calendar-grid"></div>
+                    </div>
+
                 </div>
                 <div id="sharing-view">
                     <button class="back-button">← Back to Tasks</button>
@@ -400,6 +435,7 @@
             const taskForm = document.getElementById('task-form');
             if (!taskForm) return;
 
+            // --- Element Selectors ---
             const taskNameInput = document.getElementById('task-name-input');
             const taskDeadlineInput = document.getElementById('task-deadline-input');
             const taskFinishDateInput = document.getElementById('task-finish-date-input');
@@ -427,9 +463,21 @@
             const sendFileButton = document.getElementById('send-file-button');
             const receivedFilesList = document.getElementById('received-files-list');
 
+            // --- Calendar Elements ---
+            const showListViewBtn = document.getElementById('show-list-view-btn');
+            const showCalendarViewBtn = document.getElementById('show-calendar-view-btn');
+            const listView = document.getElementById('list-view');
+            const calendarView = document.getElementById('calendar-view');
+            const monthYearHeader = document.getElementById('month-year-header');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
+            const calendarGrid = document.getElementById('calendar-grid');
+            let calendarDate = new Date();
+
             let peer;
             const connections = [];
 
+            // --- PeerJS & WebRTC Logic ---
             function getRecentPeers() { const p = localStorage.getItem('recentPeerIds'); return p ? JSON.parse(p) : []; }
             function addRecentPeer(peerId) { let p = getRecentPeers().filter(id => id !== peerId); p.unshift(peerId); if (p.length > 5) p.pop(); localStorage.setItem('recentPeerIds', JSON.stringify(p)); localStorage.setItem('lastConnectedPeerId', peerId); }
             function initializePeer(requestedId) { if (peer) peer.destroy(); peer = new Peer(requestedId); peer.on('open', (id) => { activePeerIdElement.textContent = id; activePeerIdElement.onclick = () => { navigator.clipboard.writeText(id); showNotification('Your active ID has been copied!', 'info'); }; const recent = getRecentPeers(); if (recent.length > 0) setTimeout(() => { showNotification('Reconnecting to recent peers...', 'info'); recent.forEach(connectToPeer); }, 500); }); peer.on('connection', (conn) => { showNotification(`Incoming connection from ${conn.peer}`, 'info'); setupConnection(conn); }); peer.on('error', (err) => { console.error('PeerJS error:', err); showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is taken.` : `Connection error: ${err.message}`); activePeerIdElement.textContent = 'Error'; }); }
@@ -441,11 +489,13 @@
             connectButton.onclick = () => connectToPeer(remotePeerIdInput.value.trim());
             function updateConnectionStatus() { if (connections.length > 0) { const ids = connections.map(c => c.peer).join(', '); connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${ids}`; connectionStatusElement.className = 'connected'; } else { connectionStatusElement.textContent = 'Status: Not Connected'; connectionStatusElement.className = 'disconnected'; } }
             function broadcast(data) { connections.forEach(conn => { if (conn.open) conn.send(data); }); }
-            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); } }
+            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); renderCalendar(); } }
             const lastPeerId = localStorage.getItem('lastConnectedPeerId'); if (lastPeerId) remotePeerIdInput.value = lastPeerId;
             function updatePeerSelectDropdown() { peerSelect.innerHTML = ''; if (connections.length === 0) { peerSelect.innerHTML = '<option>No peers connected</option>'; peerSelect.disabled = true; sendFileButton.disabled = true; } else { connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; }); peerSelect.disabled = false; sendFileButton.disabled = false; } }
             sendFileButton.onclick = () => { const peerId = peerSelect.value; const file = fileInput.files[0]; if (!peerId || peerId === 'No peers connected') { showNotification('Please select a peer.'); return; } if (!file) { showNotification('Please select a file.'); return; } const conn = connections.find(c => c.peer === peerId); if (!conn) { showNotification('Connection lost.'); return; } const reader = new FileReader(); reader.onload = (event) => { conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type }); showNotification(`Sending ${file.name} to ${peerId}...`, 'info'); }; reader.readAsArrayBuffer(file); };
             function handleReceivedFile({ file, fileName, fileType }) { const blob = new Blob([file], { type: fileType }); const url = URL.createObjectURL(blob); receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`; showNotification(`You received a file: ${fileName}`, 'info'); }
+            
+            // --- UI & View Logic ---
             function showView(viewToShow) { [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none'); viewToShow.style.display = 'block'; topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none'; }
             toggleSharingButton.onclick = () => showView(sharingView);
             toggleFileTransferButton.onclick = () => showView(fileTransferView);
@@ -455,23 +505,90 @@
             themeCheckbox.onchange = () => setTheme(themeCheckbox.checked ? 'dark' : 'light');
             const savedTheme = localStorage.getItem('theme'); const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
             function showNotification(message, type = 'error') { notificationElement.textContent = message; notificationElement.className = `notification ${type} show`; setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); }
+            
+            // --- Timer & Reminder Logic ---
             function updateTimer() { const now = new Date(); timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
             updateTimer(); setInterval(updateTimer, 1000);
             function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
-            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
-            taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) toggleComplete(Number(e.target.closest('.task-item').dataset.id)); };
+            
+            // --- Task CRUD Logic ---
+            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
+            taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) { toggleComplete(Number(e.target.closest('.task-item').dataset.id)); } };
             taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
-            function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') loadTasks(); }; }
+            function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); renderCalendar(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { loadTasks(); renderCalendar(); } }; }
             function addTaskToDOM(task) { const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id; const deadline = new Date(task.deadline + 'T00:00:00'); let status = ''; if (!task.isCompleted) { const now = new Date(); now.setHours(0, 0, 0, 0); const diff = Math.ceil((deadline - now) / 864e5); if (diff > 0) status = `<span class="deadline-status future">${diff} day${diff === 1 ? '' : 's'} left</span>`; else if (diff === 0) status = `<span class="deadline-status today">Due today</span>`; else { const overdue = Math.abs(diff); status = `<span class="deadline-status overdue">Overdue by ${overdue} day${overdue === 1 ? '' : 's'}</span>`; } } li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadline.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${status} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`; taskList.appendChild(li); }
             function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
             function getTaskById(id) { return getTasks().find(task => task.id === id); }
             function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
             function loadTasks() { const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
-            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); }
-            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); }
-            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); }
+            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); renderCalendar(); }
+            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); renderCalendar(); }
+            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); renderCalendar(); }
             function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
             
+            // --- Calendar Logic ---
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const tasks = getTasks();
+                const today = new Date();
+
+                for (let i = 0; i < firstDay; i++) {
+                    calendarGrid.innerHTML += `<div class="calendar-day other-month"></div>`;
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    const date = new Date(year, month, day);
+                    if (date.toDateString() === today.toDateString()) {
+                        dayEl.classList.add('current-day');
+                    }
+                    const tasksForDay = tasks.filter(task => {
+                        const taskDeadline = new Date(task.deadline + 'T00:00:00');
+                        return taskDeadline.toDateString() === date.toDateString();
+                    });
+                    
+                    let tasksHtml = tasksForDay.map(task => 
+                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(task.name)}</div>`
+                    ).join('');
+
+                    dayEl.innerHTML = `<div class="day-number">${day}</div><div class="calendar-tasks">${tasksHtml}</div>`;
+                    calendarGrid.appendChild(dayEl);
+                }
+            }
+
+            showListViewBtn.onclick = () => {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                showListViewBtn.classList.add('active');
+                showCalendarViewBtn.classList.remove('active');
+            };
+
+            showCalendarViewBtn.onclick = () => {
+                listView.style.display = 'none';
+                calendarView.style.display = 'flex';
+                showListViewBtn.classList.remove('active');
+                showCalendarViewBtn.classList.add('active');
+                renderCalendar();
+            };
+
+            prevMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() - 1);
+                renderCalendar();
+            };
+
+            nextMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
+                renderCalendar();
+            };
+
+            // Initial Load
             loadTasks();
             checkReminders(); 
         });
@@ -487,45 +604,6 @@
             const scheduleSubtitle = document.getElementById('schedule-subtitle');
 
             const csvData = `Date,DayOfWeek,CycleDay,Type,Events
-2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
-2025-09-02,Tuesday,A,,Summer Timetable
-2025-09-03,Wednesday,C,,Summer Timetable
-2025-09-04,Thursday,F,,Summer Timetable
-2025-09-05,Friday,B,,Summer Timetable
-2025-09-06,Saturday,,,
-2025-09-07,Sunday,,,
-2025-09-08,Monday,D,,Summer Timetable
-2025-09-09,Tuesday,E,,Summer Timetable
-2025-09-10,Wednesday,G,,Summer Timetable
-2025-09-11,Thursday,H,,Summer Timetable
-2025-09-12,Friday,A,,Summer Timetable
-2025-09-13,Saturday,,,
-2025-09-14,Sunday,,Special Timetable,"Education Sunday"
-2025-09-15,Monday,B,,Summer Timetable
-2025-09-16,Tuesday,C,,Summer Timetable
-2025-09-17,Wednesday,D,,Summer Timetable
-2025-09-18,Thursday,E,,Summer Timetable
-2025-09-19,Friday,F,,Summer Timetable
-2025-09-20,Saturday,,,
-2025-09-21,Sunday,,,
-2025-09-22,Monday,G,,Summer Timetable
-2025-09-23,Tuesday,H,,Summer Timetable
-2025-09-24,Wednesday,A,,
-2025-09-25,Thursday,B,,
-2025-09-26,Friday,C,,
-2025-09-27,Saturday,,,
-2025-09-28,Sunday,,,
-2025-09-29,Monday,,,
-2025-09-30,Tuesday,,,
-2025-10-01,Wednesday,,School Holiday,"The National Day"
-2025-10-02,Thursday,F,,
-2025-10-03,Friday,G,,
-2025-10-04,Saturday,,,
-2025-10-05,Sunday,,,
-2025-10-06,Monday,H,,
-2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"
-2025-10-08,Wednesday,A,,
-2025-10-09,Thursday,B,,
 2025-10-10,Friday,C,,
 2025-10-11,Saturday,,,
 2025-10-12,Sunday,,,
