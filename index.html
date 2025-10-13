@@ -741,240 +741,6 @@
             if (!taskForm) return;
 
             // --- School Schedule Data (for Calendar) ---
-            const csvData = `e,DayOfWeek,CycleDay,Type, Ceremony"\n2025-09-02,Tuesday,A,,Summer Timetable\n2025-09-03,Wednesday,C,,Summer Timetable\n2025-09-04,Thursday,F,,Summer Timetable\n2025-09-05,Friday,B,,Summer Timetable\n2025-09-06,Saturday,,,\n2025-09-07,Sunday,,,\n2025-09-08,Monday,D,,Summer Timetable\n2025-09-09,Tuesday,E,,Summer Timetable\n2025-09-10,Wednesday,G,,Summer Timetable\n2025-09-11,Thursday,H,,Summer Timetable\n2025-09-12,Friday,A,,Summer Timetable\n2025-09-13,Saturday,,,\n2025-09-14,Sunday,,Special Timetable,"Education Sunday"\n2025-09-15,Monday,B,,Summer Timetable\n2025-09-16,Tuesday,C,,Summer Timetable\n2025-09-17,Wednesday,D,,Summer Timetable\n2025-09-18,Thursday,E,,Summer Timetable\n2025-09-19,Friday,F,,Summer Timetable\n2025-09-20,Saturday,,,\n2025-09-21,Sunday,,,\n2025-09-22,Monday,G,,Summer Timetable\n2025-09-23,Tuesday,H,,Summer Timetable\n2025-09-24,Wednesday,A,,\n2025-09-25,Thursday,B,,\n2025-09-26,Friday,C,,\n2025-09-27,Saturday,,,\n2025-09-28,Sunday,,,\n2025-09-29,Monday,,,\n2025-09-30,Tuesday,,,\n2025-10-01,Wednesday,,School Holiday,"The National Day"\n2025-10-02,Thursday,F,,\n2025-10-03,Friday,G,,\n2025-10-04,Saturday,,,\n2025-10-05,Sunday,,,\n2025-10-06,Monday,H,,\n2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"\n2025-10-08,Wednesday,A,,\n2025-10-09,Thursday,B,,\n2025-10-10,Friday,C,,\n2025-10-11,Saturday,,,\n2025-10-12,Sunday,,,\n2025-10-13,Monday,D,,\n2025-10-14,Tuesday,E,,\n2025-10-15,Wednesday,F,,\n2025-10-16,Thursday,G,,\n2025-10-17,Friday,H,,\n2025-10-18,Saturday,,,\n2025-10-19,Sunday,,,\n2025-10-20,Monday,,Special Timetable,"Swimming Gala"\n2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"\n2025-10-22,Wednesday,B,,"S6 First Examination"\n2025-10-23,Thursday,C,,"S6 First Examination"\n2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"\n2025-10-25,Saturday,,,\n2025-10-26,Sunday,,,\n2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"\n2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"\n2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"\n2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"\n2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"\n2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"\n2026-03-02,Monday,,School Holiday,"The day following Parents' Days"\n2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"\n2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"`;
-            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
-            const allSchoolEvents = parseCSV(csvData);
-
-            // --- Element Selectors ---
-            const taskNameInput = document.getElementById('task-name-input');
-            const taskDeadlineInput = document.getElementById('task-deadline-input');
-            const taskFinishDateInput = document.getElementById('task-finish-date-input');
-            const taskList = document.getElementById('task-list');
-            const timerElement = document.getElementById('timer');
-            const timerDateElement = document.getElementById('timer-date');
-            const notificationElement = document.getElementById('notification');
-            const themeCheckbox = document.getElementById('theme-checkbox');
-            const searchInput = document.getElementById('search-input');
-            const mainView = document.getElementById('main-view');
-            const sharingView = document.getElementById('sharing-view');
-            const fileTransferView = document.getElementById('file-transfer-view');
-            const toggleSharingButton = document.getElementById('toggle-sharing-button');
-            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
-            const backButtons = document.querySelectorAll('.back-button');
-            const topControls = document.querySelector('.top-controls');
-            const myPeerIdInput = document.getElementById('my-peer-id-input');
-            const setPeerIdButton = document.getElementById('set-peer-id-button');
-            const activePeerIdElement = document.getElementById('active-peer-id');
-            const remotePeerIdInput = document.getElementById('remote-peer-id-input');
-            const connectButton = document.getElementById('connect-button');
-            const connectionStatusElement = document.getElementById('connection-status');
-            const peerSelect = document.getElementById('peer-select');
-            const fileInput = document.getElementById('file-input');
-            const sendFileButton = document.getElementById('send-file-button');
-            const receivedFilesList = document.getElementById('received-files-list');
-
-            // --- Calendar Elements ---
-            const showListViewBtn = document.getElementById('show-list-view-btn');
-            const showCalendarViewBtn = document.getElementById('show-calendar-view-btn');
-            const listView = document.getElementById('list-view');
-            const calendarView = document.getElementById('calendar-view');
-            const monthYearHeader = document.getElementById('month-year-header');
-            const prevMonthBtn = document.getElementById('prev-month-btn');
-            const nextMonthBtn = document.getElementById('next-month-btn');
-            const calendarGrid = document.getElementById('calendar-grid');
-            let calendarDate = new Date();
-
-            let peer;
-            const connections = [];
-
-            // --- PeerJS & WebRTC Logic ---
-            function getRecentPeers() { const p = localStorage.getItem('recentPeerIds'); return p ? JSON.parse(p) : []; }
-            function addRecentPeer(peerId) { let p = getRecentPeers().filter(id => id !== peerId); p.unshift(peerId); if (p.length > 5) p.pop(); localStorage.setItem('recentPeerIds', JSON.stringify(p)); localStorage.setItem('lastConnectedPeerId', peerId); }
-            function initializePeer(requestedId) { if (peer) peer.destroy(); peer = new Peer(requestedId); peer.on('open', (id) => { activePeerIdElement.textContent = id; activePeerIdElement.onclick = () => { navigator.clipboard.writeText(id); showNotification('Your active ID has been copied!', 'info'); }; const recent = getRecentPeers(); if (recent.length > 0) setTimeout(() => { showNotification('Reconnecting to recent peers...', 'info'); recent.forEach(connectToPeer); }, 500); }); peer.on('connection', (conn) => { showNotification(`Incoming connection from ${conn.peer}`, 'info'); setupConnection(conn); }); peer.on('error', (err) => { console.error('PeerJS error:', err); showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is taken.` : `Connection error: ${err.message}`); activePeerIdElement.textContent = 'Error'; }); }
-            setPeerIdButton.onclick = () => { const id = myPeerIdInput.value.trim(); if (!id) { showNotification('Please enter a persistent ID.'); return; } localStorage.setItem('myPeerId', id); showNotification(`Setting ID to "${id}"...`, 'info'); initializePeer(id); };
-            const savedPeerId = localStorage.getItem('myPeerId');
-            if (savedPeerId) { myPeerIdInput.value = savedPeerId; initializePeer(savedPeerId); } else { activePeerIdElement.textContent = "Set an ID to connect"; }
-            function setupConnection(conn) { conn.on('open', () => { if (connections.some(c => c.peer === conn.peer)) { conn.close(); return; } connections.push(conn); updateConnectionStatus(); updatePeerSelectDropdown(); if (conn.metadata.isInitiator) addRecentPeer(conn.peer); conn.send({ type: 'SYNC_ALL', tasks: getTasks() }); }); conn.on('data', handleRemoteData); conn.on('close', () => { const index = connections.findIndex(c => c.peer === conn.peer); if (index > -1) connections.splice(index, 1); updateConnectionStatus(); updatePeerSelectDropdown(); showNotification(`Disconnected from ${conn.peer}`, 'info'); }); }
-            function connectToPeer(remoteId) { if (!peer || peer.disconnected) { showNotification('You must set your ID before connecting.', 'error'); return; } if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) return; showNotification(`Attempting to connect to ${remoteId}...`, 'info'); const conn = peer.connect(remoteId, { metadata: { isInitiator: true } }); setupConnection(conn); }
-            connectButton.onclick = () => connectToPeer(remotePeerIdInput.value.trim());
-            function updateConnectionStatus() { if (connections.length > 0) { const ids = connections.map(c => c.peer).join(', '); connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${ids}`; connectionStatusElement.className = 'connected'; } else { connectionStatusElement.textContent = 'Status: Not Connected'; connectionStatusElement.className = 'disconnected'; } }
-            function broadcast(data) { connections.forEach(conn => { if (conn.open) conn.send(data); }); }
-            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); renderCalendar(); } }
-            const lastPeerId = localStorage.getItem('lastConnectedPeerId'); if (lastPeerId) remotePeerIdInput.value = lastPeerId;
-            function updatePeerSelectDropdown() { peerSelect.innerHTML = ''; if (connections.length === 0) { peerSelect.innerHTML = '<option>No peers connected</option>'; peerSelect.disabled = true; sendFileButton.disabled = true; } else { connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; }); peerSelect.disabled = false; sendFileButton.disabled = false; } }
-            sendFileButton.onclick = () => { const peerId = peerSelect.value; const file = fileInput.files[0]; if (!peerId || peerId === 'No peers connected') { showNotification('Please select a peer.'); return; } if (!file) { showNotification('Please select a file.'); return; } const conn = connections.find(c => c.peer === peerId); if (!conn) { showNotification('Connection lost.'); return; } const reader = new FileReader(); reader.onload = (event) => { conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type }); showNotification(`Sending ${file.name} to ${peerId}...`, 'info'); }; reader.readAsArrayBuffer(file); };
-            function handleReceivedFile({ file, fileName, fileType }) { const blob = new Blob([file], { type: fileType }); const url = URL.createObjectURL(blob); receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`; showNotification(`You received a file: ${fileName}`, 'info'); }
-            
-            // --- UI & View Logic ---
-            function showView(viewToShow) { [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none'); viewToShow.style.display = 'block'; topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none'; }
-            toggleSharingButton.onclick = () => showView(sharingView);
-            toggleFileTransferButton.onclick = () => showView(fileTransferView);
-            backButtons.forEach(button => button.onclick = () => showView(mainView));
-            searchInput.oninput = (e) => { const term = e.target.value.toLowerCase(); taskList.querySelectorAll('.task-item').forEach(task => { const name = task.querySelector('.task-name').textContent.toLowerCase(); task.classList.toggle('hidden', !name.includes(term)); }); };
-            function setTheme(theme) { document.body.classList.toggle('dark-mode', theme === 'dark'); themeCheckbox.checked = theme === 'dark'; localStorage.setItem('theme', theme); }
-            themeCheckbox.onchange = () => setTheme(themeCheckbox.checked ? 'dark' : 'light');
-            const savedTheme = localStorage.getItem('theme'); const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-            function showNotification(message, type = 'error') { notificationElement.textContent = message; notificationElement.className = `notification ${type} show`; setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); }
-            
-            // --- Timer & Reminder Logic ---
-            function updateTimer() { const now = new Date(); timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
-            updateTimer(); setInterval(updateTimer, 1000);
-            function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
-            
-            // --- Task CRUD Logic ---
-            function truncateText(text, maxLength) { if (text.length <= maxLength) { return text; } return text.slice(0, maxLength) + '...'; }
-            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
-            taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) { toggleComplete(Number(e.target.closest('.task-item').dataset.id)); } };
-            taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
-            function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); renderCalendar(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { loadTasks(); renderCalendar(); } }; }
-            function addTaskToDOM(task) { const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id; const deadline = new Date(task.deadline + 'T00:00:00'); let status = ''; if (!task.isCompleted) { const now = new Date(); now.setHours(0, 0, 0, 0); const diff = Math.ceil((deadline - now) / 864e5); if (diff > 0) status = `<span class="deadline-status future">${diff} day${diff === 1 ? '' : 's'} left</span>`; else if (diff === 0) status = `<span class="deadline-status today">Due today</span>`; else { const overdue = Math.abs(diff); status = `<span class="deadline-status overdue">Overdue by ${overdue} day${overdue === 1 ? '' : 's'}</span>`; } } li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadline.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${status} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`; taskList.appendChild(li); }
-            function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
-            function getTaskById(id) { return getTasks().find(task => task.id === id); }
-            function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
-            function loadTasks() { const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
-            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); renderCalendar(); }
-            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); renderCalendar(); }
-            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); renderCalendar(); }
-            function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-            
-            // --- Calendar Logic ---
-            calendarGrid.addEventListener('click', (e) => {
-                const target = e.target.closest('.calendar-task, .calendar-event');
-                if (target) {
-                    const fullName = target.getAttribute('title');
-                    if (fullName) {
-                        showNotification(fullName, 'info');
-                    }
-                }
-            });
-
-            function renderCalendar() {
-                calendarGrid.innerHTML = '';
-                const year = calendarDate.getFullYear();
-                const month = calendarDate.getMonth();
-                monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
-
-                const tasks = getTasks();
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Normalize today for comparison
-
-                const generateDayElement = (date, isCurrentMonth) => { // date is already normalized to midnight
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'calendar-day';
-                    if (!isCurrentMonth) {
-                        dayEl.classList.add('other-month');
-                    }
-                    if (date.getTime() === today.getTime()) {
-                        dayEl.classList.add('current-day');
-                    }
-
-                    const tasksForDay = tasks.filter(task => {
-                        const parts = task.deadline.split('-'); // e.g. "2025-10-13"
-                        // Create date as UTC to avoid timezone shift from string
-                        const taskDeadline = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-                        return taskDeadline.getTime() === date.getTime();
-                    });
-                    
-                    let tasksHtml = tasksForDay.map(task => 
-                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 10))}</div>`
-                    ).join('');
-
-                    const y = date.getFullYear();
-                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const d = date.getDate().toString().padStart(2, '0');
-                    const lookupDate = `${y}-${m}-${d}`;
-                    const eventForDay = allSchoolEvents.find(e => e.Date === lookupDate);
-                    let cycleDayHtml = '';
-                    let holidayClass = '';
-                    let eventsHtml = '';
-                    const dayOfWeek = date.getDay(); 
-
-                    if (eventForDay) {
-                        if(eventForDay.CycleDay) {
-                             cycleDayHtml = `<div class="cycle-day">${eventForDay.CycleDay}</div>`;
-                        }
-                        if(eventForDay.Type.includes('Holiday') || eventForDay.Events.includes('Holiday')) {
-                            holidayClass = ' holiday';
-                        }
-                        if(eventForDay.Events) {
-                            eventsHtml = eventForDay.Events.split(';').map(event => {
-                                const trimmedEvent = event.trim();
-                                if (trimmedEvent) {
-                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
-                                }
-                                return '';
-                            }).join('');
-                        }
-                    }
-                    
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        holidayClass = ' holiday';
-                    }
-
-                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${date.getDate()}</div>
-                                       ${cycleDayHtml}
-                                       <div class="calendar-tasks">${eventsHtml}${tasksHtml}</div>`;
-                    
-                    return dayEl;
-                };
-
-                const firstDayOfMonth = new Date(year, month, 1);
-                
-                // Find the first Sunday to start the calendar grid on
-                const startDate = new Date(firstDayOfMonth);
-                startDate.setUTCDate(startDate.getUTCDate() - firstDayOfMonth.getUTCDay());
-                startDate.setUTCHours(0,0,0,0);
-
-                // Render 6 weeks
-                for (let i = 0; i < 42; i++) {
-                    const currentDate = new Date(startDate);
-                    currentDate.setUTCDate(startDate.getUTCDate() + i);
-                    
-                    const isCurrentMonth = currentDate.getUTCMonth() === month;
-                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
-                }
-            }
-
-            showListViewBtn.onclick = () => {
-                listView.style.display = 'block';
-                calendarView.style.display = 'none';
-                showListViewBtn.classList.add('active');
-                showCalendarViewBtn.classList.remove('active');
-            };
-
-            showCalendarViewBtn.onclick = () => {
-                listView.style.display = 'none';
-                calendarView.style.display = 'flex';
-                showListViewBtn.classList.remove('active');
-                showCalendarViewBtn.classList.add('active');
-                renderCalendar();
-            };
-
-            prevMonthBtn.onclick = () => {
-                calendarDate.setMonth(calendarDate.getMonth() - 1);
-                renderCalendar();
-            };
-
-            nextMonthBtn.onclick = () => {
-                calendarDate.setMonth(calendarDate.getMonth() + 1);
-                renderCalendar();
-            };
-
-            // Initial Load
-            loadTasks();
-            checkReminders(); 
-        });
-
-        // --- SCHEDULE APP LOGIC ---
-        (function() {
-            const API_URL = 'https://iot.spyc.hk/timetable';
-            let classTimetableData = null; 
-
-            const modal = document.getElementById('class-modal');
-            const classForm = document.getElementById('class-form');
-            const classInput = document.getElementById('class-input');
-            const scheduleSubtitle = document.getElementById('schedule-subtitle');
-
             const csvData = `Date,DayOfWeek,CycleDay,Type,Events
 2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
 2025-09-02,Tuesday,A,,Summer Timetable
@@ -1341,6 +1107,247 @@
 2026-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
+            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
+            const allSchoolEvents = parseCSV(csvData);
+
+            // --- Element Selectors ---
+            const taskNameInput = document.getElementById('task-name-input');
+            const taskDeadlineInput = document.getElementById('task-deadline-input');
+            const taskFinishDateInput = document.getElementById('task-finish-date-input');
+            const taskList = document.getElementById('task-list');
+            const timerElement = document.getElementById('timer');
+            const timerDateElement = document.getElementById('timer-date');
+            const notificationElement = document.getElementById('notification');
+            const themeCheckbox = document.getElementById('theme-checkbox');
+            const searchInput = document.getElementById('search-input');
+            const mainView = document.getElementById('main-view');
+            const sharingView = document.getElementById('sharing-view');
+            const fileTransferView = document.getElementById('file-transfer-view');
+            const toggleSharingButton = document.getElementById('toggle-sharing-button');
+            const toggleFileTransferButton = document.getElementById('toggle-file-transfer-button');
+            const backButtons = document.querySelectorAll('.back-button');
+            const topControls = document.querySelector('.top-controls');
+            const myPeerIdInput = document.getElementById('my-peer-id-input');
+            const setPeerIdButton = document.getElementById('set-peer-id-button');
+            const activePeerIdElement = document.getElementById('active-peer-id');
+            const remotePeerIdInput = document.getElementById('remote-peer-id-input');
+            const connectButton = document.getElementById('connect-button');
+            const connectionStatusElement = document.getElementById('connection-status');
+            const peerSelect = document.getElementById('peer-select');
+            const fileInput = document.getElementById('file-input');
+            const sendFileButton = document.getElementById('send-file-button');
+            const receivedFilesList = document.getElementById('received-files-list');
+
+            // --- Calendar Elements ---
+            const showListViewBtn = document.getElementById('show-list-view-btn');
+            const showCalendarViewBtn = document.getElementById('show-calendar-view-btn');
+            const listView = document.getElementById('list-view');
+            const calendarView = document.getElementById('calendar-view');
+            const monthYearHeader = document.getElementById('month-year-header');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
+            const calendarGrid = document.getElementById('calendar-grid');
+            let calendarDate = new Date();
+
+            let peer;
+            const connections = [];
+
+            // --- PeerJS & WebRTC Logic ---
+            function getRecentPeers() { const p = localStorage.getItem('recentPeerIds'); return p ? JSON.parse(p) : []; }
+            function addRecentPeer(peerId) { let p = getRecentPeers().filter(id => id !== peerId); p.unshift(peerId); if (p.length > 5) p.pop(); localStorage.setItem('recentPeerIds', JSON.stringify(p)); localStorage.setItem('lastConnectedPeerId', peerId); }
+            function initializePeer(requestedId) { if (peer) peer.destroy(); peer = new Peer(requestedId); peer.on('open', (id) => { activePeerIdElement.textContent = id; activePeerIdElement.onclick = () => { navigator.clipboard.writeText(id); showNotification('Your active ID has been copied!', 'info'); }; const recent = getRecentPeers(); if (recent.length > 0) setTimeout(() => { showNotification('Reconnecting to recent peers...', 'info'); recent.forEach(connectToPeer); }, 500); }); peer.on('connection', (conn) => { showNotification(`Incoming connection from ${conn.peer}`, 'info'); setupConnection(conn); }); peer.on('error', (err) => { console.error('PeerJS error:', err); showNotification(err.type === 'unavailable-id' ? `ID "${requestedId}" is taken.` : `Connection error: ${err.message}`); activePeerIdElement.textContent = 'Error'; }); }
+            setPeerIdButton.onclick = () => { const id = myPeerIdInput.value.trim(); if (!id) { showNotification('Please enter a persistent ID.'); return; } localStorage.setItem('myPeerId', id); showNotification(`Setting ID to "${id}"...`, 'info'); initializePeer(id); };
+            const savedPeerId = localStorage.getItem('myPeerId');
+            if (savedPeerId) { myPeerIdInput.value = savedPeerId; initializePeer(savedPeerId); } else { activePeerIdElement.textContent = "Set an ID to connect"; }
+            function setupConnection(conn) { conn.on('open', () => { if (connections.some(c => c.peer === conn.peer)) { conn.close(); return; } connections.push(conn); updateConnectionStatus(); updatePeerSelectDropdown(); if (conn.metadata.isInitiator) addRecentPeer(conn.peer); conn.send({ type: 'SYNC_ALL', tasks: getTasks() }); }); conn.on('data', handleRemoteData); conn.on('close', () => { const index = connections.findIndex(c => c.peer === conn.peer); if (index > -1) connections.splice(index, 1); updateConnectionStatus(); updatePeerSelectDropdown(); showNotification(`Disconnected from ${conn.peer}`, 'info'); }); }
+            function connectToPeer(remoteId) { if (!peer || peer.disconnected) { showNotification('You must set your ID before connecting.', 'error'); return; } if (!remoteId || remoteId === peer.id || connections.some(c => c.peer === remoteId)) return; showNotification(`Attempting to connect to ${remoteId}...`, 'info'); const conn = peer.connect(remoteId, { metadata: { isInitiator: true } }); setupConnection(conn); }
+            connectButton.onclick = () => connectToPeer(remotePeerIdInput.value.trim());
+            function updateConnectionStatus() { if (connections.length > 0) { const ids = connections.map(c => c.peer).join(', '); connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${ids}`; connectionStatusElement.className = 'connected'; } else { connectionStatusElement.textContent = 'Status: Not Connected'; connectionStatusElement.className = 'disconnected'; } }
+            function broadcast(data) { connections.forEach(conn => { if (conn.open) conn.send(data); }); }
+            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); renderCalendar(); } }
+            const lastPeerId = localStorage.getItem('lastConnectedPeerId'); if (lastPeerId) remotePeerIdInput.value = lastPeerId;
+            function updatePeerSelectDropdown() { peerSelect.innerHTML = ''; if (connections.length === 0) { peerSelect.innerHTML = '<option>No peers connected</option>'; peerSelect.disabled = true; sendFileButton.disabled = true; } else { connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; }); peerSelect.disabled = false; sendFileButton.disabled = false; } }
+            sendFileButton.onclick = () => { const peerId = peerSelect.value; const file = fileInput.files[0]; if (!peerId || peerId === 'No peers connected') { showNotification('Please select a peer.'); return; } if (!file) { showNotification('Please select a file.'); return; } const conn = connections.find(c => c.peer === peerId); if (!conn) { showNotification('Connection lost.'); return; } const reader = new FileReader(); reader.onload = (event) => { conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type }); showNotification(`Sending ${file.name} to ${peerId}...`, 'info'); }; reader.readAsArrayBuffer(file); };
+            function handleReceivedFile({ file, fileName, fileType }) { const blob = new Blob([file], { type: fileType }); const url = URL.createObjectURL(blob); receivedFilesList.innerHTML += `<li><span>${fileName}</span><a href="${url}" download="${fileName}" class="download-link">Download</a></li>`; showNotification(`You received a file: ${fileName}`, 'info'); }
+            
+            // --- UI & View Logic ---
+            function showView(viewToShow) { [mainView, sharingView, fileTransferView].forEach(v => v.style.display = 'none'); viewToShow.style.display = 'block'; topControls.style.display = (viewToShow === mainView) ? 'flex' : 'none'; }
+            toggleSharingButton.onclick = () => showView(sharingView);
+            toggleFileTransferButton.onclick = () => showView(fileTransferView);
+            backButtons.forEach(button => button.onclick = () => showView(mainView));
+            searchInput.oninput = (e) => { const term = e.target.value.toLowerCase(); taskList.querySelectorAll('.task-item').forEach(task => { const name = task.querySelector('.task-name').textContent.toLowerCase(); task.classList.toggle('hidden', !name.includes(term)); }); };
+            function setTheme(theme) { document.body.classList.toggle('dark-mode', theme === 'dark'); themeCheckbox.checked = theme === 'dark'; localStorage.setItem('theme', theme); }
+            themeCheckbox.onchange = () => setTheme(themeCheckbox.checked ? 'dark' : 'light');
+            const savedTheme = localStorage.getItem('theme'); const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+            function showNotification(message, type = 'error') { notificationElement.textContent = message; notificationElement.className = `notification ${type} show`; setTimeout(() => { notificationElement.className = `notification ${type}`; }, 4000); }
+            
+            // --- Timer & Reminder Logic ---
+            function updateTimer() { const now = new Date(); timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
+            updateTimer(); setInterval(updateTimer, 1000);
+            function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
+            
+            // --- Task CRUD Logic ---
+            function truncateText(text, maxLength) { if (text.length <= maxLength) { return text; } return text.slice(0, maxLength) + '...'; }
+            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
+            taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) { toggleComplete(Number(e.target.closest('.task-item').dataset.id)); } };
+            taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
+            function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); renderCalendar(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { loadTasks(); renderCalendar(); } }; }
+            function addTaskToDOM(task) { const li = document.createElement('li'); li.className = `task-item ${task.isCompleted ? 'completed' : ''}`; li.dataset.id = task.id; const deadline = new Date(task.deadline + 'T00:00:00'); let status = ''; if (!task.isCompleted) { const now = new Date(); now.setHours(0, 0, 0, 0); const diff = Math.ceil((deadline - now) / 864e5); if (diff > 0) status = `<span class="deadline-status future">${diff} day${diff === 1 ? '' : 's'} left</span>`; else if (diff === 0) status = `<span class="deadline-status today">Due today</span>`; else { const overdue = Math.abs(diff); status = `<span class="deadline-status overdue">Overdue by ${overdue} day${overdue === 1 ? '' : 's'}</span>`; } } li.innerHTML = `<input type="checkbox" class="complete-checkbox" ${task.isCompleted ? 'checked' : ''}><div class="task-details"><div class="task-name" title="Click to edit">${escapeHTML(task.name)}</div><div class="task-info"><span class="deadline-text" title="Click to delete"><strong>Deadline:</strong> <span>${deadline.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></span> ${status} | <strong>Finished:</strong> <span>${task.finishDate ? new Date(task.finishDate.includes('T') ? task.finishDate : task.finishDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Pending'}</span></div></div>`; taskList.appendChild(li); }
+            function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
+            function getTaskById(id) { return getTasks().find(task => task.id === id); }
+            function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+            function loadTasks() { const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
+            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); renderCalendar(); }
+            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); renderCalendar(); }
+            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); renderCalendar(); }
+            function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+            
+            // --- Calendar Logic ---
+            calendarGrid.addEventListener('click', (e) => {
+                const target = e.target.closest('.calendar-task, .calendar-event');
+                if (target) {
+                    const fullName = target.getAttribute('title');
+                    if (fullName) {
+                        showNotification(fullName, 'info');
+                    }
+                }
+            });
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                const tasks = getTasks();
+                const today = new Date();
+
+                const generateDayElement = (date, isCurrentMonth) => {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    if (!isCurrentMonth) {
+                        dayEl.classList.add('other-month');
+                    }
+                    if (date.toDateString() === today.toDateString()) {
+                        dayEl.classList.add('current-day');
+                    }
+
+                    const tasksForDay = tasks.filter(task => {
+                        const taskDeadline = new Date(task.deadline + 'T00:00:00');
+                        return taskDeadline.toDateString() === date.toDateString();
+                    });
+                    
+                    let tasksHtml = tasksForDay.map(task => 
+                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 10))}</div>`
+                    ).join('');
+
+                    const y = date.getFullYear();
+                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const d = date.getDate().toString().padStart(2, '0');
+                    const lookupDate = `${y}-${m}-${d}`;
+                    const eventForDay = allSchoolEvents.find(e => e.Date === lookupDate);
+                    let cycleDayHtml = '';
+                    let holidayClass = '';
+                    let eventsHtml = '';
+                    const dayOfWeek = date.getDay(); 
+
+                    if (eventForDay) {
+                        if(eventForDay.CycleDay) {
+                             cycleDayHtml = `<div class="cycle-day">${eventForDay.CycleDay}</div>`;
+                        }
+                        if(eventForDay.Type.includes('Holiday') || eventForDay.Events.includes('Holiday')) {
+                            holidayClass = ' holiday';
+                        }
+                        if(eventForDay.Events) {
+                            eventsHtml = eventForDay.Events.split(';').map(event => {
+                                const trimmedEvent = event.trim();
+                                if (trimmedEvent) {
+                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
+                                }
+                                return '';
+                            }).join('');
+                        }
+                    }
+                    
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        holidayClass = ' holiday';
+                    }
+
+                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${date.getDate()}</div>
+                                       ${cycleDayHtml}
+                                       <div class="calendar-tasks">${eventsHtml}${tasksHtml}</div>`;
+                    
+                    return dayEl;
+                };
+
+                // Days from previous month
+                const prevMonth = new Date(year, month, 0);
+                const prevMonthDays = prevMonth.getDate();
+                for (let i = firstDayOfMonth; i > 0; i--) {
+                    const day = prevMonthDays - i + 1;
+                    calendarGrid.appendChild(generateDayElement(new Date(year, month - 1, day), false));
+                }
+
+                // Days from current month
+                for (let i = 1; i <= daysInMonth; i++) {
+                    calendarGrid.appendChild(generateDayElement(new Date(year, month, i), true));
+                }
+
+                // Days from next month
+                const lastDayOfMonth = new Date(year, month, daysInMonth).getDay();
+                const daysToFill = 6 - lastDayOfMonth;
+                 if (lastDayOfMonth !== 6) { // Only fill if month doesn't end on Saturday
+                    for (let i = 1; i <= daysToFill; i++) {
+                        calendarGrid.appendChild(generateDayElement(new Date(year, month + 1, i), false));
+                    }
+                 }
+            }
+
+            showListViewBtn.onclick = () => {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                showListViewBtn.classList.add('active');
+                showCalendarViewBtn.classList.remove('active');
+            };
+
+            showCalendarViewBtn.onclick = () => {
+                listView.style.display = 'none';
+                calendarView.style.display = 'flex';
+                showListViewBtn.classList.remove('active');
+                showCalendarViewBtn.classList.add('active');
+                renderCalendar();
+            };
+
+            prevMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() - 1);
+                renderCalendar();
+            };
+
+            nextMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
+                renderCalendar();
+            };
+
+            // Initial Load
+            loadTasks();
+            checkReminders(); 
+        });
+
+        // --- SCHEDULE APP LOGIC ---
+        (function() {
+            const API_URL = 'https://iot.spyc.hk/timetable';
+            let classTimetableData = null; 
+
+            const modal = document.getElementById('class-modal');
+            const classForm = document.getElementById('class-form');
+            const classInput = document.getElementById('class-input');
+            const scheduleSubtitle = document.getElementById('schedule-subtitle');
+
+            const csvData = `Date,DayOfWeek,CycleDay,Type,Events\n2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"\n2025-09-02,Tuesday,A,,Summer Timetable\n2025-09-03,Wednesday,C,,Summer Timetable\n2025-09-04,Thursday,F,,Summer Timetable\n2025-09-05,Friday,B,,Summer Timetable\n2025-09-06,Saturday,,,\n2025-09-07,Sunday,,,\n2025-09-08,Monday,D,,Summer Timetable\n2025-09-09,Tuesday,E,,Summer Timetable\n2025-09-10,Wednesday,G,,Summer Timetable\n2025-09-11,Thursday,H,,Summer Timetable\n2025-09-12,Friday,A,,Summer Timetable\n2025-09-13,Saturday,,,\n2025-09-14,Sunday,,Special Timetable,"Education Sunday"\n2025-09-15,Monday,B,,Summer Timetable\n2025-09-16,Tuesday,C,,Summer Timetable\n2025-09-17,Wednesday,D,,Summer Timetable\n2025-09-18,Thursday,E,,Summer Timetable\n2025-09-19,Friday,F,,Summer Timetable\n2025-09-20,Saturday,,,\n2025-09-21,Sunday,,,\n2025-09-22,Monday,G,,Summer Timetable\n2025-09-23,Tuesday,H,,Summer Timetable\n2025-09-24,Wednesday,A,,\n2025-09-25,Thursday,B,,\n2025-09-26,Friday,C,,\n2025-09-27,Saturday,,,\n2025-09-28,Sunday,,,\n2025-09-29,Monday,,,\n2025-09-30,Tuesday,,,\n2025-10-01,Wednesday,,School Holiday,"The National Day"\n2025-10-02,Thursday,F,,\n2025-10-03,Friday,G,,\n2025-10-04,Saturday,,,\n2025-10-05,Sunday,,,\n2025-10-06,Monday,H,,\n2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"\n2025-10-08,Wednesday,A,,\n2025-10-09,Thursday,B,,\n2025-10-10,Friday,C,,\n2025-10-11,Saturday,,,\n2025-10-12,Sunday,,,\n2025-10-13,Monday,D,,\n2025-10-14,Tuesday,E,,\n2025-10-15,Wednesday,F,,\n2025-10-16,Thursday,G,,\n2025-10-17,Friday,H,,\n2025-10-18,Saturday,,,\n2025-10-19,Sunday,,,\n2025-10-20,Monday,,Special Timetable,"Swimming Gala"\n2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"\n2025-10-22,Wednesday,B,,"S6 First Examination"\n2025-10-23,Thursday,C,,"S6 First Examination"\n2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"\n2025-10-25,Saturday,,,\n2025-10-26,Sunday,,,\n2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"\n2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"\n2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"\n2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"\n2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"\n2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"\n2026-03-02,Monday,,School Holiday,"The day following Parents' Days"\n2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"\n2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"`;
+
             function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
             function formatDisplayDate(date) { return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
             function formatLookupDate(date) { 
