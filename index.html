@@ -668,7 +668,6 @@
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                         }
                         
-                        // Delay positioning until scroll is likely complete
                         setTimeout(() => {
                             tutorialText.innerHTML = step.text;
                             stepCounter.textContent = `${stepIndex + 1} / ${steps.length}`;
@@ -697,7 +696,6 @@
                                 }
                                 tooltipLeft = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
 
-                                // Boundary checks
                                 if (tooltipLeft < 10) tooltipLeft = 10;
                                 if (tooltipLeft + tooltip.offsetWidth > window.innerWidth - 10) {
                                     tooltipLeft = window.innerWidth - tooltip.offsetWidth - 10;
@@ -743,7 +741,7 @@
             if (!taskForm) return;
 
             // --- School Schedule Data (for Calendar) ---
-            const csvData = `Date,DayOfWeek,CycleDay,Type,Events\n2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"\n2025-09-02,Tuesday,A,,Summer Timetable\n2025-09-03,Wednesday,C,,Summer Timetable\n2025-09-04,Thursday,F,,Summer Timetable\n2025-09-05,Friday,B,,Summer Timetable\n2025-09-06,Saturday,,,\n2025-09-07,Sunday,,,\n2025-09-08,Monday,D,,Summer Timetable\n2025-09-09,Tuesday,E,,Summer Timetable\n2025-09-10,Wednesday,G,,Summer Timetable\n2025-09-11,Thursday,H,,Summer Timetable\n2025-09-12,Friday,A,,Summer Timetable\n2025-09-13,Saturday,,,\n2025-09-14,Sunday,,Special Timetable,"Education Sunday"\n2025-09-15,Monday,B,,Summer Timetable\n2025-09-16,Tuesday,C,,Summer Timetable\n2025-09-17,Wednesday,D,,Summer Timetable\n2025-09-18,Thursday,E,,Summer Timetable\n2025-09-19,Friday,F,,Summer Timetable\n2025-09-20,Saturday,,,\n2025-09-21,Sunday,,,\n2025-09-22,Monday,G,,Summer Timetable\n2025-09-23,Tuesday,H,,Summer Timetable\n2025-09-24,Wednesday,A,,\n2025-09-25,Thursday,B,,\n2025-09-26,Friday,C,,\n2025-09-27,Saturday,,,\n2025-09-28,Sunday,,,\n2025-09-29,Monday,,,\n2025-09-30,Tuesday,,,\n2025-10-01,Wednesday,,School Holiday,"The National Day"\n2025-10-02,Thursday,F,,\n2025-10-03,Friday,G,,\n2025-10-04,Saturday,,,\n2025-10-05,Sunday,,,\n2025-10-06,Monday,H,,\n2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"\n2025-10-08,Wednesday,A,,\n2025-10-09,Thursday,B,,\n2025-10-10,Friday,C,,\n2025-10-11,Saturday,,,\n2025-10-12,Sunday,,,\n2025-10-13,Monday,D,,\n2025-10-14,Tuesday,E,,\n2025-10-15,Wednesday,F,,\n2025-10-16,Thursday,G,,\n2025-10-17,Friday,H,,\n2025-10-18,Saturday,,,\n2025-10-19,Sunday,,,\n2025-10-20,Monday,,Special Timetable,"Swimming Gala"\n2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"\n2025-10-22,Wednesday,B,,"S6 First Examination"\n2025-10-23,Thursday,C,,"S6 First Examination"\n2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"\n2025-10-25,Saturday,,,\n2025-10-26,Sunday,,,\n2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"\n2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"\n2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"\n2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"\n2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"\n2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"\n2026-03-02,Monday,,School Holiday,"The day following Parents' Days"\n2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"\n2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"`;
+            const csvData = `e,DayOfWeek,CycleDay,Type, Ceremony"\n2025-09-02,Tuesday,A,,Summer Timetable\n2025-09-03,Wednesday,C,,Summer Timetable\n2025-09-04,Thursday,F,,Summer Timetable\n2025-09-05,Friday,B,,Summer Timetable\n2025-09-06,Saturday,,,\n2025-09-07,Sunday,,,\n2025-09-08,Monday,D,,Summer Timetable\n2025-09-09,Tuesday,E,,Summer Timetable\n2025-09-10,Wednesday,G,,Summer Timetable\n2025-09-11,Thursday,H,,Summer Timetable\n2025-09-12,Friday,A,,Summer Timetable\n2025-09-13,Saturday,,,\n2025-09-14,Sunday,,Special Timetable,"Education Sunday"\n2025-09-15,Monday,B,,Summer Timetable\n2025-09-16,Tuesday,C,,Summer Timetable\n2025-09-17,Wednesday,D,,Summer Timetable\n2025-09-18,Thursday,E,,Summer Timetable\n2025-09-19,Friday,F,,Summer Timetable\n2025-09-20,Saturday,,,\n2025-09-21,Sunday,,,\n2025-09-22,Monday,G,,Summer Timetable\n2025-09-23,Tuesday,H,,Summer Timetable\n2025-09-24,Wednesday,A,,\n2025-09-25,Thursday,B,,\n2025-09-26,Friday,C,,\n2025-09-27,Saturday,,,\n2025-09-28,Sunday,,,\n2025-09-29,Monday,,,\n2025-09-30,Tuesday,,,\n2025-10-01,Wednesday,,School Holiday,"The National Day"\n2025-10-02,Thursday,F,,\n2025-10-03,Friday,G,,\n2025-10-04,Saturday,,,\n2025-10-05,Sunday,,,\n2025-10-06,Monday,H,,\n2025-10-07,Tuesday,,School Holiday,"The day following the Mid-Autumn Festival"\n2025-10-08,Wednesday,A,,\n2025-10-09,Thursday,B,,\n2025-10-10,Friday,C,,\n2025-10-11,Saturday,,,\n2025-10-12,Sunday,,,\n2025-10-13,Monday,D,,\n2025-10-14,Tuesday,E,,\n2025-10-15,Wednesday,F,,\n2025-10-16,Thursday,G,,\n2025-10-17,Friday,H,,\n2025-10-18,Saturday,,,\n2025-10-19,Sunday,,,\n2025-10-20,Monday,,Special Timetable,"Swimming Gala"\n2025-10-21,Tuesday,A,,"S6 Study Day; Staff Development (pm)"\n2025-10-22,Wednesday,B,,"S6 First Examination"\n2025-10-23,Thursday,C,,"S6 First Examination"\n2025-10-24,Friday,D,Special Timetable,"S6 First Examination; PTA AGM cum S1-4 Parents' Meet (7:00 pm)"\n2025-10-25,Saturday,,,\n2025-10-26,Sunday,,,\n2025-10-27,Monday,E,,"S6 First Examination; S1-3 Test Week"\n2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"\n2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"\n2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"\n2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"\n2026-02-28,Saturday,,Special Timetable,"S1-5 Parents' Days"\n2026-03-02,Monday,,School Holiday,"The day following Parents' Days"\n2026-06-19,Friday,,School Holiday,"Tuen Ng Festival"\n2026-07-01,Wednesday,,School Holiday,"Musical Rehearsal; HKSAR Establishment Day"`;
             function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
             const allSchoolEvents = parseCSV(csvData);
 
@@ -856,26 +854,25 @@
                 const month = calendarDate.getMonth();
                 monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
 
-                const firstDay = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const tasks = getTasks();
                 const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalize today for comparison
 
-                for (let i = 0; i < firstDay; i++) {
-                    calendarGrid.innerHTML += `<div class="calendar-day other-month"></div>`;
-                }
-
-                for (let day = 1; day <= daysInMonth; day++) {
+                const generateDayElement = (date, isCurrentMonth) => { // date is already normalized to midnight
                     const dayEl = document.createElement('div');
                     dayEl.className = 'calendar-day';
-                    const date = new Date(year, month, day);
-                    if (date.toDateString() === today.toDateString()) {
+                    if (!isCurrentMonth) {
+                        dayEl.classList.add('other-month');
+                    }
+                    if (date.getTime() === today.getTime()) {
                         dayEl.classList.add('current-day');
                     }
-                    
+
                     const tasksForDay = tasks.filter(task => {
-                        const taskDeadline = new Date(task.deadline + 'T00:00:00');
-                        return taskDeadline.toDateString() === date.toDateString();
+                        const parts = task.deadline.split('-'); // e.g. "2025-10-13"
+                        // Create date as UTC to avoid timezone shift from string
+                        const taskDeadline = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+                        return taskDeadline.getTime() === date.getTime();
                     });
                     
                     let tasksHtml = tasksForDay.map(task => 
@@ -914,10 +911,27 @@
                         holidayClass = ' holiday';
                     }
 
-                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${day}</div>
+                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${date.getDate()}</div>
                                        ${cycleDayHtml}
                                        <div class="calendar-tasks">${eventsHtml}${tasksHtml}</div>`;
-                    calendarGrid.appendChild(dayEl);
+                    
+                    return dayEl;
+                };
+
+                const firstDayOfMonth = new Date(year, month, 1);
+                
+                // Find the first Sunday to start the calendar grid on
+                const startDate = new Date(firstDayOfMonth);
+                startDate.setUTCDate(startDate.getUTCDate() - firstDayOfMonth.getUTCDay());
+                startDate.setUTCHours(0,0,0,0);
+
+                // Render 6 weeks
+                for (let i = 0; i < 42; i++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setUTCDate(startDate.getUTCDate() + i);
+                    
+                    const isCurrentMonth = currentDate.getUTCMonth() === month;
+                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
                 }
             }
 
