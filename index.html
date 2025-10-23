@@ -413,6 +413,7 @@
         <nav class="app-nav">
             <button id="show-todo-btn" class="active">To-Do List</button>
             <button id="show-schedule-btn">Schedule</button>
+            <button id="show-focus-btn">Flight Focus</button>
         </nav>
         
         <div id="notification" class="notification"></div>
@@ -560,6 +561,33 @@
 
     <!-- Main application logic -->
     <script>
+        // --- TAB SWITCHING LOGIC ---
+        const showTodoBtn = document.getElementById('show-todo-btn');
+        const showScheduleBtn = document.getElementById('show-schedule-btn');
+        const todoWrapper = document.getElementById('todo-view-wrapper');
+        const scheduleWrapper = document.getElementById('schedule-view-wrapper');
+
+        // ADD THIS LINE to select your new button
+        const showFocusBtn = document.getElementById('show-focus-btn');
+
+        showTodoBtn.addEventListener('click', () => {
+            todoWrapper.style.display = 'flex';
+            scheduleWrapper.style.display = 'none';
+            showTodoBtn.classList.add('active');
+            showScheduleBtn.classList.remove('active');
+        });
+        showScheduleBtn.addEventListener('click', () => {
+            todoWrapper.style.display = 'none';
+            scheduleWrapper.style.display = 'block';
+            showScheduleBtn.classList.add('active');
+            showTodoBtn.classList.remove('active');
+        });
+
+        // ADD THIS NEW EVENT LISTENER for the Flight Focus button
+        showFocusBtn.addEventListener('click', () => {
+            // This will navigate the browser to your other HTML file
+            window.location.href = 'https://flightfocus.netlify.app/';
+        });
         // --- SHARED DATA & UTILITIES ---
         // (This data is used by both the To-Do calendar and the Schedule app)
         
