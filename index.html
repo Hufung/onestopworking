@@ -560,34 +560,7 @@
 
 
     <!-- Main application logic -->
-    <script>
-        // --- TAB SWITCHING LOGIC ---
-        const showTodoBtn = document.getElementById('show-todo-btn');
-        const showScheduleBtn = document.getElementById('show-schedule-btn');
-        const todoWrapper = document.getElementById('todo-view-wrapper');
-        const scheduleWrapper = document.getElementById('schedule-view-wrapper');
-
-        // ADD THIS LINE to select your new button
-        const showFocusBtn = document.getElementById('show-focus-btn');
-
-        showTodoBtn.addEventListener('click', () => {
-            todoWrapper.style.display = 'flex';
-            scheduleWrapper.style.display = 'none';
-            showTodoBtn.classList.add('active');
-            showScheduleBtn.classList.remove('active');
-        });
-        showScheduleBtn.addEventListener('click', () => {
-            todoWrapper.style.display = 'none';
-            scheduleWrapper.style.display = 'block';
-            showScheduleBtn.classList.add('active');
-            showTodoBtn.classList.remove('active');
-        });
-
-        // ADD THIS NEW EVENT LISTENER for the Flight Focus button
-        showFocusBtn.addEventListener('click', () => {
-            // This will navigate the browser to your other HTML file
-            window.location.href = 'https://flightfocus.netlify.app/';
-        });
+    <script> 
         // --- SHARED DATA & UTILITIES ---
         // (This data is used by both the To-Do calendar and the Schedule app)
         
@@ -989,23 +962,26 @@
         // Parse the CSV data *once* into a global variable for both apps to use
         const ALL_SCHOOL_EVENTS = parseCSV(SCHOOL_EVENTS_CSV);
 
-        // --- TAB SWITCHING LOGIC ---
+       // --- TAB SWITCHING LOGIC ---
         const showTodoBtn = document.getElementById('show-todo-btn');
         const showScheduleBtn = document.getElementById('show-schedule-btn');
         const todoWrapper = document.getElementById('todo-view-wrapper');
         const scheduleWrapper = document.getElementById('schedule-view-wrapper');
 
+        // ADD THIS LINE to select your new button
+        const showFocusBtn = document.getElementById('show-focus-btn');
+
         showTodoBtn.addEventListener('click', () => {
-            todoWrapper.style.display = 'flex';
-            scheduleWrapper.style.display = 'none';
-            showTodoBtn.classList.add('active');
-            showScheduleBtn.classList.remove('active');
+            // ... (existing code)
         });
         showScheduleBtn.addEventListener('click', () => {
-            todoWrapper.style.display = 'none';
-            scheduleWrapper.style.display = 'block';
-            showScheduleBtn.classList.add('active');
-            showTodoBtn.classList.remove('active');
+            // ... (existing code)
+        });
+
+        // EDIT THIS LISTENER to point to the new URL
+        showFocusBtn.addEventListener('click', () => {
+            // This will navigate the browser to the live website
+            window.location.href = 'https://flightfocus.netlify.app/';
         });
         
         // --- TO-DO APP LOGIC ---
