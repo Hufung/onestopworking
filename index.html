@@ -972,7 +972,55 @@ let eventsHtml = allEventStrings.map(event => {
                 
                 const startDate = new Date(firstDayOfMonth);
                 startDate.setUTCDate(startDate.getUTCDate() - firstDayOfMonth.getUTCDay());
-                // --- School Schedule Data (for Calendar) ---
+
+                for (let i = 0; i < 42; i++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setUTCDate(startDate.getUTCDate() + i);
+                    const isCurrentMonth = currentDate.getUTCMonth() === month;
+                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
+                }
+            }
+
+            showListViewBtn.onclick = () => {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                showListViewBtn.classList.add('active');
+                showCalendarViewBtn.classList.remove('active');
+            };
+
+            showCalendarViewBtn.onclick = () => {
+                listView.style.display = 'none';
+                calendarView.style.display = 'flex';
+                showListViewBtn.classList.remove('active');
+                showCalendarViewBtn.classList.add('active');
+                renderCalendar();
+            };
+
+            prevMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() - 1);
+                renderCalendar();
+            };
+
+            nextMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
+                renderCalendar();
+            };
+
+            // Initial Load
+            loadTasks();
+            checkReminders(); 
+        });
+
+        // --- SCHEDULE APP LOGIC ---
+        (function() {
+            const API_URL = 'https://iot.spyc.hk/timetable';
+            let classTimetableData = null; 
+
+            const modal = document.getElementById('class-modal');
+            const classForm = document.getElementById('class-form');
+            const classInput = document.getElementById('class-input');
+            const scheduleSubtitle = document.getElementById('schedule-subtitle');
+            // --- School Schedule Data (for Calendar) ---
 const csvData = `Date,DayOfWeek,CycleDay,Type,Events
 2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
 2025-09-02,Tuesday,A,,Summer Timetable
@@ -1339,63 +1387,6 @@ const csvData = `Date,DayOfWeek,CycleDay,Type,Events
 2026-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
-                
-            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
-
-                for (let i = 0; i < 42; i++) {
-                    const currentDate = new Date(startDate);
-                    currentDate.setUTCDate(startDate.getUTCDate() + i);
-                    const isCurrentMonth = currentDate.getUTCMonth() === month;
-                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
-                }
-            }
-
-            showListViewBtn.onclick = () => {
-                listView.style.display = 'block';
-                calendarView.style.display = 'none';
-                showListViewBtn.classList.add('active');
-                showCalendarViewBtn.classList.remove('active');
-            };
-
-            showCalendarViewBtn.onclick = () => {
-                listView.style.display = 'none';
-                calendarView.style.display = 'flex';
-                showListViewBtn.classList.remove('active');
-                showCalendarViewBtn.classList.add('active');
-                renderCalendar();
-            };
-
-            prevMonthBtn.onclick = () => {
-) - 1);
-                renderCalendar();
-            };
-
-            nextMonthBtn.onclick = () => {
-                calendarDate.setMonth(calendarDate.getMonth() + 1);
-                renderCalendar();
-            };
-
-            // Initial Load
-            loadTasks();
-            checkReminders(); 
-        });
-
-        // --- SCHEDULE APP LOGIC ---
-        (function() {
-            const API_URL = 'https://iot.spyc.hk/timetable';
-            let classTimetableData = null; 
-
-            const modal = document.getElementById('class-modal');
-            const classForm = document.getElementById('class-form');
-            const classInput = document.getElementById('class-input');
-            const scheduleSubtitle = document.getElementById('schedule-subtitle');
-
-            
-Vacation"
-2026-08-28,Friday,,School Holiday,"Summer Vacation"
-2026-08-29,Saturday,,School Holiday,"Summer Vacation"
-2026-08-30,Sunday,,School Holiday,"Summer Vacation"
-2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
             function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
             function formatDisplayDate(date) { return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
             function formatLookupDate(date) { 
@@ -1498,4 +1489,3 @@ Vacation"
     </script>
 </body>
 </html>
-
