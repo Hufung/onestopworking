@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | To-Do & Schedule</title>
+    
+    <!-- Google Fonts for a modern look (used by both apps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PeerJS Library for WebRTC (for To-Do app) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- Tailwind CSS (for Schedule app) -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS styles are embedded here -->
     <style>
+        /* --- Base Styles & To-Do App --- */
         :root {
             --bg-color: #f7f8fc;
             --main-color: #ffffff;
@@ -659,6 +668,7 @@
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                         }
                         
+                        // Delay positioning until scroll is likely complete
                         setTimeout(() => {
                             tutorialText.innerHTML = step.text;
                             stepCounter.textContent = `${stepIndex + 1} / ${steps.length}`;
@@ -687,6 +697,7 @@
                                 }
                                 tooltipLeft = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
 
+                                // Boundary checks
                                 if (tooltipLeft < 10) tooltipLeft = 10;
                                 if (tooltipLeft + tooltip.offsetWidth > window.innerWidth - 10) {
                                     tooltipLeft = window.innerWidth - tooltip.offsetWidth - 10;
@@ -790,52 +801,7 @@
             connectButton.onclick = () => connectToPeer(remotePeerIdInput.value.trim());
             function updateConnectionStatus() { if (connections.length > 0) { const ids = connections.map(c => c.peer).join(', '); connectionStatusElement.innerHTML = `<strong>Connected to:</strong> ${ids}`; connectionStatusElement.className = 'connected'; } else { connectionStatusElement.textContent = 'Status: Not Connected'; connectionStatusElement.className = 'disconnected'; } }
             function broadcast(data) { connections.forEach(conn => { if (conn.open) conn.send(data); }); }
-            
-            // MODIFICATION: Robust data handling
-            function handleRemoteData(data) {
-                let tasks = getTasks();
-                let updated = false;
-
-                switch (data.type) {
-                    case 'FILE_TRANSFER':
-                        handleReceivedFile(data);
-                        return;
-
-                    case 'UPDATE_TASK':
-                        const taskIndex = tasks.findIndex(t => t.id === data.task.id);
-                        if (taskIndex > -1) {
-                            // Update only if incoming data is newer
-                            if (data.task.updatedAt > tasks[taskIndex].updatedAt) {
-                                tasks[taskIndex] = data.task;
-                                updated = true;
-                            }
-                        } else {
-                            // If task doesn't exist, add it (it might be a resurrected delete)
-                            tasks.push(data.task);
-                            updated = true;
-                        }
-                        break;
-                    
-                    case 'SYNC_ALL':
-                        const localTasksMap = new Map(tasks.map(t => [t.id, t]));
-                        data.tasks.forEach(remoteTask => {
-                            const localTask = localTasksMap.get(remoteTask.id);
-                            if (!localTask || (remoteTask.updatedAt > localTask.updatedAt)) {
-                                localTasksMap.set(remoteTask.id, remoteTask);
-                            }
-                        });
-                        tasks = Array.from(localTasksMap.values());
-                        updated = true;
-                        break;
-                }
-
-                if (updated) {
-                    saveTasks(tasks);
-                    loadTasks();
-                    renderCalendar();
-                }
-            }
-            
+            function handleRemoteData(data) { if (data.type === 'FILE_TRANSFER') { handleReceivedFile(data); return; } let tasks = getTasks(); let updated = false; let index; switch (data.type) { case 'ADD_TASK': if (!tasks.some(t => t.id === data.task.id)) { tasks.push(data.task); updated = true; } break; case 'TOGGLE_COMPLETE': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], { isCompleted: data.isCompleted, finishDate: data.finishDate }); updated = true; } break; case 'DELETE_TASK': const len = tasks.length; tasks = tasks.filter(t => t.id != data.taskId); if (tasks.length < len) updated = true; break; case 'UPDATE_TASK': index = tasks.findIndex(t => t.id == data.taskId); if (index > -1) { Object.assign(tasks[index], data.updatedFields); updated = true; } break; case 'SYNC_ALL': const map = new Map(tasks.map(t => [t.id, t])); data.tasks.forEach(rt => map.set(rt.id, rt)); tasks = Array.from(map.values()); updated = true; break; } if (updated) { saveTasks(tasks); loadTasks(); renderCalendar(); } }
             const lastPeerId = localStorage.getItem('lastConnectedPeerId'); if (lastPeerId) remotePeerIdInput.value = lastPeerId;
             function updatePeerSelectDropdown() { peerSelect.innerHTML = ''; if (connections.length === 0) { peerSelect.innerHTML = '<option>No peers connected</option>'; peerSelect.disabled = true; sendFileButton.disabled = true; } else { connections.forEach(conn => { peerSelect.innerHTML += `<option value="${conn.peer}">${conn.peer}</option>`; }); peerSelect.disabled = false; sendFileButton.disabled = false; } }
             sendFileButton.onclick = () => { const peerId = peerSelect.value; const file = fileInput.files[0]; if (!peerId || peerId === 'No peers connected') { showNotification('Please select a peer.'); return; } if (!file) { showNotification('Please select a file.'); return; } const conn = connections.find(c => c.peer === peerId); if (!conn) { showNotification('Connection lost.'); return; } const reader = new FileReader(); reader.onload = (event) => { conn.send({ type: 'FILE_TRANSFER', file: event.target.result, fileName: file.name, fileType: file.type }); showNotification(`Sending ${file.name} to ${peerId}...`, 'info'); }; reader.readAsArrayBuffer(file); };
@@ -855,11 +821,11 @@
             // --- Timer & Reminder Logic ---
             function updateTimer() { const now = new Date(); timerDateElement.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); timerElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); }
             updateTimer(); setInterval(updateTimer, 1000);
-            function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id) && !task.deleted) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
+            function checkReminders() { const tasks = getTasks(); const now = new Date(); now.setHours(0, 0, 0, 0); const reminded = JSON.parse(sessionStorage.getItem('remindedTasks')) || []; let delay = 0; tasks.forEach(task => { if (!task.isCompleted && !reminded.includes(task.id)) { const deadline = new Date(task.deadline + 'T00:00:00'); if (now.getTime() === deadline.getTime()) { setTimeout(() => { const name = escapeHTML(task.name).substring(0, 30) + (task.name.length > 30 ? '...' : ''); showNotification(`Reminder: "${name}" is due today!`, 'reminder'); }, delay); delay += 500; reminded.push(task.id); } } }); sessionStorage.setItem('remindedTasks', JSON.stringify(reminded)); }
             
             // --- Task CRUD Logic ---
             function truncateText(text, maxLength) { if (text.length <= maxLength) { return text; } return text.slice(0, maxLength) + '...'; }
-            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null, updatedAt: Date.now(), deleted: false }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'UPDATE_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
+            taskForm.onsubmit = (e) => { e.preventDefault(); const name = taskNameInput.value.trim(); const deadline = taskDeadlineInput.value; const finishDate = taskFinishDateInput.value; if (name === '' || deadline === '') { showNotification('Task name and deadline are required.'); return; } const task = { id: Date.now(), name, deadline, isCompleted: false, finishDate: finishDate || null }; let tasks = getTasks(); tasks.push(task); saveTasks(tasks); loadTasks(); renderCalendar(); broadcast({ type: 'ADD_TASK', task }); taskForm.reset(); taskNameInput.focus(); };
             taskList.onchange = (e) => { if (e.target.classList.contains('complete-checkbox')) { toggleComplete(Number(e.target.closest('.task-item').dataset.id)); } };
             taskList.onclick = (e) => { const item = e.target.closest('.task-item'); if (!item) return; const id = Number(item.dataset.id); if (e.target.closest('.deadline-text')) { item.style.transition = 'opacity 0.3s ease, transform 0.3s ease'; item.style.opacity = '0'; item.style.transform = 'translateX(-20px)'; setTimeout(() => deleteTask(id), 300); } else if (e.target.classList.contains('task-name')) makeEditable(e.target, id, 'name'); };
             function makeEditable(element, id, field) { const original = getTaskById(id)[field]; const input = document.createElement('input'); input.type = 'text'; input.value = original; input.className = 'edit-input-field'; element.replaceWith(input); input.focus(); const save = () => { const newValue = input.value.trim(); if (newValue && newValue !== original) { updateTask(id, { [field]: newValue }); } else { loadTasks(); renderCalendar(); } }; input.onblur = save; input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); if (e.key === 'Escape') { loadTasks(); renderCalendar(); } }; }
@@ -867,10 +833,10 @@
             function getTasks() { try { return JSON.parse(localStorage.getItem('tasks')) || []; } catch (e) { return []; } }
             function getTaskById(id) { return getTasks().find(task => task.id === id); }
             function saveTasks(tasks) { localStorage.setItem('tasks', JSON.stringify(tasks)); }
-            function loadTasks() { const tasks = getTasks().filter(t => !t.deleted); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
-            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields, updatedAt: Date.now() }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', task: tasks[index] }); } loadTasks(); renderCalendar(); }
-            function toggleComplete(id) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; task.updatedAt = Date.now(); if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', task }); } loadTasks(); renderCalendar(); }
-            function deleteTask(id) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index].deleted = true; tasks[index].updatedAt = Date.now(); saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', task: tasks[index] }); } loadTasks(); renderCalendar(); }
+            function loadTasks() { const tasks = getTasks(); tasks.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); taskList.innerHTML = ''; tasks.forEach(addTaskToDOM); }
+            function updateTask(id, fields) { let tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { tasks[index] = { ...tasks[index], ...fields }; saveTasks(tasks); broadcast({ type: 'UPDATE_TASK', taskId: id, updatedFields: fields }); } loadTasks(); renderCalendar(); }
+            function toggleComplete(id) { const tasks = getTasks(); const index = tasks.findIndex(t => t.id == id); if (index > -1) { const task = tasks[index]; task.isCompleted = !task.isCompleted; if (task.isCompleted) task.finishDate = task.finishDate || new Date().toISOString().split('T')[0]; saveTasks(tasks); broadcast({ type: 'TOGGLE_COMPLETE', taskId: id, isCompleted: task.isCompleted, finishDate: task.finishDate }); } loadTasks(); renderCalendar(); }
+            function deleteTask(id) { let tasks = getTasks().filter(t => t.id != id); saveTasks(tasks); broadcast({ type: 'DELETE_TASK', taskId: id }); loadTasks(); renderCalendar(); }
             function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
             
             // --- Calendar Logic ---
@@ -885,86 +851,82 @@
             });
 
             function renderCalendar() {
-                calendarGrid.innerHTML = '';
-                const year = calendarDate.getFullYear();
-                const month = calendarDate.getMonth();
-                monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
+    calendarGrid.innerHTML = '';
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    monthYearHeader.textContent = `${calendarDate.toLocaleString('default', { month: 'long' })} ${year}`;
 
-                const tasks = getTasks().filter(t => !t.deleted);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); 
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const tasks = getTasks();
+    const today = new Date();
 
-                const generateDayElement = (date, isCurrentMonth) => { 
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'calendar-day';
-                    if (!isCurrentMonth) {
-                        dayEl.classList.add('other-month');
-                    }
-                    if (date.getTime() === today.getTime()) {
-                        dayEl.classList.add('current-day');
-                    }
+    // Parse CSV once at render
+    const allEvents = parseCSV(csvData);
 
-                    const tasksForDay = tasks.filter(task => {
-                        const parts = task.deadline.split('-');
-                        const taskDeadline = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-                        return taskDeadline.getTime() === date.getTime();
-                    });
-                    
-                    let tasksHtml = tasksForDay.map(task => 
-                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 10))}</div>`
-                    ).join('');
+    // Fill empty cells for days before month start
+    for (let i = 0; i < firstDay; i++) {
+        calendarGrid.innerHTML += `<div class="calendar-day other-month"></div>`;
+    }
 
-                    const y = date.getUTCFullYear();
-                    const m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-                    const d = date.getUTCDate().toString().padStart(2, '0');
-                    const lookupDate = `${y}-${m}-${d}`;
-                    const eventForDay = allSchoolEvents.find(e => e.Date === lookupDate);
-                    let cycleDayHtml = '';
-                    let holidayClass = '';
-                    let eventsHtml = '';
-                    const dayOfWeek = date.getUTCDay(); 
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateStr = date.toISOString().split('T')[0];
+        const isToday = date.toDateString() === today.toDateString();
 
-                    if (eventForDay) {
-                        if(eventForDay.CycleDay) {
-                             cycleDayHtml = `<div class="cycle-day">${eventForDay.CycleDay}</div>`;
-                        }
-                        if(eventForDay.Type.includes('Holiday') || eventForDay.Events.includes('Holiday')) {
-                            holidayClass = ' holiday';
-                        }
-                        if(eventForDay.Events) {
-                            eventsHtml = eventForDay.Events.split(';').map(event => {
-                                const trimmedEvent = event.trim();
-                                if (trimmedEvent) {
-                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
-                                }
-                                return '';
-                            }).join('');
-                        }
-                    }
-                    
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        holidayClass = ' holiday';
-                    }
+        // Find events for that day
+        const event = allEvents.find(e => e.Date === dateStr);
 
-                    dayEl.innerHTML = `<div class="day-number${holidayClass}">${date.getUTCDate()}</div>
-                                       ${cycleDayHtml}
-                                       <div class="calendar-tasks">${eventsHtml}${tasksHtml}</div>`;
-                    
-                    return dayEl;
-                };
+        // Create base HTML
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        if (isToday) dayEl.classList.add('current-day');
 
-                const firstDayOfMonth = new Date(Date.UTC(year, month, 1));
-                
-                const startDate = new Date(firstDayOfMonth);
-                startDate.setUTCDate(startDate.getUTCDate() - firstDayOfMonth.getUTCDay());
+        // Add cycle day
+        let cycleDayHtml = '';
+        if (event && event.CycleDay) {
+            cycleDayHtml = `<div class="cycle-day">${event.CycleDay}</div>`;
+        }
 
-                for (let i = 0; i < 42; i++) {
-                    const currentDate = new Date(startDate);
-                    currentDate.setUTCDate(startDate.getUTCDate() + i);
-                    const isCurrentMonth = currentDate.getUTCMonth() === month;
-                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
-                }
-            }
+        // Highlight holidays (Type contains “School Holiday”)
+        let holidayClass = '';
+        if (event && event.Type && event.Type.toLowerCase().includes('holiday')) {
+            holidayClass = ' holiday';
+        }
+
+        // Collect events text
+        let eventsHtml = '';
+        if (event && event.Events) {
+            const eventsList = event.Events.split(';');
+            eventsHtml = eventsList.map(ev => `
+                <div class="calendar-event" title="${escapeHTML(ev.trim())}">
+                    ${escapeHTML(truncateText(ev.trim(), 10))}
+                </div>
+            `).join('');
+        }
+
+        // Add tasks due that day
+        const tasksForDay = tasks.filter(t => {
+            const tDate = new Date(t.deadline + 'T00:00:00');
+            return tDate.toDateString() === date.toDateString();
+        }).map(t => `
+            <div class="calendar-task ${t.isCompleted ? 'completed' : ''}" title="${escapeHTML(t.name)}">
+                ${escapeHTML(truncateText(t.name, 10))}
+            </div>
+        `).join('');
+
+        dayEl.innerHTML = `
+            <div class="day-number${holidayClass}">${day}</div>
+            ${cycleDayHtml}
+            <div class="calendar-tasks">
+                ${eventsHtml}
+                ${tasksForDay}
+            </div>
+        `;
+        calendarGrid.appendChild(dayEl);
+    }
+}
+
 
             showListViewBtn.onclick = () => {
                 listView.style.display = 'block';
@@ -1474,4 +1436,3 @@
     </script>
 </body>
 </html>
-
