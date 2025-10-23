@@ -918,33 +918,48 @@
                     const m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
                     const d = date.getUTCDate().toString().padStart(2, '0');
                     const lookupDate = `${y}-${m}-${d}`;
-                    const eventForDay = allSchoolEvents.find(e => e.Date === lookupDate);
-                    let cycleDayHtml = '';
-                    let holidayClass = '';
-                    let eventsHtml = '';
-                    const dayOfWeek = date.getUTCDay(); 
-
-                    if (eventForDay) {
-                        if(eventForDay.CycleDay) {
-                             cycleDayHtml = `<div class="cycle-day">${eventForDay.CycleDay}</div>`;
-                        }
-                        if(eventForDay.Type.includes('Holiday') || eventForDay.Events.includes('Holiday')) {
-                            holidayClass = ' holiday';
-                        }
-                        if(eventForDay.Events) {
-                            eventsHtml = eventForDay.Events.split(';').map(event => {
-                                const trimmedEvent = event.trim();
-                                if (trimmedEvent) {
-                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
-                                }
-                                return '';
-                            }).join('');
-                        }
-                    }
                     
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        holidayClass = ' holiday';
-                    }
+                    // ...
+const eventsForDay = allSchoolEvents.filter(e => e.Date === lookupDate); // <-- Use filter()
+let cycleDayHtml = '';
+let holidayClass = '';
+let allEventStrings = []; // <-- Array to hold all event strings
+const dayOfWeek = date.getUTCDay(); 
+
+if (eventsForDay.length > 0) {
+    // Get Cycle Day from the first event that has one
+    const eventWithCycleDay = eventsForDay.find(e => e.CycleDay);
+    if (eventWithCycleDay) {
+         cycleDayHtml = `<div class="cycle-day">${eventWithCycleDay.CycleDay}</div>`;
+    }
+
+    // Check if *any* event marks it as a holiday
+    if (eventsForDay.some(e => e.Type.includes('Holiday') || e.Events.includes('Holiday'))) {
+        holidayClass = ' holiday';
+    }
+
+    // Collect all event strings from all entries for the day
+    eventsForDay.forEach(event => {
+        if (event.Events) {
+            allEventStrings = allEventStrings.concat(
+                event.Events.split(';')
+                            .map(e => e.trim())
+                            .filter(e => e) // Remove empty strings
+            );
+        }
+    });
+}
+
+// Add weekend holiday class
+if (dayOfWeek === 0 || dayOfWeek === 6) {
+    holidayClass = ' holiday';
+}
+
+// Generate HTML for all collected events
+let eventsHtml = allEventStrings.map(event => {
+    return `<div class="calendar-event" title="${escapeHTML(event)}">${escapeHTML(truncateText(event, 10))}</div>`;
+}).join('');
+// ...
 
                     dayEl.innerHTML = `<div class="day-number${holidayClass}">${date.getUTCDate()}</div>
                                        ${cycleDayHtml}
