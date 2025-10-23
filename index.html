@@ -972,56 +972,8 @@ let eventsHtml = allEventStrings.map(event => {
                 
                 const startDate = new Date(firstDayOfMonth);
                 startDate.setUTCDate(startDate.getUTCDate() - firstDayOfMonth.getUTCDay());
-
-                for (let i = 0; i < 42; i++) {
-                    const currentDate = new Date(startDate);
-                    currentDate.setUTCDate(startDate.getUTCDate() + i);
-                    const isCurrentMonth = currentDate.getUTCMonth() === month;
-                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
-                }
-            }
-
-            showListViewBtn.onclick = () => {
-                listView.style.display = 'block';
-                calendarView.style.display = 'none';
-                showListViewBtn.classList.add('active');
-                showCalendarViewBtn.classList.remove('active');
-            };
-
-            showCalendarViewBtn.onclick = () => {
-                listView.style.display = 'none';
-                calendarView.style.display = 'flex';
-                showListViewBtn.classList.remove('active');
-                showCalendarViewBtn.classList.add('active');
-                renderCalendar();
-            };
-
-            prevMonthBtn.onclick = () => {
-                calendarDate.setMonth(calendarDate.getMonth() - 1);
-                renderCalendar();
-            };
-
-            nextMonthBtn.onclick = () => {
-                calendarDate.setMonth(calendarDate.getMonth() + 1);
-                renderCalendar();
-            };
-
-            // Initial Load
-            loadTasks();
-            checkReminders(); 
-        });
-
-        // --- SCHEDULE APP LOGIC ---
-        (function() {
-            const API_URL = 'https://iot.spyc.hk/timetable';
-            let classTimetableData = null; 
-
-            const modal = document.getElementById('class-modal');
-            const classForm = document.getElementById('class-form');
-            const classInput = document.getElementById('class-input');
-            const scheduleSubtitle = document.getElementById('schedule-subtitle');
-
-            const csvData = `Date,DayOfWeek,CycleDay,Type,Events
+                // --- School Schedule Data (for Calendar) ---
+const csvData = `Date,DayOfWeek,CycleDay,Type,Events
 2025-09-01,Monday,,Special Timetable,"School Opening Ceremony"
 2025-09-02,Tuesday,A,,Summer Timetable
 2025-09-03,Wednesday,C,,Summer Timetable
@@ -1100,7 +1052,7 @@ let eventsHtml = allEventStrings.map(event => {
 2025-11-15,Saturday,,,
 2025-11-16,Sunday,,,
 2025-11-17,Monday,D,,"Seasonal Influenza Vaccination"
-2025-11-18,Tuesday,F,,
+2IA5-11-18,Tuesday,F,,
 2025-11-19,Wednesday,A,,
 2025-11-20,Thursday,,Special Timetable,"School Picnic"
 2025-11-21,Friday,,Special Timetable,"Staff Development Day"
@@ -1303,7 +1255,7 @@ let eventsHtml = allEventStrings.map(event => {
 2026-06-06,Saturday,,,
 2026-06-07,Sunday,,,
 2026-06-08,Monday,,,"S1-5 Final Examination"
-2026-06-09,Tuesday,,,"S1-5 Final Examination"
+2026-0GE-09,Tuesday,,,"S1-5 Final Examination"
 2026-06-10,Wednesday,,,"S1-5 Final Examination"
 2026-06-11,Thursday,,,"S1-5 Final Examination"
 2026-06-12,Friday,,,"S1-5 Final Examination"
@@ -1383,6 +1335,63 @@ let eventsHtml = allEventStrings.map(event => {
 2026-08-25,Tuesday,,School Holiday,"Summer Vacation"
 2026-08-26,Wednesday,,School Holiday,"Summer Vacation"
 2026-08-27,Thursday,,School Holiday,"Summer Vacation"
+2026-08-28,Friday,,School Holiday,"Summer Vacation"
+2026-08-29,Saturday,,School Holiday,"Summer Vacation"
+2026-08-30,Sunday,,School Holiday,"Summer Vacation"
+2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
+                
+            function parseCSV(csvText) { const lines = csvText.trim().split('\n'); const headers = lines[0].split(','); const data = []; for (let i = 1; i < lines.length; i++) { const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); if (values.length === headers.length) { const entry = {}; for (let j = 0; j < headers.length; j++) { entry[headers[j]] = values[j].replace(/"/g, ''); } data.push(entry); } } return data; }
+
+                for (let i = 0; i < 42; i++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setUTCDate(startDate.getUTCDate() + i);
+                    const isCurrentMonth = currentDate.getUTCMonth() === month;
+                    calendarGrid.appendChild(generateDayElement(currentDate, isCurrentMonth));
+                }
+            }
+
+            showListViewBtn.onclick = () => {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                showListViewBtn.classList.add('active');
+                showCalendarViewBtn.classList.remove('active');
+            };
+
+            showCalendarViewBtn.onclick = () => {
+                listView.style.display = 'none';
+                calendarView.style.display = 'flex';
+                showListViewBtn.classList.remove('active');
+                showCalendarViewBtn.classList.add('active');
+                renderCalendar();
+            };
+
+            prevMonthBtn.onclick = () => {
+) - 1);
+                renderCalendar();
+            };
+
+            nextMonthBtn.onclick = () => {
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
+                renderCalendar();
+            };
+
+            // Initial Load
+            loadTasks();
+            checkReminders(); 
+        });
+
+        // --- SCHEDULE APP LOGIC ---
+        (function() {
+            const API_URL = 'https://iot.spyc.hk/timetable';
+            let classTimetableData = null; 
+
+            const modal = document.getElementById('class-modal');
+            const classForm = document.getElementById('class-form');
+            const classInput = document.getElementById('class-input');
+            const scheduleSubtitle = document.getElementById('schedule-subtitle');
+
+            
+Vacation"
 2026-08-28,Friday,,School Holiday,"Summer Vacation"
 2026-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
