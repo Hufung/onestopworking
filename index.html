@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do</title>
     
-    <!-- Google Fonts for a modern look (used by both apps) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- PeerJS Library for WebRTC (for To-Do app) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
-    <!-- Tailwind CSS (for Schedule app) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- CSS styles are embedded here -->
     <style>
         /* --- Base Styles & To-Do App --- */
         :root {
@@ -242,7 +238,7 @@
             flex-direction: column; 
             width: 100%;
             /* --- MODIFICATION: Set max-width and center calendar --- */
-            max-width: 600px;
+            max-width: 550px;
             margin: 0 auto;
         }
         #calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -256,7 +252,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             /* --- MODIFICATION: Reduced height further --- */
-            height: 90px; 
+            height: 80px; 
             padding: 8px;
             font-size: 0.9rem;
             transition: border-color 0.2s;
@@ -384,7 +380,7 @@
             .app-container { padding: 15px; }
             #todo-view-wrapper .container { padding: 20px; }
              /* --- MODIFICATION: Reduced height further --- */
-            .calendar-day { height: 85px; padding: 5px; font-size: 0.8rem;}
+            .calendar-day { height: 75px; padding: 5px; font-size: 0.8rem;}
             .calendar-task, .calendar-event { font-size: 0.7rem; padding: 1px 4px;}
         }
         @media (max-width: 600px) {
@@ -403,23 +399,20 @@
             .back-button { margin-bottom: 20px; }
             #calendar-weekdays div { font-size: 0.7rem; }
              /* --- MODIFICATION: Reduced height further --- */
-            .calendar-day { height: 80px; }
+            .calendar-day { height: 70px; }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Main Tab Navigation -->
         <nav class="app-nav">
             <button id="show-todo-btn" class="active">To-Do List</button>
             <button id="show-schedule-btn">Schedule</button>
-            <!-- /// MODIFICATION 1: Added new tab button /// -->
             <button id="show-focus-btn">Flight Focus</button>
         </nav>
         
         <div id="notification" class="notification"></div>
 
-        <!-- Wrapper for To-Do App -->
         <div id="todo-view-wrapper">
             <div class="container">
                 <div class="top-controls">
@@ -507,7 +500,6 @@
             </div>
         </div>
 
-        <!-- Wrapper for Schedule App -->
         <div id="schedule-view-wrapper" style="display: none;">
             <div class="container mx-auto p-4 max-w-5xl">
                 <header class="text-center mb-8">
@@ -532,7 +524,6 @@
         </div>
     </div>
     
-    <!-- Modal for Class Input -->
     <div id="class-modal" style="display: none;">
         <div class="modal-content">
             <h2>Enter Your Class</h2>
@@ -544,7 +535,6 @@
         </div>
     </div>
 
-    <!-- Tutorial Overlay -->
     <div id="tutorial-overlay">
         <div id="tutorial-spotlight"></div>
         <div id="tutorial-tooltip">
@@ -560,7 +550,6 @@
     </div>
 
 
-    <!-- Main application logic -->
     <script>
         // --- SHARED DATA & UTILITIES ---
         // (This data is used by both the To-Do calendar and the Schedule app)
@@ -630,7 +619,7 @@
 2025-10-28,Tuesday,F,,"S6 First Examination; S1-3 Test Week"
 2025-10-29,Wednesday,,School Holiday,"S6 First Examination; S1-3 Test Week; Chung Yeung Festival"
 2025-10-30,Thursday,,,"S6 First Examination; S1-3 Test Week"
-2025-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"
+2E-10-31,Friday,H,,"S6 First Examination; S1-3 Test Week"
 2025-11-01,Saturday,,,
 2025-11-02,Sunday,,,
 2025-11-03,Monday,B,,"S6 First Examination"
@@ -707,7 +696,7 @@
 2026-01-13,Tuesday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-14,Wednesday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-15,Thursday,,,"S1-5 First Examination; S6 Mock Examination"
-2all-school-events.js-16,Friday,,,"S1-5 First Examination; S6 Mock Examination"
+2026-01-16,Friday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-17,Saturday,,,
 2026-01-18,Sunday,,,
 2026-01-19,Monday,A,,"S6 Mock Examination"
@@ -824,7 +813,7 @@
 2026-05-10,Sunday,,,
 2026-05-11,Monday,,,
 2026-05-12,Tuesday,,,
-2026-05-13,Wednesday,,,
+202Choose-05-13,Wednesday,,,
 2026-05-14,Thursday,,,
 2026-05-15,Friday,F,,"Summer Timetable"
 2026-05-16,Saturday,,Special Timetable,"Summer Timetable; Speech Day"
@@ -1376,7 +1365,7 @@
                     });
                     
                     let tasksHtml = tasksForDay.map(task => 
-                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 10))}</div>`
+                        `<div class="calendar-task ${task.isCompleted ? 'completed' : ''}" title="${escapeHTML(task.name)}">${escapeHTML(truncateText(task.name, 8))}</div>`
                     ).join('');
 
                     const y = date.getFullYear();
@@ -1403,7 +1392,7 @@
                             eventsHtml = eventForDay.Events.split(';').map(event => {
                                 const trimmedEvent = event.trim();
                                 if (trimmedEvent) {
-                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 10))}</div>`;
+                                    return `<div class="calendar-event" title="${escapeHTML(trimmedEvent)}">${escapeHTML(truncateText(trimmedEvent, 8))}</div>`;
                                 }
                                 return '';
                             }).join('');
