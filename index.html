@@ -413,6 +413,7 @@
         <nav class="app-nav">
             <button id="show-todo-btn" class="active">To-Do List</button>
             <button id="show-schedule-btn">Schedule</button>
+            <!-- /// MODIFICATION 1: Added new tab button /// -->
             <button id="show-focus-btn">Flight Focus</button>
         </nav>
         
@@ -560,7 +561,7 @@
 
 
     <!-- Main application logic -->
-    <script> 
+    <script>
         // --- SHARED DATA & UTILITIES ---
         // (This data is used by both the To-Do calendar and the Schedule app)
         
@@ -706,7 +707,7 @@
 2026-01-13,Tuesday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-14,Wednesday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-15,Thursday,,,"S1-5 First Examination; S6 Mock Examination"
-2026-01-16,Friday,,,"S1-5 First Examination; S6 Mock Examination"
+2all-school-events.js-16,Friday,,,"S1-5 First Examination; S6 Mock Examination"
 2026-01-17,Saturday,,,
 2026-01-18,Sunday,,,
 2026-01-19,Monday,A,,"S6 Mock Examination"
@@ -931,7 +932,7 @@
 2026-08-26,Wednesday,,School Holiday,"Summer Vacation"
 2026-08-27,Thursday,,School Holiday,"Summer Vacation"
 2026-08-28,Friday,,School Holiday,"Summer Vacation"
-2026-08-29,Saturday,,School Holiday,"Summer Vacation"
+2028-08-29,Saturday,,School Holiday,"Summer Vacation"
 2026-08-30,Sunday,,School Holiday,"Summer Vacation"
 2026-08-31,Monday,,School Holiday,"Summer Vacation"`;
         
@@ -962,27 +963,48 @@
         // Parse the CSV data *once* into a global variable for both apps to use
         const ALL_SCHOOL_EVENTS = parseCSV(SCHOOL_EVENTS_CSV);
 
-       // --- TAB SWITCHING LOGIC ---
+        // --- TAB SWITCHING LOGIC ---
+        // --- MODIFICATION 2: Updated Tab Switching Logic ---
         const showTodoBtn = document.getElementById('show-todo-btn');
         const showScheduleBtn = document.getElementById('show-schedule-btn');
         const todoWrapper = document.getElementById('todo-view-wrapper');
         const scheduleWrapper = document.getElementById('schedule-view-wrapper');
-
-        // ADD THIS LINE to select your new button
+        
+        // Added selector for the new button
         const showFocusBtn = document.getElementById('show-focus-btn');
 
         showTodoBtn.addEventListener('click', () => {
-            // ... (existing code)
+            todoWrapper.style.display = 'flex';
+            scheduleWrapper.style.display = 'none';
+            showTodoBtn.classList.add('active');
+            showScheduleBtn.classList.remove('active');
+            // Added this line
+            if (showFocusBtn) showFocusBtn.classList.remove('active');
         });
+        
+        // Modified this listener
         showScheduleBtn.addEventListener('click', () => {
-            // ... (existing code)
+            todoWrapper.style.display = 'none';
+            scheduleWrapper.style.display = 'block';
+            showScheduleBtn.classList.add('active');
+            showTodoBtn.classList.remove('active');
+            // Added this line
+            if (showFocusBtn) showFocusBtn.classList.remove('active');
+
+            // Added this logic to fix the modal issue
+            const savedClass = localStorage.getItem('userClass');
+            if (!savedClass) {
+                // If no class is saved, show the modal now.
+                document.getElementById('class-modal').style.display = 'flex';
+            }
         });
 
-        // EDIT THIS LISTENER to point to the new URL
-        showFocusBtn.addEventListener('click', () => {
-            // This will navigate the browser to the live website
-            window.location.href = 'https://flightfocus.netlify.app/';
-        });
+        // Added this new listener for the Flight Focus tab
+        if (showFocusBtn) {
+            showFocusBtn.addEventListener('click', () => {
+                window.location.href = 'https://flightfocus.netlify.app/';
+            });
+        }
         
         // --- TO-DO APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1055,7 +1077,7 @@
                         localStorage.setItem('hasVisitedBefore', 'true');
                         
                         const savedClass = localStorage.getItem('userClass');
-                        if (!savedClass) {
+                        if (!savedClass && !showTodoBtn.classList.contains('active')) { // Only show if not on to-do tab
                             document.getElementById('class-modal').style.display = 'flex';
                         }
                     }
@@ -1472,7 +1494,7 @@
                 const d = date.getDate().toString().padStart(2, '0');
                 return `${y}-${m}-${d}`;
             }
-            function renderEvents(element, eventsForDay) { if (!eventsForDay || eventsForDay.length === 0) { element.innerHTML = '<p class="text-gray-500 italic">No events scheduled.</p>'; return; } const event = eventsForDay[0]; let html = ''; if (event.CycleDay) { html += `<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${event.CycleDay}</span></div>`; } if (event.Type) { html += `<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${event.Type}</span></div>`; } if (event.Events) { const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>'); html += `<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowrap">Events</span><span class="text-gray-800">${eventItems}</span></div>`; } element.innerHTML = html || '<p class="text-gray-500 italic">No specific events listed.</p>'; }
+            function renderEvents(element, eventsForDay) { if (!eventsForDay || eventsForDay.length === 0) { element.innerHTML = '<p class="text-gray-500 italic">No events scheduled.</p>'; return; } const event = eventsForDay[0]; let html = ''; if (event.CycleDay) { html += `<div class="flex items-center bg-gray-50 p-3 rounded-lg"><span class="bg-gray-200 text-gray-700 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Cycle Day</span><span class="text-gray-800 font-semibold">${event.CycleDay}</span></div>`; } if (event.Type) { html += `<div class="flex items-center bg-blue-50 p-3 rounded-lg"><span class="bg-blue-100 text-blue-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full">Type</span><span class="text-gray-800">${event.Type}</span></div>`; } if (event.Events) { const eventItems = event.Events.split(';').map(e => e.trim()).join('<br>'); html += `<div class="flex items-start bg-green-50 p-3 rounded-lg"><span class="bg-green-100 text-green-800 text-sm font-bold mr-3 px-2.5 py-1 rounded-full whitespace-nowWarp">Events</span><span class="text-gray-800">${eventItems}</span></div>`; } element.innerHTML = html || '<p class="text-gray-500 italic">No specific events listed.</p>'; }
             
             function renderTimetable(element, eventData) {
                 if (!eventData || !eventData.CycleDay || !classTimetableData || !classTimetableData[eventData.CycleDay]) {
@@ -1506,10 +1528,13 @@
                     const data = await response.json();
 
                     if (!data[userClass]) {
-                        alert(`Class "${userClass}" not found. Please try again.`);
+                        // Use a custom modal/notification instead of alert
+                        console.error(`Class "${userClass}" not found.`);
+                        // Find a way to show notification, e.g., using the to-do app's notification system if possible
+                        // For simplicity, we'll just update the text and show the modal again.
                         localStorage.removeItem('userClass');
                         modal.style.display = 'flex';
-                        scheduleSubtitle.textContent = "Please enter your class to begin.";
+                        scheduleSubtitle.textContent = `Class "${userClass}" not found. Please try again.`;
                         return;
                     }
                     classTimetableData = data[userClass];
@@ -1538,7 +1563,7 @@
                 } catch (error) {
                     console.error('Failed to fetch timetable:', error);
                     scheduleSubtitle.textContent = "Could not load schedule. Please try again later.";
-                    alert("Error fetching schedule. Please check your internet or try again.");
+                    // alert("Error fetching schedule. Please check your internet or try again.");
                 }
             }
 
@@ -1552,6 +1577,7 @@
                 }
             };
             
+            // --- MODIFICATION 3: Fixed the modal logic ---
             document.addEventListener("DOMContentLoaded", () => {
                 const savedClass = localStorage.getItem('userClass');
                 const hasVisited = localStorage.getItem('hasVisitedBefore');
@@ -1559,7 +1585,8 @@
                 if (savedClass) {
                     fetchAndRenderSchedule(savedClass);
                 } else if (hasVisited) {
-                    modal.style.display = 'flex';
+                    // This line was removed to prevent the modal from showing on page load
+                    // modal.style.display = 'flex'; 
                     scheduleSubtitle.textContent = "Please enter your class to begin.";
                 } else {
                     scheduleSubtitle.textContent = "Please enter your class to begin.";
@@ -1569,6 +1596,3 @@
     </script>
 </body>
 </html>
-
-
-
